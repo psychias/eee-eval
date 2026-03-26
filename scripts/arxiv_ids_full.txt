@@ -1,0 +1,50 @@
+# ── 2021 ──────────────────────────────────────────────────────────────────
+2109.01652   # FLAN (Google Brain) — instruction fine-tuning, clean zero-shot tables, ~20 pages
+
+# ── 2022 ──────────────────────────────────────────────────────────────────
+2204.06745   # GPT-NeoX-20B (EleutherAI) — open-source, clean benchmark grid, ~25 pages
+2210.11416   # Flan-T5 (Google) — instruction-tuned T5 family, clean multi-benchmark tables
+
+# ── 2023 ──────────────────────────────────────────────────────────────────
+2304.01373   # Pythia (EleutherAI) — transparent scaling study, clean tables, ~20 pages
+2305.10403   # LIMA (Meta AI) — alignment with less data, clean benchmark tables, ~15 pages
+2306.11644   # phi-1 (Microsoft) — "Textbooks Are All You Need", compact clean tables
+2309.05463   # phi-1.5 (Microsoft) — "Textbooks Are All You Need II", compact clean tables
+2310.06825   # Mistral 7B — compact, clean tables, ~9 pages
+2310.16944   # Zephyr (HuggingFace) — aligned model, clean tables, ~10 pages
+2311.11045   # Orca 2 (Microsoft) — 15-benchmark zero-shot grid
+2312.06550   # LLM360 (fully transparent, clean multi-checkpoint tables)
+
+# ── 2024 Q1 ───────────────────────────────────────────────────────────────
+2401.02385   # TinyLlama — small/efficient model, clean benchmark grid, ~15 pages
+2401.04088   # Mixtral 8x7B (Mistral AI) — concise, clear tables, ~12 pages
+2402.00838   # OLMo (AI2) — fully reproducible, published eval code
+2402.16819   # Nemotron-4 15B (NVIDIA) — clean standardized tables
+2402.17834   # StableLM 2 1.6B — structured benchmark tables
+2402.19173   # StarCoder2 (BigCode) — code benchmarks, clean grid
+2403.04652   # Yi (01.AI) — multi-size benchmark tables
+2403.08295   # Gemma (Google DeepMind) — reference paper, clean reproducible tables
+2404.05892   # RWKV-6 / Eagle & Finch — architecture benchmark tables
+2404.06395   # MiniCPM (ModelBest/Tsinghua) — small efficient LLM, clean tables, ~20 pages
+2404.14219   # Phi-3 (Microsoft) — exemplary clean tables
+
+# ── 2024 Q2 ───────────────────────────────────────────────────────────────
+2406.11704   # Nemotron-4 340B (NVIDIA) — clean benchmark grid
+
+# ── 2024 Q3 ───────────────────────────────────────────────────────────────
+2407.10671   # Qwen2 (Alibaba) — multi-size, clean category tables
+2407.14885   # Falcon2-11B (TII) — compact tech report, standardized tables
+2408.00118   # Gemma 2 (Google DeepMind) — clean size-segmented tables
+2408.12570   # Jamba-1.5 (AI21 Labs) — hybrid SSM+attention, clear tables
+2409.12122   # Qwen2.5-Math — domain benchmark tables
+2409.12186   # Qwen2.5-Coder — code benchmark tables
+
+# ── 2024 Q4 ───────────────────────────────────────────────────────────────
+2411.04905   # OpenCoder — code model, clean benchmark grid
+2412.04261   # Aya Expanse (Cohere) — multilingual benchmarks
+2412.08905   # Phi-4 (Microsoft) — clean tables, ~20 pages
+2412.15115   # Qwen2.5 (Alibaba) — exemplary size-category table structure
+
+# ── 2025 ──────────────────────────────────────────────────────────────────
+2501.00656   # OLMo 2 (AllenAI) — transparent, reproducible benchmark tables
+2502.02737   # SmolLM2 (HuggingFace) — small model, clean comparison tables

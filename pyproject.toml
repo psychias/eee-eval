@@ -1,0 +1,31 @@
+[project]
+name = "every-eval-ever"
+version = "0.2.1"
+description = "Unified schema and extraction pipeline for LLM evaluation results — ACL 2026 EvalEval Shared Task submission"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+dependencies = [
+    "google-generativeai>=0.8.0",
+    "openai>=2.29.0",
+]
+
+[tool.setuptools.packages.find]
+include = [
+    "eee_inspect_adapter",
+    "eee_inspect_adapter.*",
+    "eval_converters",
+    "eval_converters.*",
+    "scripts",
+    "scripts.*",
+    "scripts.extraction",
+    "scripts.extraction.*",
+    "scripts.analysis",
+    "scripts.analysis.*",
+    "scripts.figures",
+    "scripts.figures.*",
+    "scripts.scrapers",
+    "scripts.scrapers.*",
+    "utils",
+    "utils.*",
+]

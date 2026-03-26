@@ -1,0 +1,131 @@
+Track 2 Submission: Proprietary Evaluation Data
+================================================
+
+Benchmark name:   Internal Safety Benchmark v1.0
+Organization:     MyOrg  [replace with your org]
+Evaluator role:   first_party (our org ran the evaluation on models we tested)
+Date range:       [replace with your evaluation date range, e.g. 2025-10-01 – 2025-11-30]
+Schema version:   0.2.1
+Converter:        utils/proprietary_template/adapter.py
+
+---
+
+1. Data Origin
+--------------
+Results were produced by running our internal safety benchmark on a set of models
+via local inference using vLLM (when available) or a remote API.  The benchmark
+dataset is proprietary and cannot be publicly released per internal data governance
+policy.  source_type is set to "other" (SourceDataPrivate) with an additional_details
+note explaining that the dataset is internal-only and providing a contact point for
+access requests.
+
+The benchmark covers [replace: e.g. "adversarial prompt robustness across 800 test
+cases spanning 12 safety categories"].  Evaluation was single-turn: one prompt in,
+one completion out, judged by an exact-match rubric against a held-out reference
+answer (or a classifier in the case of open-ended generations).
+
+---
+
+2. Input Format
+---------------
+CSV file produced by our internal evaluation harness with the following columns:
+
+Required:
+  - model_id         : HuggingFace-format model identifier (org/name)
+  - benchmark        : benchmark sub-task name (e.g. "internal_safety_bench")
+  - score            : numeric score in [0, 1] (or [0, 100] — normalised to [0, 1])
+
+Optional generation-config columns:
+  - num_shots        : number of few-shot examples used
+  - temperature      : sampling temperature
+  - max_tokens       : maximum response token budget
+  - eval_date        : ISO 8601 date of this evaluation run
+
+Optional inference columns:
+  - inference_platform : remote API provider when the model was called through
+                         an API (e.g. "openai", "anthropic", "huggingface").
+                         Leave blank for local runs; the adapter auto-detects
+                         local engines (vLLM, Ollama, llama.cpp, mlx-lm) via
+                         importlib.metadata in that case.
+
+Optional instance-level columns (present when per-sample outputs were retained):
+  - sample_id        : unique identifier for the test item
+  - model_input      : the exact prompt sent to the model
+  - model_output     : the model's raw completion
+  - reference        : the reference/gold answer used for scoring
+  - is_correct       : 1/true/yes when the model answer matches the reference
+
+When instance-level columns are present, the converter writes a companion
+{uuid}.jsonl file and links it via the detailed_evaluation_results field.  The
+jsonl file is validated against instance_level_eval.schema.json before submission.
+
+---
+
+3. Conversion Steps
+-------------------
+a) Group rows by model_id.
+b) For each model, deduplicate benchmark entries — first occurrence per benchmark
+   name is kept.  This avoids double-counting when the same eval appears in
+   multiple CSV exports (e.g. a re-run after a hotfix).
+c) Scores > 1.0 are assumed to be percentages and divided by 100.
+d) generation_config is populated field-by-field from the CSV columns.  Any field
+   that is missing or unparseable is recorded individually in
+   generation_config.additional_details["missing_fields"] so consumers know exactly
+   what context is absent rather than receiving a single opaque note.
+e) If the CSV carries an inference_platform value (a remote API provider), it is
+   written directly to model_info.inference_platform and local-engine auto-detection
+   is skipped.  For blank or absent inference_platform, importlib.metadata is used
+   to detect vLLM / Ollama / llama.cpp / mlx-lm in the conversion environment and
+   populate model_info.inference_engine instead.
+f) evaluation_timestamp at the per-result level is populated from eval_date when
+   present.
+g) If the CSV includes instance-level columns, each row is converted to an
+   InstanceLevelEvaluationLog and written to a companion JSONL.  The aggregate
+   JSON file links to the JSONL via detailed_evaluation_results (format, file_path,
+   SHA-256 checksum, total_rows).
+
+---
+
+4. Known Limitations / Issues
+------------------------------
+- Confidence intervals and standard errors are not captured in the source CSV.
+  Our internal harness computes bootstrap CIs but does not export them to the
+  summary CSV.  To reproduce them: re-run bootstrap sampling over the JSONL
+  instance scores.
+
+- Per-result evaluation_timestamp reflects the date of the CSV export, not the
+  wall-clock time of each individual inference call.  Intra-run timing is
+  available in the JSONL performance field when instance-level columns are present.
+
+- The benchmark sub-task breakdown (when applicable) is collapsed into a single
+  aggregate score in the CSV export.  Finer-grained splits exist internally but
+  cannot be released alongside the aggregate data without also releasing the
+  category labels, which are considered proprietary.
+
+- model_output in the instance-level JSONL is truncated to 512 characters to
+  avoid inadvertently surfacing PII that appeared in long-form model responses.
+  Researchers requiring full outputs should contact the contributing organisation
+  under a data use agreement.
+
+- The auto-detected inference_engine version reflects the version installed in
+  the conversion environment, not necessarily the version used during the original
+  evaluation run if re-run later.  Where reproducibility is critical, pin the
+  engine version in your reproduction environment and compare against the
+  version recorded in the JSON.
+
+---
+
+5. Data Use Agreement
+---------------------
+[Describe the DUA or permission you have to contribute this data.
+ If submitting privately, reference the data use agreement here.]
+
+---
+
+6. Reproducibility
+------------------
+The conversion can be reproduced by running:
+
+    python utils/proprietary_template/adapter.py --source <path_to_results.csv>
+
+with the original results CSV (available to the benchmark owner).
