@@ -1,0 +1,51 @@
+model_name,benchmark,score,arxiv_id,paper_url,n_shot,prompt_template,temperature_gen_config,eval_harness,source_file
+GAL 1.3B,TruthfulQA,0.19,2211.09085,https://arxiv.org/abs/2211.09085v1,not found,not found,not found,not found,other\GAL-1.3B\b3d2c761-1edf-4d9c-aefe-6b7fe2f2d72b.json
+Auto-CoT,TruthfulQA,42.2,2210.03493,https://arxiv.org/abs/2210.03493v1,not found,chain-of-thought,not found,not found,other\Auto-CoT\9cefc436-bc01-41d4-8412-6ac3ab1ee9fb.json
+Unicorn 11B (fine-tuned),HellaSwag,93.9,2103.13009,https://arxiv.org/abs/2103.13009v1,not found,not found,not found,not found,other\Unicorn-11B--fine-tuned\92ccc50c-d5dd-40d8-9e0a-47630c2c1a2b.json
+Shakti-LLM (2.5B),TruthfulQA,68.4,2410.11331,https://arxiv.org/abs/2410.11331v1,not found,2.5B,not found,not found,other\Shakti-LLM--2.5B\ce72ff6a-d8c7-44fc-8a57-19779e234537.json
+Random baseline,WinoGrande,50.0,2104.08161,https://arxiv.org/abs/2104.08161v2,not found,not found,not found,not found,other\Random-baseline\a6ef4b8a-7941-441a-88ca-25e78360c697.json
+InCoder 6.7B + MBR-Exec,MBPP,26.7,2211.16490,https://arxiv.org/abs/2211.16490v1,not found,not found,not found,not found,other\InCoder-6.7B---MBR-Exec\a6a307f7-baf7-45b1-8148-fbd4c9819b49.json
+FiD-KD (full),NaturalQuestions,54.7,2007.01282,https://arxiv.org/abs/2007.01282v2,not found,full,not found,not found,other\FiD-KD--full\67f66218-98b8-45a2-b235-87f4b1d5fe03.json
+DeepSeek-Coder-Instruct 1.3B (few-shot),MBPP,49.4,2401.14196,https://arxiv.org/abs/2401.14196v2,few,not found,not found,not found,deepseek-ai\DeepSeek-Coder-Instruct-1.3B--few-shot\4b2b4165-840e-4d49-b1d2-d030d01145fd.json
+"DeepMind 70B Model (SFT+ORM-RL, ORM reranking)",GSM8K,87.3,2211.14275,https://arxiv.org/abs/2211.14275v1,not found,not found,not found,not found,other\DeepMind-70B-Model--SFT-ORM-RL--ORM-reranking\68bf68a5-1d8e-4a40-8f4e-ecb2e639c5b5.json
+LLaMA 13B-maj1@k,GSM8K,29.3,2302.13971,https://arxiv.org/abs/2302.13971v1,not found,not found,not found,not found,meta-llama\LLaMA-13B-maj1-k\fbe9e808-18e4-4903-8589-7edd879549a7.json
+BERT-large 345M,WinoGrande,55.6,2104.08161,https://arxiv.org/abs/2104.08161v2,not found,not found,not found,not found,other\BERT-large-345M\f4b1550c-c446-419b-aa3d-d537811474e1.json
+BERT-DPR 345M (0-shot),WinoGrande,51.0,1907.10641,https://arxiv.org/abs/1907.10641v2,0,not found,not found,not found,other\BERT-DPR-345M--0-shot\adab6fdf-1ff2-404f-8803-89a112cfaa26.json
+DPR+RoBERTa-base-crossencoder-reranker,NaturalQuestions,84.46,2109.03502,https://arxiv.org/abs/2109.03502v1,not found,not found,not found,not found,other\DPR-RoBERTa-base-crossencoder-reranker\150c726c-a304-4b4b-a6dc-f6df1c33a9eb.json
+QualityFlow (Sonnet-3.5),MBPP,94.2,2501.17167,https://arxiv.org/abs/2501.17167v2,not found,not found,not found,not found,other\QualityFlow--Sonnet-3.5\d3b8c5d3-1b93-4f2e-8350-c9342a0e8ecd.json
+RoBERTa-DPR 355M (0-shot),WinoGrande,58.9,1907.10641,https://arxiv.org/abs/1907.10641v2,0,not found,not found,not found,other\RoBERTa-DPR-355M--0-shot\b4be5212-c47e-4fb4-8b41-e5f3a31c4917.json
+Gemini Pro (4-shot),MATH,32.6,2312.11805,https://arxiv.org/abs/2312.11805v5,4,not found,not found,not found,google\Gemini-Pro--4-shot\a4d235df-7737-4317-b4f7-597ae91a0643.json
+Base Layers 10B (0-shot),HellaSwag,30.2,2203.06850,https://arxiv.org/abs/2203.06850v3,0,not found,not found,not found,other\Base-Layers-10B--0-shot\6f4e56be-7742-40ed-a450-28926f1c1de4.json
+Claude,MBPP,71.4,2307.12488,https://arxiv.org/abs/2307.12488v5,not found,not found,not found,not found,anthropic\Claude\864a180b-1174-4c31-81ca-2a6e11109192.json
+Neo-6B (QA),NaturalQuestions,19.7,2210.02441,https://arxiv.org/abs/2210.02441v3,not found,not found,not found,not found,other\Neo-6B--QA\44bd3689-f7fd-4802-a82c-76d1fec43933.json
+LLaMA 13B (0-shot),HellaSwag,79.2,2302.13971,https://arxiv.org/abs/2302.13971v1,0,not found,not found,not found,meta-llama\LLaMA-13B--0-shot\f37e9f59-3b4a-4eaf-bd44-5eb78257ede6.json
+R2-D2 (full),NaturalQuestions,55.9,2109.03502,https://arxiv.org/abs/2109.03502v1,not found,not found,not found,not found,other\R2-D2--full\8462c946-00d7-4fc3-817d-d8dceb8f092c.json
+Llama-3.3-70B + CAPO,GSM8K,73.73,2504.16005,https://arxiv.org/abs/2504.16005v3,not found,not found,not found,not found,meta-llama\Llama-3.3-70B---CAPO\89f1c961-0d70-4df0-9099-484aba220c34.json
+UnifiedQA 3B,TruthfulQA,53.86,2109.07958,https://arxiv.org/abs/2109.07958v2,not found,not found,not found,not found,other\UnifiedQA-3B\526b9fdb-8e31-4a03-a0bd-c8abafbcb069.json
+"Qwen2-72B-Instruct-Step-DPO (0-shot CoT, w/o code)",MATH,70.8,2406.18629,https://arxiv.org/abs/2406.18629v1,0,chain-of-thought,not found,not found,Qwen\Qwen2-72B-Instruct-Step-DPO--0-shot-CoT--w-o-code\432aa46f-e8a8-4e8f-91b4-a746f9d0fd7a.json
+Mamba-2.8B,HellaSwag,66.1,2312.00752,https://arxiv.org/abs/2312.00752v2,not found,not found,not found,not found,other\Mamba-2.8B\e2d88cdf-68d8-497c-a2bf-b85883a15fb3.json
+GPT-Neo-2.7B + Self-Sampling,GSM8K,19.5,2205.14318,https://arxiv.org/abs/2205.14318v2,not found,not found,not found,not found,openai\GPT-Neo-2.7B---Self-Sampling\bd3ab3cf-000f-42cc-a5cd-9c1e4c87f5ae.json
+LSTM + ElMo,HellaSwag,31.4,1905.07830,https://arxiv.org/abs/1905.07830v1,not found,not found,not found,not found,other\LSTM---ElMo\5fd79218-2bc8-426f-9cbd-88adbda0f008.json
+Pythia 12B (5-shot),ARC-Challenge,36.8,2304.01373,https://arxiv.org/abs/2304.01373v2,5,not found,not found,not found,other\Pythia-12B--5-shot\75912ae8-99f4-4b6f-aa07-c0621cbe2fab.json
+"GPT-4 Turbo (MACM, w/code, voting)",MATH,87.92,2404.04735,https://arxiv.org/abs/2404.04735v2,not found,not found,not found,not found,openai\GPT-4-Turbo--MACM--w-code--voting\720e565b-eb64-4632-a06c-f07d77d0cb28.json
+DPR-PAQ,NaturalQuestions,84.68,2107.13602,https://arxiv.org/abs/2107.13602v1,not found,not found,not found,not found,other\DPR-PAQ\6e99cd7c-e142-456a-8d8b-acf277f77fdd.json
+Shepherd + Mistral-7B (SFT on MetaMATH + PRM RL),MATH,33.0,2312.08935,https://arxiv.org/abs/2312.08935v3,not found,not found,not found,not found,mistralai\Shepherd---Mistral-7B--SFT-on-MetaMATH---PRM-RL\44f61c4a-6720-4056-b490-b1a95f0dd9b0.json
+ESIM + ElMo,HellaSwag,33.3,1905.07830,https://arxiv.org/abs/1905.07830v1,not found,not found,not found,not found,other\ESIM---ElMo\a9424bae-97be-47c2-ab75-3c8b56f8ae56.json
+"DART-Math-Mistral-7B-Prop2Diff (0-shot CoT, w/o code)",MATH,45.5,2407.13690,https://arxiv.org/abs/2407.13690v2,0,chain-of-thought,not found,not found,mistralai\DART-Math-Mistral-7B-Prop2Diff--0-shot-CoT--w-o-code\ae0a8c7c-41ff-430d-bc50-af4feac63816.json
+GPT4o,GPQA,53.6,2406.07496,https://arxiv.org/abs/2406.07496v1,not found,not found,not found,not found,openai\GPT4o\8c117e50-a3b4-441a-a68f-622e980b8b74.json
+ToRA-Code 13B,GSM8K,75.8,2309.17452,https://arxiv.org/abs/2309.17452v4,not found,not found,not found,not found,other\ToRA-Code-13B\9bb7a80f-f865-4563-bc9a-ee5ea6517b3d.json
+Branch-Train-MiX 4x7B (sampling top-2 experts),MATH,17.8,2403.07816,https://arxiv.org/abs/2403.07816v1,not found,not found,not found,not found,other\Branch-Train-MiX-4x7B--sampling-top-2-experts\113c2292-42b7-4f94-a928-b89b5a9afdbb.json
+LLaMA 33B-maj1@k,GSM8K,53.1,2302.13971,https://arxiv.org/abs/2302.13971v1,not found,not found,not found,not found,meta-llama\LLaMA-33B-maj1-k\5268f601-523b-46cc-8492-d87138977f79.json
+PaLM 62B (8-shot),GSM8K,33.0,2206.14858,https://arxiv.org/abs/2206.14858v2,8,not found,not found,not found,google\PaLM-62B--8-shot\92252f4a-98c2-41e1-ab3c-ba2905bf4f10.json
+"Gopher 1.4 (zero-shot, QA prompts)",TruthfulQA,0.23,2112.11446,https://arxiv.org/abs/2112.11446v2,0,QA prompt,not found,not found,other\Gopher-1.4--zero-shot--QA-prompts\752da6eb-9e78-43db-bd27-99d03e5d0bcb.json
+"OpenMath-Mistral-7B (w/ code, SC, k=50)",GSM8K,86.9,2402.10176,https://arxiv.org/abs/2402.10176v2,not found,not found,not found,not found,mistralai\OpenMath-Mistral-7B--w--code--SC--k-50\b1df7300-e4fe-4a9d-af6a-653448e65e2a.json
+CompassMTL 567M with Tailor,WinoGrande,90.5,2210.06277,https://arxiv.org/abs/2210.06277v1,not found,not found,not found,not found,other\CompassMTL-567M-with-Tailor\681a3977-fc1e-4e6d-ad0e-714aa1b2bb62.json
+EG-CFG (DeepSeek-V3-0324),MBPP,96.6,2506.10948,https://arxiv.org/abs/2506.10948v1,not found,not found,not found,not found,deepseek-ai\EG-CFG--DeepSeek-V3-0324\41796907-d0fb-402b-82d0-d489d11b8033.json
+BlooombergGPT 50B (1-shot),HellaSwag,73.9,2303.17564,https://arxiv.org/abs/2303.17564v3,1,not found,not found,not found,openai\BlooombergGPT-50B--1-shot\9132dabb-ec0a-44b4-a4d7-877ce1687c78.json
+"DART-Math-Mistral-7B-Uniform (0-shot CoT, w/o code)",GSM8K,82.6,2407.13690,https://arxiv.org/abs/2407.13690v2,0,chain-of-thought,not found,not found,mistralai\DART-Math-Mistral-7B-Uniform--0-shot-CoT--w-o-code\6f5ca6af-f911-4f76-89e2-f3f79078756d.json
+MuggleMATH-13B,MATH,30.7,2310.05506,https://arxiv.org/abs/2310.05506v3,not found,not found,not found,not found,other\MuggleMATH-13B\609d4e94-49e6-48b8-b529-a68c253eac4d.json
+code-davinci-002 175B (Self-Debugging with unit tests + trace),MBPP,70.8,2304.05128,https://arxiv.org/abs/2304.05128v2,not found,not found,not found,not found,other\code-davinci-002-175B--Self-Debugging-with-unit-tests---trace\49efdf7c-9a10-481c-9a0d-ee07d5f4ef36.json
+Branch-Train-MiX 4x7B (sampling top-2 experts),GSM8K,37.1,2403.07816,https://arxiv.org/abs/2403.07816v1,not found,not found,not found,not found,other\Branch-Train-MiX-4x7B--sampling-top-2-experts\113c2292-42b7-4f94-a928-b89b5a9afdbb.json
+RETRO + DPR (full),NaturalQuestions,45.5,2112.04426,https://arxiv.org/abs/2112.04426v3,not found,not found,not found,not found,other\RETRO---DPR--full\fc8ad822-3138-4e65-a478-2747ead4861d.json
+Xolver,GSM8K,98.1,2506.14234,https://arxiv.org/abs/2506.14234v1,not found,not found,not found,not found,other\Xolver\8c0d9fd2-75c6-4c36-91d9-130900ba83e5.json
+CompassMTL 567M with Tailor,HellaSwag,96.1,2210.06277,https://arxiv.org/abs/2210.06277v1,not found,not found,not found,not found,other\CompassMTL-567M-with-Tailor\681a3977-fc1e-4e6d-ad0e-714aa1b2bb62.json

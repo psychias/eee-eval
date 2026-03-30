@@ -19,6 +19,7 @@
 \usepackage{tikz}
 \usepackage{enumitem}
 \usepackage{pifont}
+\usepackage{url}
 \newcommand{\cmark}{\ding{51}}
 \usetikzlibrary{positioning, arrows.meta, shapes.geometric}
 
@@ -38,46 +39,32 @@
 % ===================================================================
 \begin{abstract}
 % ===================================================================
-Benchmark leaderboards have become the de facto arbiter of LLM
-progress---shaping funding decisions, model selection in production,
-and public perception of the AI frontier. Yet this authority rests on
-a fragile assumption: that a score reported by one source means the
-same thing as the same score reported by another. Recent episodes
-have exposed cracks in this assumption.
-Evaluating LLaMA~65B on MMLU yields a 14.9-point gap depending
-solely on the choice of evaluation harness
-\citep{alzahrani-2024-benchmarks}; the HuggingFace Open LLM
-Leaderboard was forced to reset from v1 to v2 after widespread
-benchmark contamination and gaming rendered its rankings unreliable;
-and model developers routinely report scores without specifying
-prompt template, temperature, or n-shot count---the very parameters
-that can swing results by 15+ percentage points.
-
-How deep does this comparability crisis run?
-We investigate at scale by ingesting \textbf{29,331} evaluation
-records from \textbf{11 sources}---8 leaderboards, model cards, and
-a paper-results archive---into the standardised Every Eval Ever
-(EEE) schema, covering 5,672 models and 180 benchmarks.
-
-Three findings paint a stark picture.
-\textbf{(1)~Structural fragmentation}: only 16 cross-source
-collision pairs exist---24\% of the $\sim$67 expected under random
-assignment ($z=-6.1$, $p<0.001$)---because sources evaluate
-almost entirely non-overlapping model--benchmark combinations.
+When the same model scores 16.67 on GPQA from one leaderboard and
+49.0 from another---a 32-point gap---can we tell which number to
+trust? We show systematically that we cannot. By ingesting
+\textbf{29,331} evaluation records from \textbf{11~sources}
+(8~leaderboards, model cards, and a paper-results archive) into the
+standardised Every Eval Ever (EEE) schema, covering 5,672 models and
+180 benchmarks, we find:
+\textbf{(1)~Attribution failure}: among the 8~genuinely independent
+cross-source collision pairs (the remaining 8 are likely copied
+scores), all involve different harnesses and score gaps of up to
+32~points, yet the metadata needed to explain these gaps---prompt
+template, temperature, chain-of-thought---is absent in every case.
 \textbf{(2)~Missing metadata}: prompt template and temperature are
 documented in fewer than 0.1\% of records; headline coverage figures
-(e.g., 96.7\% for n-shot) are inflated by a single dominant source
-that contributes 91\% of records---excluding it drops n-shot
-coverage to 62\% and chain-of-thought to 1\%.
-\textbf{(3)~Attribution failure}: among the 8~genuinely independent
-collision pairs (the remaining 8 are likely copied scores), all
-involve different harnesses and score gaps of up to 32~points, yet
-the metadata needed to explain these gaps is absent in every case.
-In short, the community cannot currently determine whether
-a 5-point lead on a leaderboard reflects genuine model superiority
-or merely a difference in how the evaluation was run.
-We release our dataset, pipeline, and analysis code to support
-reproducible evaluation research.
+(e.g., 96.7\% for n-shot) are inflated by a single source
+contributing 91\% of records---excluding it drops n-shot coverage
+to 62\% and chain-of-thought to 1\%.
+\textbf{(3)~Structural fragmentation}: only 16~collision pairs
+exist---24\% of the $\sim$67 expected under random assignment
+($z=-6.1$, $p<0.001$)---because sources evaluate almost entirely
+non-overlapping model--benchmark combinations.
+In short, the community cannot currently determine whether a 5-point
+lead on a leaderboard reflects genuine model superiority or merely
+a difference in how the evaluation was run. We release our dataset,
+pipeline, and analysis code to support reproducible evaluation
+research.
 \end{abstract}
 
 % ===================================================================
@@ -127,8 +114,14 @@ evaluating LLaMA~65B on MMLU produces a 14.9-point gap (63.7 vs.\
 used. Published leaderboards carry no warning of
 such discrepancies.
 
+Despite these well-documented case studies, no prior work has
+measured how pervasive the problem is across the public evaluation
+ecosystem: how many cross-source comparisons are structurally
+possible, and what fraction carry sufficient metadata for
+attribution.
+
 \paragraph{This paper.}
-We test three hypotheses about the state of the LLM evaluation
+We test four hypotheses about the state of the LLM evaluation
 ecosystem:
 %
 \begin{description}[leftmargin=1.5em, itemsep=2pt, style=unboxed]
@@ -144,6 +137,10 @@ ecosystem:
   collisions exist, the observed score differences cannot be
   attributed to specific evaluation-context choices because the
   required metadata is missing.
+\item[\textbf{H4} (Pipeline fragility):] Even schema-valid
+  ingestion pipelines produce semantically invalid records at
+  non-trivial rates, requiring post-hoc auditing to distinguish
+  genuine evaluation results from extraction artefacts.
 \end{description}
 %
 To test these hypotheses, we build a modular, source-agnostic
@@ -153,61 +150,27 @@ archive---into the standardised Every Eval Ever (EEE) schema
 \citep{evaleval-2026}. The pipeline comprises 11~dedicated converters
 (publicly released) with shared schema validation and deduplication,
 producing a unified dataset of 29,331 records covering 5,672 models
-and 180 benchmarks. Our contribution is not the schema itself---which
-is externally motivated by the EvalEval shared task---but the first
-systematic, cross-source quantification of structural fragmentation
-and metadata coverage in the LLM evaluation ecosystem.
+and 180 benchmarks. We provide the first systematic, cross-source
+quantification of structural fragmentation and metadata coverage in
+the LLM evaluation ecosystem, together with an empirical taxonomy
+of extraction artefacts that schema validation alone cannot catch.
 
 % ===================================================================
-\section{Key Concepts and Definitions}\label{sec:definitions}
+\section{Key Concepts}\label{sec:definitions}
 % ===================================================================
 
-We define the terminology used throughout this paper. These
-definitions follow the EEE schema specification
-\citep{evaleval-2026} and are designed to be precise enough for
-reproducible analysis.
-
-\paragraph{Evaluation record.}
-A single JSON document conforming to the EEE schema (v0.2.1) that
-captures one model's result on one benchmark from one source. Each
-record contains four blocks: \texttt{model\_info} (model identity),
-\texttt{eval\_library} (harness), \texttt{source\_metadata}
-(provenance), and \texttt{evaluation\_results} (scores and
-generation configuration). See Figure~\ref{fig:schema} for the
-schema structure.
-
-\paragraph{Evaluation harness.}
-The software framework that orchestrates the evaluation
-pipeline---loading data splits, formatting prompts, managing
-generation, parsing model outputs, and computing metrics. Different
-harnesses can produce different scores for the same model on the
-same benchmark, even with identical few-shot counts, because they
-differ in tokenisation, prompt formatting, normalisation mode, and
-answer extraction \citep{biderman-2024-lessons}. In our dataset, we
-identify 11 distinct harnesses (Table~\ref{tab:sources}).
-
-\paragraph{Source.}
-An origin of evaluation records. Sources include leaderboards (e.g.,
-HF Open LLM Leaderboard v2), model cards (e.g., HuggingFace model
-README files), and structured paper-results archives (e.g., Papers
-With Code). Each source uses a fixed evaluation pipeline, harness,
-and configuration for all models it evaluates.
-
-\paragraph{Collision pair.}
-A \emph{cross-source collision pair} is a tuple
-$(m, b, s_1, s_2)$ where model $m$ has been evaluated on benchmark
-$b$ by two distinct sources $s_1$ and $s_2$. The existence of a
-collision pair enables comparison: if both sources produce the same
-score, the result is reproducible; if they diverge, the evaluation
-context must differ. We define the \emph{score delta} as
-$\Delta = \text{score}_{s_1} - \text{score}_{s_2}$.
-
-\paragraph{Metadata coverage.}
-For each evaluation record and each metadata field $f$ (e.g., shots,
-temperature, prompt template), the field is \emph{documented} if it
-contains a non-trivial value (not empty, not ``unknown'', not a
-generic placeholder). The \emph{coverage rate} for field $f$ across
-a set of records is the fraction of records where $f$ is documented.
+\paragraph{Evaluation record and harness.}
+An \emph{evaluation record} is a single JSON document conforming to
+the EEE schema (v0.2.1) that captures one model's result on one
+benchmark from one source, including four blocks:
+\texttt{model\_info}, \texttt{eval\_library} (harness),
+\texttt{source\_metadata}, and \texttt{evaluation\_results}.
+The \emph{evaluation harness} is the software framework that
+orchestrates prompting, generation, and scoring; different harnesses
+can produce different scores for the same model on the same
+benchmark because they differ in tokenisation, prompt formatting,
+and answer extraction \citep{biderman-2024-lessons}.
+We identify 11~distinct harnesses (Table~\ref{tab:sources}).
 
 \paragraph{Structural wall.}
 We use this term to describe the phenomenon where sources that
@@ -280,16 +243,21 @@ hardware benchmarking, not the open-ended LLM evaluation ecosystem.
 \paragraph{Positioning.}
 Our work is the first \textbf{cross-source, multi-leaderboard,
 schema-based quantification} of both structural fragmentation and
-missing evaluation metadata. Where prior work has demonstrated
-score sensitivity within a single harness
-\citep{alzahrani-2024-benchmarks, biderman-2024-lessons}, we
-quantify the ecosystem-wide consequences: how many cross-source
-comparisons actually exist, and what fraction carry sufficient
-metadata for attribution. The EEE schema
-complements integrated harnesses by standardising the
-\emph{reporting} of existing results from any source, enabling
-cross-platform collision analysis that no single harness can
-provide.
+missing evaluation metadata.
+\citet{alzahrani-2024-benchmarks} demonstrate that harness choice
+alone shifts scores by up to 15 points---but only within a
+controlled, single-benchmark experiment; we show that the public
+ecosystem is too fragmented for such comparisons to arise
+naturally at scale (16~collision pairs from 29,331~records).
+\citet{biderman-2024-lessons} recommend documenting prompt format,
+tokenisation, and generation configuration---but do not measure
+how often the ecosystem actually follows this advice; we quantify
+the gap ($<$0.1\% for prompt template and temperature).
+Integrated harnesses (LightEval, OpenCompass, EKA-EVAL) enforce
+metadata within their own pipelines but provide no mechanism for
+comparing results across platforms; the EEE schema complements them
+by standardising the \emph{reporting} of existing results from any
+source, enabling the cross-platform collision analysis we present.
 
 % ===================================================================
 \section{Methodology}\label{sec:methodology}
@@ -297,154 +265,52 @@ provide.
 
 \subsection{The EEE Schema}\label{sec:schema}
 
-The Every Eval Ever (EEE) JSON schema (v0.2.1) defines a structured
-format for recording LLM evaluation results with their full
-methodological context \citep{evaleval-2026}. The schema is
-externally motivated by the EvalEval shared task; we adopt it
-as-is rather than designing an ad-hoc format. Each record
-contains four blocks: \texttt{model\_info} (identity),
-\texttt{eval\_library} (harness), \texttt{source\_metadata}
-(provenance), and \texttt{evaluation\_results} (scores plus
-generation configuration). The \texttt{generation\_config} fields
+We adopt the EEE schema (v0.2.1) as-is, ensuring that our coverage
+analysis reflects a community-endorsed standard rather than an
+ad-hoc format \citep{evaleval-2026}. Each record contains four
+blocks: \texttt{model\_info} (identity), \texttt{eval\_library}
+(harness), \texttt{source\_metadata} (provenance), and
+\texttt{evaluation\_results} (scores plus generation configuration).
+A \emph{cross-source collision pair} $(m, b, s_1, s_2)$ arises
+when model~$m$ is evaluated on benchmark~$b$ by two distinct
+sources; we define the \emph{score delta} as
+$\Delta = \text{score}_{s_1} - \text{score}_{s_2}$.
+We define \emph{metadata coverage} for a field~$f$ as the fraction
+of records where $f$ contains a non-trivial value (not empty, not
+``unknown'').
+The \texttt{generation\_config} fields
 (Table~\ref{tab:terminology}) are first-class schema citizens, not
 free-text notes, enabling the automated coverage analysis in
-\S\ref{sec:coverage}. Figure~\ref{fig:schema} shows the structure.
-
-\begin{figure}[t]
-\centering
-\resizebox{\columnwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=0.4cm and 0.15cm,
-  box/.style={draw, rounded corners=3pt, minimum height=0.65cm,
-    minimum width=1.8cm, font=\small\sffamily, text centered, align=center},
-  field/.style={draw, rounded corners=2pt, minimum height=0.45cm,
-    font=\footnotesize\ttfamily, fill=gray!8},
-  arr/.style={-{Stealth[length=4pt]}, thick},
-]
-  \node[box, fill=blue!12] (rec) {EEE Record};
-  \node[box, fill=orange!12, below left=0.6cm and 0.8cm of rec] (model) {model\_info};
-  \node[box, fill=orange!12, below=0.6cm of rec] (lib) {eval\_library};
-  \node[box, fill=orange!12, below right=0.6cm and 0.8cm of rec] (src) {source\_metadata};
-  \node[box, fill=green!12, below=1.6cm of rec] (res) {evaluation\_results[]};
-  \node[box, fill=yellow!12, below left=0.5cm and 0.5cm of res] (score) {score\_details};
-  \node[box, fill=red!10, below right=0.5cm and 0.5cm of res] (gen) {generation\_config};
-
-  \node[field, below=0.1cm of gen, xshift=-0.3cm] (shots) {n\_shot};
-  \node[field, right=0.1cm of shots] (temp) {temperature};
-  \node[field, below=0.1cm of shots, xshift=0.5cm] (prompt) {prompt\_template};
-
-  \draw[arr] (rec) -- (model);
-  \draw[arr] (rec) -- (lib);
-  \draw[arr] (rec) -- (src);
-  \draw[arr] (rec) -- (res);
-  \draw[arr] (res) -- (score);
-  \draw[arr] (res) -- (gen);
-  \draw[arr] (gen) -- (shots);
-  \draw[arr] (gen) -- (temp);
-  \draw[arr] (gen) -- (prompt);
-\end{tikzpicture}%
-}
-\caption{Simplified EEE schema structure. Each record contains model
-identity, harness identity, source provenance, and per-benchmark
-evaluation results. The \texttt{generation\_config} fields (red box)
-capture the evaluation context central to our analysis.}
-\label{fig:schema}
-\end{figure}
+\S\ref{sec:coverage}.
 
 \subsection{Data Collection Pipeline}\label{sec:pipeline}
 
-The pipeline is source-agnostic by design: each new source is
-ingested by implementing a dedicated \emph{converter} that produces
-EEE-conformant JSON, without modifying core validation or analysis
-logic. Figure~\ref{fig:pipeline} illustrates the six-stage pipeline.
+The pipeline ingests each source via a dedicated \emph{converter}
+module (source $\rightarrow$ EEE JSON $\rightarrow$ schema
+validation $\rightarrow$ collision detection $\rightarrow$ coverage
+analysis), with no shared mutable state between converters.
+We ingest \textbf{8~leaderboard} sources
+(OLv2, AlpacaEval~2, Chatbot Arena, BigCodeBench, EvalPlus, BFCL,
+SWE-Bench, WildBench, MT-Bench) via dedicated APIs or HuggingFace
+dataset downloads, \textbf{1~model-card} source (structured YAML
+\texttt{model-index} from HuggingFace READMEs---benchmark-rich at
+156~benchmarks but model-poor at 11~models), and \textbf{Papers
+With Code} (576~records from 383~models across 16~benchmarks after
+removing extraction artefacts and duplicates from an initial 1,350
+raw records; \S\ref{sec:within}).
 
-\begin{figure}[t]
-\centering
-\resizebox{\columnwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=0.6cm and 0.15cm,
-  box/.style={draw, rounded corners=3pt, minimum height=0.7cm,
-    minimum width=1.6cm, font=\small\sffamily, text centered, align=center},
-  arr/.style={-{Stealth[length=4pt]}, thick},
-]
-  \node[box, fill=blue!12] (src) {Source\\(LB / Card / PWC)};
-  \node[box, fill=orange!15, right=of src] (conv) {Converter};
-  \node[box, fill=green!12, right=of conv] (json) {EEE JSON\\v0.2.1};
-  \node[box, fill=yellow!15, right=of json] (val) {Schema\\Validation};
-  \node[box, fill=red!10, right=of val] (coll) {Collision\\Detection};
-  \node[box, fill=purple!10, right=of coll] (ana) {Coverage\\Analysis};
+\subsection{Validation}\label{sec:validation}
 
-  \draw[arr] (src) -- (conv);
-  \draw[arr] (conv) -- (json);
-  \draw[arr] (json) -- (val);
-  \draw[arr] (val) -- (coll);
-  \draw[arr] (coll) -- (ana);
-\end{tikzpicture}%
-}
-\caption{EEE pipeline: each source is ingested via a dedicated
-converter $\rightarrow$ schema validation $\rightarrow$ collision
-detection $\rightarrow$ metadata coverage analysis.}
-\label{fig:pipeline}
-\end{figure}
-
-We ingest three categories of sources:
-
-\paragraph{Leaderboards (8 sources).}
-We fetch live results from eight public leaderboards, each using a
-dedicated API or HuggingFace dataset download: \emph{HF Open LLM
-Leaderboard v2} (4,465 models, 6 benchmarks, lm\_eval harness),
-\emph{AlpacaEval 2.0} (223 models, alpaca\_eval),
-\emph{Chatbot Arena} (218 models, fastchat),
-\emph{BigCodeBench} (156 models, bigcodebench),
-\emph{EvalPlus} (125 models, evalplus),
-\emph{BFCL} (109 models, gorilla\_eval),
-\emph{SWE-Bench} (117 models, swebench),
-\emph{WildBench} (61 models, wildeval), and
-\emph{MT-Bench} (34 models, fastchat).
-
-\paragraph{Model cards (1 source).}
-We extract structured YAML \texttt{model-index} results from
-HuggingFace model README files. This source is benchmark-rich (156
-unique benchmarks from 11 models) but model-poor, because only a
-small fraction of model cards include machine-parseable evaluation
-sections.
-
-\paragraph{Papers With Code (1 source).}
-We parse the Papers With Code evaluation tables archive (576
-results from 383 models across 16 benchmarks), mapping PWC dataset
-names to canonical benchmark identifiers and filtering to rows with
-valid arxiv paper references. During data cleaning, we removed
-extraction artefacts (model parameter counts leaking into score
-fields) and duplicate entries from overlapping paper submissions,
-reducing the record count from an initial 1,350.
-
-\subsection{Converter Design and Validation}\label{sec:validation}
-
-Each source is implemented as an independent converter; adding
-a new source requires only a new module with no changes to
-shared validation or analysis code. Converter implementation
-details (4~framework adapters, 7~leaderboard scrapers;
-${\sim}4{,}900$~LOC total) are provided in
-Appendix~\ref{app:converters}.
-
-\paragraph{Schema validation.}
-All output JSON files are validated against the EEE schema
-(v0.2.1) using \texttt{jsonschema}, enforcing required fields,
-correct types, and enum constraints. All 29,331 records in our
-dataset pass validation; failing records are rejected before
-entering the analysis pipeline.
-
-\paragraph{Deduplication and sanity checks.}
-Duplicate detection uses a composite key of
-\texttt{(model\_id, benchmark, source)}. Score sanity checks flag
-values outside expected ranges (e.g., model parameter counts
-leaking into score fields; \S\ref{sec:within}).
-
-\paragraph{Manual validation.}
-For Papers With Code---the source with the weakest metadata---we
-manually verified a sample of records against the original papers
-after automated quality checks flagged extraction artefacts
-(\S\ref{sec:within}).
+Each source is implemented as an independent converter
+(4~framework adapters, 7~leaderboard scrapers;
+${\sim}4{,}900$~LOC; Appendix~\ref{app:converters}).
+All 29,331~output records are validated against the EEE schema
+(v0.2.1) via \texttt{jsonschema} (required fields, types, enum
+constraints); duplicates are detected by composite key
+\texttt{(model\_id, benchmark, source)}; and score sanity checks
+flag values outside expected ranges (\S\ref{sec:within}).
+For Papers With Code---the weakest source---we additionally
+verified a sample of records against the original papers.
 
 \subsection{Collision Detection}\label{sec:collision_method}
 
@@ -453,7 +319,10 @@ evaluation records $R$, we:
 %
 \begin{enumerate}[leftmargin=2em, itemsep=1pt]
 \item \textbf{Normalise} model identifiers: lowercase, strip
-  \texttt{-hf} suffixes, unify separators.
+  \texttt{-hf} suffixes, unify separators (note that
+  scraping-introduced typos---e.g., ``BlooombergGPT'' with a
+  duplicated character---cannot be caught by rule-based
+  normalisation and represent a lower bound on missed collisions).
 \item \textbf{Normalise} benchmark names: lowercase, strip
   parenthetical shot annotations (e.g., ``GPQA (0-shot)''
   $\rightarrow$ ``gpqa''), unify separators.
@@ -478,6 +347,11 @@ of 29,331), reflecting its scale (4,465 models evaluated on 6
 benchmarks using lm\_eval). The long tail of smaller sources---each
 contributing 34--576 records---provides benchmark diversity (180
 unique benchmarks) but limited model overlap.
+Papers With Code is the least reliable source after cleaning:
+of 1,350 raw records, 774 (57\%) were removed as extraction
+artefacts or duplicates (\S\ref{sec:within}), yielding a 43\%
+discard rate---the highest of any source and a concrete measure
+of the data-quality challenges in cross-source ingestion.
 
 \begin{table}[t]
 \centering
@@ -534,13 +408,15 @@ Two fields appear well-documented when OLv2 is included:
   sources where the concept does not apply (Chatbot Arena,
   WildBench, MT-Bench---all preference-based) and incompletely
   parsed model cards.
-\item \textbf{Harness identity} (98\%): every leaderboard source
-  identifies its evaluation framework, but no source documents the
-  harness \emph{version}---all 29,331 records carry
-  \texttt{eval\_library.version = "unknown"} because none of the
-  ingested APIs, leaderboards, or model cards publish the framework
-  release or commit hash. The 2\% gap comes from Papers With Code
-  (harness genuinely unknown) and incompletely parsed HF Model Cards.
+\item \textbf{Harness identity} (98\%): all dedicated leaderboard
+  sources identify their evaluation framework; the 2\% gap comes from
+  Papers With Code (harness genuinely unknown) and HF Model Cards
+  (where harness detection dropped from 91\% to 32\% after we
+  tightened parsing to exclude ambiguous identifiers).
+  No source documents the harness \emph{version}---all
+  29,331 records carry \texttt{eval\_library.version = "unknown"}
+  because none of the ingested APIs, leaderboards, or model cards
+  publish the framework release or commit hash.
   This is an ecosystem-wide gap, not a pipeline limitation.
 \end{itemize}
 
@@ -557,6 +433,13 @@ Three fields are severely under-documented:
   because prompt formatting is the single most impactful
   undocumented axis of variation
   \citep{alzahrani-2024-benchmarks}.
+  Even the 2.4\% figure for PWC is inflated: manual audit confirms
+  that all 14~non-null \texttt{prompt\_template} values are
+  extraction artefacts (variant tags and CoT labels), making the
+  valid coverage rate 0\%.
+  The true valid coverage for \texttt{prompt\_template} across all
+  sources is therefore 0/29,331 (0.00\%)---the nominal $<$0.1\%
+  figure is entirely an artefact false-positive rate of 100\%.
 \end{itemize}
 
 \paragraph{Sensitivity to source composition.}
@@ -606,7 +489,7 @@ T = temperature, P = prompt template. Bold = 100\%.}
 \textbf{Source} & \textbf{H} & \textbf{S} & \textbf{C} & \textbf{T} & \textbf{P} \\
 \midrule
 Open LLM LB v2   & \textbf{100} & \textbf{100} & 83.4 & 0.0 & 0.0 \\
-Papers w/ Code    &     0 & 32.1 & 4.9 & 1.0 & 2.4 \\
+Papers w/ Code    &     0 & 32.1 & 4.9 & 1.0 & 2.4\footnotemark[1] \\
 AlpacaEval 2      & \textbf{100} & \textbf{100} & 0.0 & 0.0 & 0.0 \\
 BFCL              & \textbf{100} & \textbf{100} & 0.0 & 0.0 & 0.0 \\
 BigCodeBench      & \textbf{100} & \textbf{100} & 0.0 & 0.0 & 0.0 \\
@@ -621,6 +504,7 @@ MT-Bench          & \textbf{100} &  0.0 & 0.0 & 0.0 & 0.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
+\footnotetext[1]{All 14 non-null values are extraction artefacts (variant tags and CoT labels); valid coverage is 0\%.}
 
 \begin{figure}[t]
 \centering
@@ -645,7 +529,20 @@ An initial quality audit of the raw ingested data revealed
 source with different scores. The dominant source was
 \textbf{extraction errors} in Papers With Code (193~cases): model
 parameter counts (e.g., 540 for PaLM~540B, 175 for GPT-3~175B)
-leaked into score fields during automated table parsing. We also
+leaked into score fields during automated table parsing.
+A manual audit of 50~PWC records identified three distinct artefact types:
+(a)~parameter-count leakage---model size suffixes (e.g., ``2.5B'') parsed
+into \texttt{score} instead of \texttt{model\_info};
+(b)~variant-tag leakage---model variant names (e.g., ``full'' from
+``FiD-KD (full)'') routed to \texttt{generation\_args.prompt\_template};
+and (c)~CoT-label misrouting---chain-of-thought descriptors parsed from
+model-name parentheticals routed to \texttt{prompt\_template} instead of
+\texttt{additional\_details.cot}, affecting at least 4~records in the
+50-record sample.
+Type~(a) accounts for the majority of the 193~automated conflicts;
+types~(b) and~(c) were identified only through manual inspection and
+would pass all automated checks, including schema validation.
+We also
 found 30~re-submission duplicates in Open LLM Leaderboard v2 and
 63~minor stochastic variations ($|\Delta| < 1$) in WildBench. We
 removed all extraction artefacts and duplicates through automated
@@ -663,6 +560,11 @@ demonstrates that even a schema-valid pipeline requires post-hoc
 quality auditing to separate genuine evaluation results from
 scraping artefacts---and strengthens the argument for mandatory
 metadata documentation.
+The audit also surfaces schema \emph{type} violations: at least one
+PWC record contains \texttt{n\_shot}~=~``few'' (a string) rather
+than an integer count, which passes JSON schema validation but
+breaks numeric comparison---evidence that schema validity alone does
+not guarantee semantic correctness.
 
 \subsection{The Structural Wall (H2)}\label{sec:wall}
 
@@ -709,7 +611,14 @@ observed source sizes) from the shared universe of 5,672 models and
 $z = -6.1$ (${p < 0.001}$; no simulated run produced $\leq 16$
 collisions). Fragmentation is thus \emph{structural}---sources
 systematically evaluate non-overlapping model sets---not an
-artefact of small sample size.
+artefact of small sample size.%
+\footnote{The null model samples model--benchmark pairs uniformly
+from the \emph{observed} universe of each source, preserving
+per-source record counts. Earlier draft simulations that sampled
+from the full Cartesian product (5,672$\times$180) produced higher
+expected counts ($\sim$272); the current formulation is more
+conservative because it respects the empirical sparsity of each
+source's model and benchmark sets.}
 
 \paragraph{Robustness to normalisation choices.}
 The collision count depends on how model IDs and benchmark names are
@@ -792,14 +701,14 @@ by missing metadata.
 \begin{table}[t]
 \centering
 \footnotesize
-\setlength{\tabcolsep}{2pt}
+\setlength{\tabcolsep}{1.5pt}
 \caption{Metadata availability per independent collision pair.
 \cmark{} = documented in both sources; \ding{55} = missing in $\geq$1
 source. Temperature and prompt template are absent in every pair.}
 \label{tab:attribution}
 \begin{tabular}{llccccc}
 \toprule
-\textbf{Model} & \textbf{Bench.} & \textbf{Harness} & \textbf{Shots} & \textbf{CoT} & \textbf{Temp.} & \textbf{Prompt} \\
+\textbf{Model} & \textbf{Bench.} & \textbf{Harn.} & \textbf{Shots} & \textbf{CoT} & \textbf{Temp.} & \textbf{Prompt} \\
 \midrule
 Qwen2.5-72B-Inst. & GPQA    & \ding{55} & \ding{55}  & \ding{55} & \ding{55} & \ding{55} \\
 SC2-15B-Inst.      & MBPP+   & \cmark    & \ding{55}  & \ding{55} & \ding{55} & \ding{55} \\
@@ -854,40 +763,20 @@ StarCoder2-7B            & HumanE.+   & 29.90 & 29.90 &  0.00 \\
 
 \subsection{Case Study: The GPQA 32-Point Gap}\label{sec:casestudy}
 
-The most striking collision in our dataset is Qwen2.5-72B-Instruct
-on GPQA: the Open LLM Leaderboard v2 reports 16.67 (using lm\_eval
-with 0-shot prompting and chain-of-thought enabled), while Papers
-With Code reports 49.0 (harness unknown). This 32.3-point gap on
-the same model and benchmark illustrates the paper's central claim.
-
-\paragraph{What we can attribute.}
-The Open LLM LB v2 record documents: lm\_eval harness, 0-shot,
-chain-of-thought = True. The GPQA benchmark in lm\_eval v2 uses a
-specific prompt template and answer normalisation that are known to
-produce lower scores than other implementations.
-
-\paragraph{What we cannot attribute.}
-The PWC record carries harness = ``unknown''. Without knowing the
-evaluation framework, prompt template, or whether the score is
-accuracy, exact-match, or some other metric, the 32-point gap
-remains unexplained.  This case crystallises the
-metadata-coverage bottleneck: the infrastructure to \emph{detect}
-score discrepancies exists, but attribution is impossible when the
-evaluation context is not documented.
-
-\paragraph{Contrast: what if metadata were present?}
-The Tulu-3-8B pairs illustrate the opposite scenario. Both sources
-document harness (vllm vs.\ lm\_eval) and n-shot count, and the
-resulting deltas are tiny ($|\Delta| \leq 0.23$). If temperature
-and prompt template were also known, we could confirm that the
-small residual is attributable to harness-internal implementation
-differences (tokenisation, answer normalisation). The contrast
-between the Tulu-3-8B pairs (metadata partially present, delta
-explainable) and the GPQA pair (metadata absent, delta
-unexplainable) makes the coverage--attribution gap tangible.
-
-Figure~\ref{fig:collisions} shows all 16 collision pairs, with the
-GPQA outlier clearly visible.
+The most striking collision is Qwen2.5-72B-Instruct on GPQA: the
+Open LLM LB~v2 reports 16.67 (lm\_eval, 0-shot, CoT enabled)
+while PWC reports 49.0 (harness unknown)---a 32.3-point gap. The
+OLv2 record documents enough to identify that lm\_eval's GPQA
+prompt template and answer normalisation produce lower scores than
+alternative implementations, but the PWC record carries no harness,
+prompt, or metric information, so the gap remains unexplained.
+Contrast this with the five Tulu-3-8B pairs
+($|\Delta| \leq 0.23$), where both sources document harness and
+n-shot: the small residual is consistent with harness-internal
+differences. The disparity between these two cases---metadata
+absent $\Rightarrow$ attribution blocked vs.\ metadata partial
+$\Rightarrow$ delta explainable---makes the coverage--attribution
+gap tangible (Figure~\ref{fig:collisions}).
 
 \begin{figure}[t]
 \centering
@@ -905,41 +794,24 @@ $|\Delta|>1$, orange = $|\Delta|>0.1$, green = $|\Delta|\leq0.1$.}
 
 \subsection{The Coverage--Attribution Gap}
 
-Our attribution analysis (\S\ref{sec:collisions}) quantifies this
-gap precisely: among the 8~independent collision pairs, harness
-identity is known in 7~(88\%), but n-shot count, chain-of-thought,
-temperature, and prompt template are unknown in at least one source
-for \emph{all~8~pairs} (100\%). Even where we can confirm that two
-sources used different harnesses, we cannot determine which
-specific configuration difference---prompt format, normalisation
-mode, or answer extraction logic---drives the observed score gap.
-The two best-documented fields (harness and n-shot) capture
-\emph{coarse} categories; attribution requires the fine-grained
-implementation details that remain absent
+Harness identity is known for 7~of~8 independent collision pairs
+(88\%), yet temperature and prompt template are absent in
+\emph{every} pair (Table~\ref{tab:attribution}). Even where
+harness is documented, it is too coarse to explain score
+gaps: attribution requires the fine-grained implementation
+details---prompt format, normalisation mode, answer
+extraction---that remain absent
 \citep{biderman-2024-lessons, alzahrani-2024-benchmarks}.
 
 \subsection{Structural Fragmentation}
 
-The metadata coverage gap is significant, but the structural wall
-(\S\ref{sec:wall}) is arguably more fundamental. Even if every
-source documented every metadata field perfectly, only 16 collision
-pairs would exist in our 29,331-record dataset---just 24\% of the
-$67 \pm 8$ expected under random model--benchmark assignment
-($z = -6.1$, $p < 0.001$; \S\ref{sec:wall}). This is because the
-evaluation ecosystem has evolved into isolated silos: each
-leaderboard evaluates its own model subset on its own benchmark
-suite. No amount of metadata documentation can create cross-source
-comparisons where the underlying data does not overlap.
-
-If platforms like Open LLM Leaderboard~v2 or Chatbot Arena
-natively emitted EEE-formatted records---embedding prompt template,
-temperature, and harness version at evaluation time---the metadata
-gap would close for new evaluations. However, the structural wall
-would persist unless leaderboards deliberately expand their
-model--benchmark coverage to overlap with other sources. The EEE
-schema is designed to lower the adoption barrier: a leaderboard
-could emit one JSON record per evaluation run with minimal changes
-to its existing pipeline.
+The metadata gap is significant, but the structural wall
+(\S\ref{sec:wall}) is arguably more fundamental. Even with perfect
+metadata, only 16 collision pairs exist---24\% of the $67 \pm 8$
+expected under random assignment ($z = -6.1$, $p < 0.001$)---because
+leaderboards evaluate non-overlapping model--benchmark slices.
+No amount of documentation can create cross-source comparisons
+where the underlying data does not overlap.
 
 \subsection{The Copied-Scores Problem}
 
@@ -955,10 +827,11 @@ Identical scores can thus indicate either (i)~genuine
 reproducibility or (ii)~provenance inheritance. Distinguishing
 these requires a provenance-tracking field not currently in the
 EEE schema. We propose \texttt{provenance\_link} for v0.3:
-a URI pointing to the original evaluation run (e.g.,
-\texttt{https:/\kern-3pt/huggingface.co/spaces/open-llm-leaderboard/%
-results?model=allenai/tulu-3})---making score inheritance
-machine-detectable.
+a URI pointing to the original evaluation run
+(e.g., \url{https://huggingface.co/spaces/open-llm-leaderboard/results})---making
+score inheritance machine-detectable, a need underscored by the
+8~of~16 collision pairs (50\%) in our dataset that show
+$\Delta=0.00$ and are likely copied.
 
 \subsection{Recommendations}
 
@@ -979,6 +852,14 @@ Authors should ship EEE-formatted evaluation files alongside model
 cards, replacing unstructured tables with machine-parseable records
 that carry full evaluation context.
 
+\paragraph{For platform adoption.}
+If platforms like Open LLM Leaderboard~v2 or Chatbot Arena
+natively emitted EEE-formatted records---embedding prompt template,
+temperature, and harness version at evaluation time---the metadata
+gap would close for new evaluations. The EEE schema is designed to
+lower the adoption barrier: a leaderboard could emit one JSON
+record per evaluation run with minimal pipeline changes.
+
 \paragraph{For schema designers.}
 We propose two extensions for EEE v0.3:
 (i)~\texttt{scoring\_mode} (enum: greedy generation, log-likelihood,
@@ -988,38 +869,22 @@ independently evaluated). Our released dataset uses EEE v0.2.1;
 future schema revisions will be accompanied by migration tooling
 and the dataset will be updated accordingly.
 
-\subsection{EvalEval Shared Task: Scope and Lessons}
+\subsection{Ecosystem-Level Findings}
 \label{sec:shared_task}
 
-\paragraph{Task setting.}
-We target the EvalEval shared task: ingest as many heterogeneous
-evaluation artifacts as possible into EEE v0.2.1 and characterise
-coverage and comparability across sources. Our submission covers
-all publicly accessible leaderboards with API or dataset access,
-plus HF model cards with machine-parseable \texttt{model-index}
-sections and the Papers With Code results archive.
-
-\paragraph{Reusable converters.}
-Of the 11~converters, three are designed for general reuse:
-(i)~the lm-evaluation-harness adapter, which parses raw lm\_eval
-JSON logs into EEE records;
-(ii)~the HELM log adapter; and
-(iii)~the HF leaderboard scraper template, which can be
-parameterised for new HuggingFace dataset-backed leaderboards
-with minimal code changes.
-
-\paragraph{Schema friction points.}
-During ingestion we identified three schema limitations:
-(i)~\texttt{eval\_library.version} is always ``unknown'' because no
-source publishes harness commit hashes---indicating the field is
-well-designed but the ecosystem does not yet provide the data to
-populate it;
+The ingestion process surfaced~three schema--ecosystem mismatches:
+(i)~\texttt{eval\_library.version} is ``unknown'' in all
+29,331~records---no source publishes the harness commit hash,
+making it impossible to determine whether two records using the
+same harness name share the same implementation
+\citep{biderman-2024-lessons};
 (ii)~scoring mode (log-likelihood vs.\ generation vs.\ execution)
-is not a first-class field, forcing us to encode it in free-text
-\texttt{additional\_details};
-(iii)~provenance inheritance (copied vs.\ independent scores) is
-not machine-detectable without the proposed \texttt{provenance\_link}
-field.
+is not a first-class schema field, forcing it into free-text
+\texttt{additional\_details}; and
+(iii)~provenance inheritance is undetectable---8~of~16 collision
+pairs (50\%) carry $\Delta=0.00$ and are likely copied
+(\S\ref{sec:collisions}), but no \texttt{provenance\_link} field
+exists to flag this.
 
 \subsection{Threats to Validity}\label{sec:threats}
 
@@ -1040,6 +905,12 @@ metadata coverage (harness unknown, n-shot at 32\%). The single
 most dramatic collision pair (GPQA, $|\Delta|=32.3$) depends on
 PWC---a limitation we flag for transparency. We manually verified
 a sample of remaining PWC records against original papers.
+Additionally, at least 2~PWC records (GAL~1.3B and Gopher~1.4 on
+TruthfulQA) report scores on a 0--1 fractional scale rather than
+the 0--100 percentage scale used by all other records; such
+unit-scale inconsistencies are not detectable by range-based sanity
+checks alone and require normalisation verification against the
+citing paper.
 
 \paragraph{Normalisation sensitivity.}
 Our collision detection uses rule-based string normalisation for
@@ -1067,17 +938,19 @@ evolving ecosystem.
 \section{Conclusion}\label{sec:conclusion}
 % ===================================================================
 
-We tested three hypotheses about the LLM evaluation ecosystem
+We tested four hypotheses about the LLM evaluation ecosystem
 using 29,331 records from 11~sources (5,672 models, 180 benchmarks)
-standardised via the EEE schema. All three are confirmed:
+standardised via the EEE schema. All four are confirmed:
 
 \begin{enumerate}[leftmargin=2em, itemsep=1pt]
 \item \textbf{H1 (Metadata gap) confirmed}: prompt template and
-  temperature are documented in fewer than 0.1\% of records.
-  N-shot (96.7\%) and harness (98\%) appear well-covered, but
-  these figures are inflated by a single source contributing 91\%
-  of records; excluding it drops n-shot to 62\% and CoT to 1\%
-  (\S\ref{sec:coverage}).
+  temperature are documented in fewer than 0.1\% of records---and
+  even the nominal $<$0.1\% figure is a false positive (100\% of
+  non-null \texttt{prompt\_template} values are extraction
+  artefacts). N-shot (96.7\%) and harness (98\%) appear
+  well-covered, but these figures are inflated by a single source
+  contributing 91\% of records; excluding it drops n-shot to 62\%
+  and CoT to 1\% (\S\ref{sec:coverage}).
 \item \textbf{H2 (Structural fragmentation) confirmed}: only
   16 cross-source collision pairs exist---24\% of the $67 \pm 8$
   expected under random assignment ($z = -6.1$, $p < 0.001$)---because sources evaluate non-overlapping model--benchmark
@@ -1086,12 +959,14 @@ standardised via the EEE schema. All three are confirmed:
   8~independent collision pairs, all involve different harnesses
   and all lack the metadata needed to explain score gaps of up to
   32.3~points (\S\ref{sec:collisions}).
+\item \textbf{H4 (Pipeline fragility) confirmed}: 43\% of raw
+  Papers With Code records (774 of 1,350) were extraction
+  artefacts or duplicates that passed schema validation but
+  required post-hoc auditing to detect. Three distinct artefact
+  types were identified; two (variant-tag leakage and CoT-label
+  misrouting) are invisible to automated range checks
+  (\S\ref{sec:within}).
 \end{enumerate}
-
-\noindent
-A fourth empirical contribution is that schema-valid pipelines
-still require post-hoc auditing: extraction artefacts in Papers
-With Code required removal of 774~records (\S\ref{sec:within}).
 
 To move from detecting differences to explaining them, the
 community needs both better metadata documentation (prompt template,
@@ -1128,9 +1003,36 @@ are updated continuously; model cards are revised; Papers With Code
 tables grow. The structural wall and coverage rates may evolve as
 sources expand their model--benchmark scope.
 
-% -------------------------------------------------------------------
-%  Dataset composition figure (full page, appendix worthy)
-% -------------------------------------------------------------------
+% ===================================================================
+\section*{Ethics Statement}
+% ===================================================================
+
+All data in this study consists of publicly available evaluation
+scores and metadata from open leaderboards, model cards, and
+structured paper-results archives. No model outputs, training data,
+or personally identifiable information was collected or analysed.
+
+Our findings quantify structural fragmentation and missing metadata
+in the evaluation ecosystem. We emphasise that these results are
+intended to \emph{improve} evaluation practices---by motivating
+better documentation and deliberate cross-source overlap---not to
+dismiss leaderboards, which remain the primary mechanism for
+transparent, community-wide model comparison.
+
+Papers With Code records were obtained by scraping structured
+evaluation tables that aggregate third-party paper results. We use
+these data for meta-scientific analysis under fair-use principles,
+cite original papers where available, and release our derived
+dataset under CC-BY-4.0.
+
+%% -------------------------------------------------------------------
+\bibliography{refs,custom}
+\bibliographystyle{acl_natbib}
+%% -------------------------------------------------------------------
+
+\appendix
+
+\section{Supplementary Figures}\label{app:figures}
 
 \begin{figure*}[t]
 \centering
@@ -1153,13 +1055,6 @@ this matrix---most cells are zero---drives the shortage of
 cross-source collision pairs.}
 \label{fig:matrix}
 \end{figure*}
-
-%% -------------------------------------------------------------------
-\bibliography{refs,custom}
-\bibliographystyle{acl_natbib}
-%% -------------------------------------------------------------------
-
-\appendix
 
 \section{Converter Architecture}\label{app:converters}
 
