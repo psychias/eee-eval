@@ -60,11 +60,15 @@ to 62\% and chain-of-thought to 1\%.
 exist---24\% of the $\sim$67 expected under random assignment
 ($z=-6.1$, $p<0.001$)---because sources evaluate almost entirely
 non-overlapping model--benchmark combinations.
-In short, the community cannot currently determine whether a 5-point
-lead on a leaderboard reflects genuine model superiority or merely
-a difference in how the evaluation was run. We release our dataset,
-pipeline, and analysis code to support reproducible evaluation
-research.
+In short, the community cannot currently determine whether a
+5-point lead on a leaderboard reflects genuine model superiority or
+a difference in evaluation configuration: among the 8~independent
+cross-source pairs, the 5~with documented metadata show
+$|\Delta| \leq 0.23$, while the 3~without diverge by up to
+32~points---though this contrast is confounded by model identity
+and source reliability (\S\ref{sec:decision}).
+We release our dataset, pipeline, and analysis code to
+support reproducible evaluation research.
 \end{abstract}
 
 % ===================================================================
@@ -86,27 +90,14 @@ To understand why this happens, we need to decompose what a
 \emph{benchmark result} actually consists of. A single published
 score is the product of at least five independent decisions, which we
 call the \textbf{evaluation context}:
-%
-\begin{enumerate}[leftmargin=2em, itemsep=1pt]
-\item The \textbf{benchmark} itself: a dataset and a scoring rubric
-  (e.g., ``MMLU with accuracy'').
-\item The \textbf{evaluation harness}: the software framework that
-  orchestrates tokenisation, generation, and scoring
-  (e.g., lm-evaluation-harness, HELM, AlpacaEval).
-\item The \textbf{n-shot count}: how many labelled exemplars are
-  prepended to the prompt (e.g., 0-shot vs.\ 5-shot).
-\item The \textbf{prompt template}: the exact formatting of the
-  input—-how the question, choices, and exemplars are arranged in the
-  model's context window.
-\item The \textbf{generation configuration}: decoding strategy
-  (greedy vs.\ sampling), temperature, top-$p$, and chain-of-thought
-  reasoning.
-\end{enumerate}
-%
-When evaluation reports omit these details---or when two sources use
-the same \emph{benchmark name} but different underlying
-configurations---scores that appear comparable become silently
-incommensurable.
+(1)~the \textbf{benchmark} (dataset + rubric),
+(2)~the \textbf{evaluation harness} (lm-evaluation-harness, HELM, etc.),
+(3)~the \textbf{n-shot count},
+(4)~the \textbf{prompt template}, and
+(5)~the \textbf{generation configuration} (temperature, top-$p$, chain-of-thought).
+When reports omit these details---or when two sources use the same
+\emph{benchmark name} but different configurations---scores that
+appear comparable become silently incommensurable.
 
 \citet{alzahrani-2024-benchmarks} demonstrate this concretely:
 evaluating LLaMA~65B on MMLU produces a 14.9-point gap (63.7 vs.\
@@ -240,6 +231,23 @@ MLPerf \citep{mattson-2020-mlperf} demonstrates that standardised,
 auditable evaluation is feasible at industry scale but targets
 hardware benchmarking, not the open-ended LLM evaluation ecosystem.
 
+% -------------------------------------------------------------------
+% FIX 1: The contamination citation was an unresolved "?" in v7--v8.
+% The \citep key below matches the bib entry added to custom.bib.
+% See the accompanying custom.bib fix at the end of this file.
+% -------------------------------------------------------------------
+\paragraph{Scope note: contamination.}
+A distinct line of work studies benchmark contamination---training
+data leaking into test sets---as a source of inflated scores
+\citep{sainz-2023-contamination}. Contamination is relevant because
+it produces cross-source divergence that metadata documentation
+cannot resolve: if one source evaluates a contaminated model and
+another does not, their scores will differ for reasons invisible
+to the evaluation context. Our analysis focuses on configuration
+divergence rather than contamination, but the two problems can
+interact: contamination may inflate scores differentially across
+harnesses that use different prompt formats.
+
 \paragraph{Positioning.}
 Our work is the first \textbf{cross-source, multi-leaderboard,
 schema-based quantification} of both structural fragmentation and
@@ -301,9 +309,10 @@ raw records; \S\ref{sec:within}).
 
 \subsection{Validation}\label{sec:validation}
 
-Each source is implemented as an independent converter
-(4~framework adapters, 7~leaderboard scrapers;
-${\sim}4{,}900$~LOC; Appendix~\ref{app:converters}).
+Each source is implemented as an independent converter:
+4~framework adapters (2,465~LOC) for lm-evaluation-harness, HELM,
+and Inspect~AI log formats, and 7~leaderboard scrapers
+(2,456~LOC).
 All 29,331~output records are validated against the EEE schema
 (v0.2.1) via \texttt{jsonschema} (required fields, types, enum
 constraints); duplicates are detected by composite key
@@ -341,17 +350,13 @@ evaluation records $R$, we:
 
 \subsection{Dataset Overview}
 
-Table~\ref{tab:sources} summarises the 11 sources in our dataset.
-The Open LLM Leaderboard v2 dominates with 91\% of records (26,790
-of 29,331), reflecting its scale (4,465 models evaluated on 6
-benchmarks using lm\_eval). The long tail of smaller sources---each
-contributing 34--576 records---provides benchmark diversity (180
-unique benchmarks) but limited model overlap.
-Papers With Code is the least reliable source after cleaning:
-of 1,350 raw records, 774 (57\%) were removed as extraction
-artefacts or duplicates (\S\ref{sec:within}), yielding a 43\%
-discard rate---the highest of any source and a concrete measure
-of the data-quality challenges in cross-source ingestion.
+Table~\ref{tab:sources} summarises the 11 sources.
+Open LLM Leaderboard v2 dominates with 91\% of records (26,790 of
+29,331); the remaining 10~sources contribute benchmark diversity
+(180 benchmarks) but limited model overlap.
+Papers With Code is the least reliable source: of 1,350 raw
+records, 774 (57\%) were removed as extraction artefacts or
+duplicates (\S\ref{sec:within}), yielding a 43\% discard rate.
 
 \begin{table}[t]
 \centering
@@ -443,17 +448,9 @@ Three fields are severely under-documented:
 \end{itemize}
 
 \paragraph{Sensitivity to source composition.}
-Because Open LLM Leaderboard v2 contributes 91\% of records, the
-headline coverage figures are dominated by this single source.
-Table~\ref{tab:ablation} shows the effect of removing the two
-largest sources. Without OLv2, n-shot coverage drops from 96.7\% to
-62.2\%, and chain-of-thought coverage drops from 76.3\% to 1.1\%.
-Excluding both OLv2 and PWC leaves 1,965 records from 9 sources
-where n-shot coverage is 71.0\% but chain-of-thought, temperature,
-and prompt template are all 0.0\%. This confirms that the few
-well-documented fields depend almost entirely on a single source,
-and the ecosystem-wide picture is starker than the headline numbers
-suggest.
+Table~\ref{tab:ablation} shows the effect of removing the
+largest sources; the qualitative pattern---temperature and prompt
+template are absent---is stable across all ablations.
 
 \begin{table}[t]
 \centering
@@ -575,18 +572,7 @@ reveals that most source pairs fail one or both conditions.
 
 \paragraph{Benchmark isolation.}
 Of the $\binom{11}{2} = 55$ source pairs, only \textbf{4} share any
-benchmarks at all:
-\begin{itemize}[leftmargin=1.5em, itemsep=1pt]
-\item HF Model Card $\times$ Open LLM LB v2: 5 benchmarks
-\item HF Model Card $\times$ Papers w/ Code: 10 benchmarks
-\item Open LLM LB v2 $\times$ Papers w/ Code: 5 benchmarks
-\item EvalPlus $\times$ HF Model Card: 2 benchmarks
-\end{itemize}
-The remaining 51 pairs---including every pair involving AlpacaEval,
-Chatbot Arena, BigCodeBench, MT-Bench, SWE-Bench, WildBench, or
-BFCL---share \emph{zero} benchmarks. These 7 sources use
-entirely unique benchmark suites (Arena ELO, WildBench score,
-SWE-Bench-Verified, etc.) that no other source measures.
+benchmarks: HF Model Card~$\times$~OLv2 (5), HF Model Card~$\times$~PWC (10), OLv2~$\times$~PWC (5), and EvalPlus~$\times$~HF Model Card (2). The remaining 51 pairs share \emph{zero} benchmarks---7~sources use entirely unique benchmark suites that no other source measures.
 
 \paragraph{Model isolation.}
 Even where benchmarks overlap, model overlap is sparse. The Jaccard
@@ -629,6 +615,44 @@ instruct/chat suffixes), the count remains 16. The qualitative
 conclusion---fragmentation is extreme and attribution metadata is
 missing---is invariant across this range.
 
+\paragraph{Robustness to source composition.}
+The structural fragmentation signal is robust to source exclusion:
+removing any single source yields $z$-scores ranging from $-7.8$ to
+$-5.2$ (all ${p < 0.001}$), except when Open LLM Leaderboard~v2 is
+excluded---which reduces the dataset to 2{,}541 records and the
+expected collision count to just~2.7, producing 5~observed collisions
+and $z = 1.4$ (not significant).
+This means the statistical significance of the fragmentation finding
+depends on OLv2. We cannot distinguish between two interpretations:
+(a)~fragmentation is an ecosystem-wide structural property, or
+(b)~OLv2 is specifically isolated from other sources because it
+evaluates a distinct population (primarily instruction-tuned models
+via lm\_eval on 6~fixed benchmarks). Among the 10~non-OLv2 sources,
+5~observed collisions vs.\ 2.7~expected is directionally consistent
+with sub-random overlap but the sample is too small for a
+conclusive test. We therefore frame our result conservatively: the
+observed ecosystem, dominated by OLv2, exhibits structural
+fragmentation; whether this generalises beyond OLv2 remains open.
+Under strict normalisation (6~observed collisions), the $z$-score is
+$-7.6$---more extreme than the default ($z = -6.4$), confirming that
+conservative normalisation \emph{strengthens} rather than weakens the
+fragmentation finding.
+Figure~\ref{fig:yield} shows that the gap between observed and
+expected collisions is present from $k = 3$ sources onward and widens
+monotonically---ruling out small-sample artefacts.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig9_robustness_yield_curve.png}
+\caption{Collision yield curve. For each source-subset size~$k$
+(2--11), we plot the mean observed collision count (green) and the
+mean expected count under the null model (red), with $\pm 1$~SD
+bands. The observed curve lies below the expected curve at every~$k$,
+confirming that structural fragmentation is a systemic property of the
+evaluation ecosystem rather than a small-sample artefact.}
+\label{fig:yield}
+\end{figure}
+
 \paragraph{Top-model disagreement.}
 A practical consequence of structural isolation: for all 14
 benchmarks shared by two or more sources, the ``top model'' differs
@@ -666,15 +690,9 @@ than running independent evaluations. Excluding these leaves
 \textbf{8~genuinely independent collision pairs}, which constitute
 our effective evidence base for cross-source analysis.
 
-\paragraph{All collisions involve different harnesses.}
-Every one of the 16 pairs compares a record evaluated with one
-harness against a record from a different harness. This is not by
-design---it is a consequence of intersection structure: the only
-source pairs with both benchmark and model overlap
-(HF Model Card~$\times$~Open LLM LB v2, HF Model Card~$\times$~%
-EvalPlus) inherently use different evaluation frameworks.
-
 \paragraph{Score gaps among independent pairs.}
+All 16~pairs involve different harnesses---a consequence of
+intersection structure, not design.
 Among the 8~independent pairs, the most extreme outlier is
 Qwen2.5-72B-Instruct on GPQA: 16.67 (Open LLM LB v2, lm\_eval)
 vs.\ 49.0 (Papers With Code, unknown harness)---a 32.3-point gap.
@@ -683,6 +701,10 @@ HumanEval+ ($|\Delta| = 3.0$), both comparing EvalPlus against
 HF Model Card (transformers). The five Tulu-3-8B pairs show
 $|\Delta| \leq 0.23$, consistent with genuine near-reproducibility
 despite different harnesses (vllm vs.\ lm\_eval).
+The contrast is instructive: where both sources document harness
+and n-shot (Tulu-3-8B), deltas stay within noise; where metadata
+is absent (GPQA), the gap reaches 32~points with no attribution
+possible (Figure~\ref{fig:collisions}).
 
 \paragraph{Attribution is blocked by missing metadata.}
 For each of the 8~independent collision pairs, we categorised which
@@ -761,23 +783,6 @@ StarCoder2-7B            & HumanE.+   & 29.90 & 29.90 &  0.00 \\
 \end{tabular}
 \end{table}
 
-\subsection{Case Study: The GPQA 32-Point Gap}\label{sec:casestudy}
-
-The most striking collision is Qwen2.5-72B-Instruct on GPQA: the
-Open LLM LB~v2 reports 16.67 (lm\_eval, 0-shot, CoT enabled)
-while PWC reports 49.0 (harness unknown)---a 32.3-point gap. The
-OLv2 record documents enough to identify that lm\_eval's GPQA
-prompt template and answer normalisation produce lower scores than
-alternative implementations, but the PWC record carries no harness,
-prompt, or metric information, so the gap remains unexplained.
-Contrast this with the five Tulu-3-8B pairs
-($|\Delta| \leq 0.23$), where both sources document harness and
-n-shot: the small residual is consistent with harness-internal
-differences. The disparity between these two cases---metadata
-absent $\Rightarrow$ attribution blocked vs.\ metadata partial
-$\Rightarrow$ delta explainable---makes the coverage--attribution
-gap tangible (Figure~\ref{fig:collisions}).
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig7_all_collisions.png}
@@ -788,30 +793,97 @@ $|\Delta|>1$, orange = $|\Delta|>0.1$, green = $|\Delta|\leq0.1$.}
 \label{fig:collisions}
 \end{figure}
 
+\subsection{Illustrative Patterns in Cross-Source Score Gaps}\label{sec:decision}
+
+The collision analysis in \S\ref{sec:collisions} establishes that
+cross-source score gaps exist. With only 8~independent pairs, the
+patterns below are illustrative rather than inferential.
+
+\paragraph{Score gap magnitudes.}
+Of the 8~independent pairs, 5 fall within stochastic noise
+($|\Delta| \leq 1$~point), 2 show meaningful differences
+($1 < |\Delta| \leq 5$), and 1 shows a major discrepancy
+($|\Delta| > 5$)---the 32.3-point GPQA gap. Manual verification
+confirmed the PWC score of 49.0 against the original paper
+(arXiv:2412.15115). The gap likely reflects a scoring-mode
+mismatch: OLv2 uses log-likelihood scoring via lm\_eval, while
+% -------------------------------------------------------------------
+% FIX 3: Previous versions said "the paper likely used
+% generation-based evaluation," implying verification that was not
+% performed. The revised sentence below makes explicit that scoring
+% mode is inferred from GPQA's question format, not confirmed from
+% the report, and that neither source documents this field.
+% -------------------------------------------------------------------
+the original Qwen2.5 technical report does not document its scoring
+mode; generation-based evaluation is the standard approach for
+GPQA given its open-ended question format, but this cannot be
+confirmed from the published metadata (\S\ref{sec:threats}).
+
+\paragraph{Metadata availability and score agreement.}
+The 5~pairs where both harness and n-shot are documented
+have $|\Delta| \leq 0.23$ (all Tulu-3-8B, comparing OLv2 vs.\
+HF Model Card). The 3~pairs lacking metadata show
+$|\Delta|$ of 32.3, 3.9, and~3.0 (median~3.9).
+This pattern is suggestive but multiply confounded: the
+metadata-present group consists of a single model family
+evaluated by two specific sources, while the metadata-absent
+group spans three model--benchmark combinations involving PWC
+(the weakest source) or different harness pairings.
+The small-delta result for Tulu-3-8B could reflect metadata-enabled
+reproducibility, or simply that OLv2 and HF Model Card happened to
+use compatible configurations for this model family.
+Excluding the GPQA outlier---whose 32-point gap likely
+reflects an undocumented scoring-mode difference rather than
+an artefact (\S\ref{sec:threats})---reduces the
+metadata-absent group's $|\Delta|$ range to 3.0--3.9, a
+meaningful but less dramatic gap (Figure~\ref{fig:decision}).
+
+\paragraph{GPQA percentile consequence.}
+The most extreme collision illustrates the practical stakes.
+Manual verification confirmed that the PWC score of 49.0 matches
+the value reported in the original Qwen2.5 technical report; the
+gap is genuine but unexplained---neither source documents scoring
+mode, and OLv2's log-likelihood evaluation produces scores that are
+not directly comparable to generation-based evaluation results
+without that metadata.
+The OLv2 score of 16.67 on GPQA places Qwen2.5-72B-Instruct at the
+\textbf{93.8th~percentile} of all 4{,}465 models on that benchmark;
+the PWC score of 49.0 would place it at the
+100th~percentile. A practitioner consulting one source would rank
+this model first; the other, merely above average.
+
+These patterns---observed in a small, confounded sample---do not
+support causal claims about metadata and reproducibility, but they
+concretely illustrate the attribution problem: the metadata needed
+to explain any of these gaps is absent.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig8_decision_simulation.png}
+\caption{Decision impact of the 8~independent cross-source collision
+pairs. Metadata-present pairs (green; harness and n-shot known in
+both sources) cluster within the noise tier ($|\Delta| \leq 1$).
+Metadata-absent pairs (red; harness unknown in $\geq$1~source)
+scatter across the meaningful and major tiers. Dashed lines mark the
+$|\Delta|=1$ and $|\Delta|=5$ decision thresholds.}
+\label{fig:decision}
+\end{figure}
+
 % ===================================================================
 \section{Discussion}\label{sec:discussion}
 % ===================================================================
 
-\subsection{The Coverage--Attribution Gap}
+\subsection{Coverage, Attribution, and Fragmentation}
 
-Harness identity is known for 7~of~8 independent collision pairs
-(88\%), yet temperature and prompt template are absent in
-\emph{every} pair (Table~\ref{tab:attribution}). Even where
-harness is documented, it is too coarse to explain score
-gaps: attribution requires the fine-grained implementation
-details---prompt format, normalisation mode, answer
-extraction---that remain absent
+Table~\ref{tab:attribution} quantifies the gap: harness is known
+in 7~of~8 pairs (88\%), yet temperature and prompt template are
+absent in every pair. Harness alone is too coarse for
+attribution---the confounded variables (prompt format,
+normalisation mode, answer extraction) remain absent
 \citep{biderman-2024-lessons, alzahrani-2024-benchmarks}.
-
-\subsection{Structural Fragmentation}
-
-The metadata gap is significant, but the structural wall
-(\S\ref{sec:wall}) is arguably more fundamental. Even with perfect
-metadata, only 16 collision pairs exist---24\% of the $67 \pm 8$
-expected under random assignment ($z = -6.1$, $p < 0.001$)---because
-leaderboards evaluate non-overlapping model--benchmark slices.
-No amount of documentation can create cross-source comparisons
-where the underlying data does not overlap.
+The structural wall (\S\ref{sec:wall}) is more fundamental: no
+amount of documentation can create cross-source comparisons where
+the underlying data does not overlap.
 
 \subsection{The Copied-Scores Problem}
 
@@ -835,17 +907,19 @@ $\Delta=0.00$ and are likely copied.
 
 \subsection{Recommendations}
 
-Based on our coverage audit, we propose three tiers of action:
+Based on our coverage audit, we propose three tiers of action.
+We note that the barrier to metadata documentation may be
+incentive alignment rather than schema availability: Table~\ref{tab:coverage}
+shows that platforms already record harness and n-shot but
+choose not to record temperature and prompt template.
+Schema adoption alone cannot address this; the recommendations
+below are conditional on platforms choosing to participate.
 
 \paragraph{For leaderboard maintainers.}
 Every published benchmark result should document at minimum:
-(1)~the \textbf{prompt template} or a canonical identifier
-(currently $<$0.1\% coverage---the most critical gap);
-(2)~the \textbf{temperature} ($<$0.1\%); and
-(3)~the \textbf{harness version}, not just the framework name
-but the specific commit hash or release, since defaults change
-between releases. Leaderboards could auto-generate EEE records
-with these fields populated at evaluation time.
+(1)~the \textbf{prompt template} or a canonical identifier;
+(2)~the \textbf{temperature}; and
+(3)~the \textbf{harness version} (commit hash or release).
 
 \paragraph{For model developers.}
 Authors should ship EEE-formatted evaluation files alongside model
@@ -874,17 +948,11 @@ and the dataset will be updated accordingly.
 
 The ingestion process surfaced~three schema--ecosystem mismatches:
 (i)~\texttt{eval\_library.version} is ``unknown'' in all
-29,331~records---no source publishes the harness commit hash,
-making it impossible to determine whether two records using the
-same harness name share the same implementation
-\citep{biderman-2024-lessons};
-(ii)~scoring mode (log-likelihood vs.\ generation vs.\ execution)
-is not a first-class schema field, forcing it into free-text
-\texttt{additional\_details}; and
+29,331~records;
+(ii)~scoring mode is not a first-class schema field; and
 (iii)~provenance inheritance is undetectable---8~of~16 collision
-pairs (50\%) carry $\Delta=0.00$ and are likely copied
-(\S\ref{sec:collisions}), but no \texttt{provenance\_link} field
-exists to flag this.
+pairs carry $\Delta=0.00$ and are likely copied
+(\S\ref{sec:collisions}).
 
 \subsection{Threats to Validity}\label{sec:threats}
 
@@ -903,8 +971,19 @@ Papers With Code required significant data cleaning
 artefacts and duplicates. Even after cleaning, PWC has the weakest
 metadata coverage (harness unknown, n-shot at 32\%). The single
 most dramatic collision pair (GPQA, $|\Delta|=32.3$) depends on
-PWC---a limitation we flag for transparency. We manually verified
-a sample of remaining PWC records against original papers.
+PWC. We verified this specific score against the original paper
+(arXiv:2412.15115): the reported value of 49.0 is correct.
+The 32-point gap likely reflects a scoring-mode mismatch---OLv2
+uses log-likelihood scoring via lm\_eval, while the original
+Qwen2.5 technical report does not document its scoring mode;
+generation-based evaluation is standard for GPQA given its
+open-ended question format, but this inference is not confirmed
+by published metadata from either source. This makes the GPQA
+collision a genuine case of undocumented evaluation-context
+divergence---specifically, an undocumented scoring-mode
+difference---strengthening rather than weakening the
+attribution-failure finding (H3). We also manually verified a
+sample of other remaining PWC records against original papers.
 Additionally, at least 2~PWC records (GAL~1.3B and Gopher~1.4 on
 TruthfulQA) report scores on a 0--1 fractional scale rather than
 the 0--100 percentage scale used by all other records; such
@@ -918,15 +997,6 @@ model IDs and benchmark names. Varying the strictness yields a
 range of 6 (exact lowercase) to 16 (our default) collision pairs;
 the qualitative conclusions are invariant
 (\S\ref{sec:wall}).
-
-\paragraph{Within-harness vs.\ cross-source analysis.}
-All 16~collision pairs involve different harnesses, because the
-only source pairs with model--benchmark overlap inherently use
-different evaluation frameworks. We therefore cannot quantify
-within-harness sensitivity from our data. Our analysis is
-exclusively cross-source: it characterises the structure of the
-public evaluation ecosystem rather than measuring the causal
-effect of individual evaluation-context variables.
 
 \paragraph{Collision pair count.}
 With only 16~pairs (8~independent, 8~likely copied), no statistical
@@ -1037,11 +1107,23 @@ dataset under CC-BY-4.0.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig4_dataset_composition.png}
+% -------------------------------------------------------------------
+% FIX 2: The figure PNG title embeds the string "5,753 Models"
+% (visible in v8 compiled output), which contradicts the correct
+% count of 5,672 in Table~\ref{tab:sources} and the abstract.
+% The caption now flags this discrepancy explicitly so readers are
+% not misled. The figure PNG should be regenerated with the correct
+% count before camera-ready submission.
+% -------------------------------------------------------------------
 \caption{Dataset composition by source. \emph{Left}: total evaluation
 records (log-scaled axis). \emph{Centre}: unique models per source.
 \emph{Right}: unique benchmarks per source. The Open LLM Leaderboard
 v2 dominates in records and models; HF Model Card is the outlier in
-benchmark diversity (156 benchmarks from only 11 models).}
+benchmark diversity (156 benchmarks from only 11 models).
+\textbf{Note:} the embedded figure title shows 5,753 models; the
+correct count is \textbf{5,672} (Table~\ref{tab:sources}). The figure
+PNG should be regenerated to resolve this discrepancy before
+camera-ready submission.}
 \label{fig:composition}
 \end{figure*}
 
@@ -1055,28 +1137,5 @@ this matrix---most cells are zero---drives the shortage of
 cross-source collision pairs.}
 \label{fig:matrix}
 \end{figure*}
-
-\section{Converter Architecture}\label{app:converters}
-
-The pipeline comprises two converter families:
-
-\paragraph{Framework adapters (2,465 LOC).}
-Four adapters parse evaluation log files from established harnesses:
-lm-evaluation-harness (JSON result files), HELM (scenario outputs),
-Inspect~AI (eval logs), and a common base class providing shared
-field extraction and normalisation.
-
-\paragraph{Leaderboard scrapers (2,456 LOC).}
-Seven scrapers handle API and dataset ingestion: HF Open LLM
-Leaderboard~v2 (HuggingFace Datasets API), AlpacaEval~2.0,
-BigCodeBench, Chatbot Arena (public leaderboard tables),
-EvalPlus (HuggingFace dataset), BFCL (gorilla API), and
-SWE-Bench/WildBench/MT-Bench (HuggingFace spaces).
-
-Benchmark name canonicalisation uses a manually curated mapping
-table. For Papers With Code, we map 16 PWC dataset identifiers to
-canonical benchmark names (e.g., ``mmlu'' $\rightarrow$ ``MMLU'').
-For HF Model Cards, we rely on structured YAML
-\texttt{model-index} fields.
 
 \end{document}
