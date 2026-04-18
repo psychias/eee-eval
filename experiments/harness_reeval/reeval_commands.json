@@ -1,0 +1,233 @@
+[
+  {
+    "model_norm": "bloom-3b",
+    "model_id": "bigscience/bloom-3b",
+    "benchmark": "arc_challenge",
+    "benchmark_original": "arc_challenge",
+    "existing_score": 0.27986348122866894,
+    "lm_eval_task": "arc_challenge",
+    "shots": 25,
+    "note": "ARC Challenge 25-shot",
+    "command": "lm_eval --model hf --model_args pretrained=bigscience/bloom-3b --tasks arc_challenge --num_fewshot 25 --batch_size auto --output_path results/bloom-3b/arc_challenge"
+  },
+  {
+    "model_norm": "bloom-3b",
+    "model_id": "bigscience/bloom-3b",
+    "benchmark": "hellaswag",
+    "benchmark_original": "hellaswag",
+    "existing_score": 0.41236805417247563,
+    "lm_eval_task": "hellaswag",
+    "shots": 10,
+    "note": "HellaSwag 10-shot",
+    "command": "lm_eval --model hf --model_args pretrained=bigscience/bloom-3b --tasks hellaswag --num_fewshot 10 --batch_size auto --output_path results/bloom-3b/hellaswag"
+  },
+  {
+    "model_norm": "bloom-3b",
+    "model_id": "bigscience/bloom-3b",
+    "benchmark": "humaneval",
+    "benchmark_original": "humaneval",
+    "existing_score": 0.15524390243902436,
+    "lm_eval_task": "humaneval",
+    "shots": 0,
+    "note": "HumanEval (pass@1)",
+    "command": "lm_eval --model hf --model_args pretrained=bigscience/bloom-3b --tasks humaneval --num_fewshot 0 --batch_size auto --output_path results/bloom-3b/humaneval"
+  },
+  {
+    "model_norm": "bloom-3b",
+    "model_id": "bigscience/bloom-3b",
+    "benchmark": "winogrande",
+    "benchmark_original": "winogrande",
+    "existing_score": 0.5864246250986582,
+    "lm_eval_task": "winogrande",
+    "shots": 5,
+    "note": "WinoGrande 5-shot",
+    "command": "lm_eval --model hf --model_args pretrained=bigscience/bloom-3b --tasks winogrande --num_fewshot 5 --batch_size auto --output_path results/bloom-3b/winogrande"
+  },
+  {
+    "model_norm": "gpt-j-6b",
+    "model_id": "EleutherAI/gpt-j-6b",
+    "benchmark": "truthfulqa",
+    "benchmark_original": "TruthfulQA",
+    "existing_score": 26.68,
+    "lm_eval_task": "truthfulqa_mc2",
+    "shots": 0,
+    "note": "TruthfulQA MC2 0-shot",
+    "command": "lm_eval --model hf --model_args pretrained=EleutherAI/gpt-j-6b --tasks truthfulqa_mc2 --num_fewshot 0 --batch_size auto --output_path results/gpt-j-6b/truthfulqa"
+  },
+  {
+    "model_norm": "llama-13b",
+    "model_id": "huggyllama/llama-13b",
+    "benchmark": "gsm8k",
+    "benchmark_original": "GSM8K",
+    "existing_score": 17.8,
+    "lm_eval_task": "gsm8k",
+    "shots": 5,
+    "note": "GSM8K 5-shot CoT",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-13b --tasks gsm8k --num_fewshot 5 --batch_size auto --output_path results/llama-13b/gsm8k"
+  },
+  {
+    "model_norm": "llama-13b",
+    "model_id": "huggyllama/llama-13b",
+    "benchmark": "math",
+    "benchmark_original": "MATH",
+    "existing_score": 3.9,
+    "lm_eval_task": "minerva_math",
+    "shots": 4,
+    "note": "MATH 4-shot",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-13b --tasks minerva_math --num_fewshot 4 --batch_size auto --output_path results/llama-13b/math"
+  },
+  {
+    "model_norm": "llama-13b",
+    "model_id": "huggyllama/llama-13b",
+    "benchmark": "truthfulqa",
+    "benchmark_original": "TruthfulQA",
+    "existing_score": 47.0,
+    "lm_eval_task": "truthfulqa_mc2",
+    "shots": 0,
+    "note": "TruthfulQA MC2 0-shot",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-13b --tasks truthfulqa_mc2 --num_fewshot 0 --batch_size auto --output_path results/llama-13b/truthfulqa"
+  },
+  {
+    "model_norm": "llama-65b",
+    "model_id": "huggyllama/llama-65b",
+    "benchmark": "gsm8k",
+    "benchmark_original": "GSM8K",
+    "existing_score": 50.9,
+    "lm_eval_task": "gsm8k",
+    "shots": 5,
+    "note": "GSM8K 5-shot CoT",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-65b --tasks gsm8k --num_fewshot 5 --batch_size auto --output_path results/llama-65b/gsm8k"
+  },
+  {
+    "model_norm": "llama-65b",
+    "model_id": "huggyllama/llama-65b",
+    "benchmark": "math",
+    "benchmark_original": "MATH",
+    "existing_score": 10.6,
+    "lm_eval_task": "minerva_math",
+    "shots": 4,
+    "note": "MATH 4-shot",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-65b --tasks minerva_math --num_fewshot 4 --batch_size auto --output_path results/llama-65b/math"
+  },
+  {
+    "model_norm": "llama-65b",
+    "model_id": "huggyllama/llama-65b",
+    "benchmark": "truthfulqa",
+    "benchmark_original": "TruthfulQA",
+    "existing_score": 57.0,
+    "lm_eval_task": "truthfulqa_mc2",
+    "shots": 0,
+    "note": "TruthfulQA MC2 0-shot",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-65b --tasks truthfulqa_mc2 --num_fewshot 0 --batch_size auto --output_path results/llama-65b/truthfulqa"
+  },
+  {
+    "model_norm": "llama-7b",
+    "model_id": "huggyllama/llama-7b",
+    "benchmark": "gsm8k",
+    "benchmark_original": "GSM8K",
+    "existing_score": 11.0,
+    "lm_eval_task": "gsm8k",
+    "shots": 5,
+    "note": "GSM8K 5-shot CoT",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-7b --tasks gsm8k --num_fewshot 5 --batch_size auto --output_path results/llama-7b/gsm8k"
+  },
+  {
+    "model_norm": "llama-7b",
+    "model_id": "huggyllama/llama-7b",
+    "benchmark": "math",
+    "benchmark_original": "MATH",
+    "existing_score": 2.9,
+    "lm_eval_task": "minerva_math",
+    "shots": 4,
+    "note": "MATH 4-shot",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-7b --tasks minerva_math --num_fewshot 4 --batch_size auto --output_path results/llama-7b/math"
+  },
+  {
+    "model_norm": "llama-7b",
+    "model_id": "huggyllama/llama-7b",
+    "benchmark": "truthfulqa",
+    "benchmark_original": "TruthfulQA",
+    "existing_score": 33.0,
+    "lm_eval_task": "truthfulqa_mc2",
+    "shots": 0,
+    "note": "TruthfulQA MC2 0-shot",
+    "command": "lm_eval --model hf --model_args pretrained=huggyllama/llama-7b --tasks truthfulqa_mc2 --num_fewshot 0 --batch_size auto --output_path results/llama-7b/truthfulqa"
+  },
+  {
+    "model_norm": "mistral-7b",
+    "model_id": "mistralai/Mistral-7B-v0.1",
+    "benchmark": "humaneval",
+    "benchmark_original": "HumanEval",
+    "existing_score": 93.9,
+    "lm_eval_task": "humaneval",
+    "shots": 0,
+    "note": "HumanEval (pass@1)",
+    "command": "lm_eval --model hf --model_args pretrained=mistralai/Mistral-7B-v0.1 --tasks humaneval --num_fewshot 0 --batch_size auto --output_path results/mistral-7b/humaneval"
+  },
+  {
+    "model_norm": "orca-2-13b",
+    "model_id": "microsoft/Orca-2-13b",
+    "benchmark": "gsm8k",
+    "benchmark_original": "GSM8K",
+    "existing_score": 59.14,
+    "lm_eval_task": "gsm8k",
+    "shots": 5,
+    "note": "GSM8K 5-shot CoT",
+    "command": "lm_eval --model hf --model_args pretrained=microsoft/Orca-2-13b --tasks gsm8k --num_fewshot 5 --batch_size auto --output_path results/orca-2-13b/gsm8k"
+  },
+  {
+    "model_norm": "orca-2-7b",
+    "model_id": "microsoft/Orca-2-7b",
+    "benchmark": "gsm8k",
+    "benchmark_original": "GSM8K",
+    "existing_score": 47.23,
+    "lm_eval_task": "gsm8k",
+    "shots": 5,
+    "note": "GSM8K 5-shot CoT",
+    "command": "lm_eval --model hf --model_args pretrained=microsoft/Orca-2-7b --tasks gsm8k --num_fewshot 5 --batch_size auto --output_path results/orca-2-7b/gsm8k"
+  },
+  {
+    "model_norm": "phi-2",
+    "model_id": "microsoft/phi-2",
+    "benchmark": "humaneval",
+    "benchmark_original": "HumanEval",
+    "existing_score": 98.2,
+    "lm_eval_task": "humaneval",
+    "shots": 0,
+    "note": "HumanEval (pass@1)",
+    "command": "lm_eval --model hf --model_args pretrained=microsoft/phi-2 --tasks humaneval --num_fewshot 0 --batch_size auto --output_path results/phi-2/humaneval"
+  },
+  {
+    "model_norm": "qwen2.5-72b-instruct",
+    "model_id": "Qwen/Qwen2.5-72B-Instruct",
+    "benchmark": "gpqa",
+    "benchmark_original": "GPQA",
+    "existing_score": 49.0,
+    "lm_eval_task": "gpqa_main_zeroshot",
+    "shots": 0,
+    "note": "GPQA main (0-shot)",
+    "command": "lm_eval --model hf --model_args pretrained=Qwen/Qwen2.5-72B-Instruct --tasks gpqa_main_zeroshot --num_fewshot 0 --batch_size auto --output_path results/qwen2.5-72b-instruct/gpqa"
+  },
+  {
+    "model_norm": "santacoder-1.1b",
+    "model_id": "bigcode/santacoder",
+    "benchmark": "mbpp",
+    "benchmark_original": "MBPP",
+    "existing_score": 35.0,
+    "lm_eval_task": "mbpp",
+    "shots": 3,
+    "note": "MBPP 3-shot",
+    "command": "lm_eval --model hf --model_args pretrained=bigcode/santacoder --tasks mbpp --num_fewshot 3 --batch_size auto --output_path results/santacoder-1.1b/mbpp"
+  },
+  {
+    "model_norm": "starcoder2-15b",
+    "model_id": "bigcode/starcoder2-15b",
+    "benchmark": "mbpp",
+    "benchmark_original": "MBPP",
+    "existing_score": 66.2,
+    "lm_eval_task": "mbpp",
+    "shots": 3,
+    "note": "MBPP 3-shot",
+    "command": "lm_eval --model hf --model_args pretrained=bigcode/starcoder2-15b --tasks mbpp --num_fewshot 3 --batch_size auto --output_path results/starcoder2-15b/mbpp"
+  }
+]

@@ -1,0 +1,113 @@
+"""
+coverage_audit.py — audit metadata field coverage per source directory.
+
+Checks what fraction of evaluation_results records have each methodology
+field populated: n_shot, harness (non-"unknown"), prompt_template, temperature,
+top_k, reasoning_mode.
+
+Output: analysis_output/coverage_stats.csv
+Columns: source, n_records, pct_n_shot, pct_harness, pct_prompt_template,
+         pct_temperature, pct_top_k, pct_reasoning_mode
+"""
+from __future__ import annotations
+import json
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+_ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(_ROOT))
+
+DATA_DIR = _ROOT / "data"
+OUT_DIR = _ROOT / "analysis_output"
+
+
+def audit_source(source_dir: Path) -> dict:
+    n_records = 0
+    has_n_shot = 0
+    has_harness = 0
+    has_prompt_template = 0
+    has_temperature = 0
+    has_top_k = 0
+    has_reasoning_mode = 0
+
+    for fpath in source_dir.rglob("*.json"):
+        try:
+            rec = json.loads(fpath.read_text())
+        except Exception:
+            continue
+        harness = rec.get("eval_library", {}).get("name", "")
+        harness_known = harness not in ("", "unknown")
+
+        for result in rec.get("evaluation_results", []):
+            n_records += 1
+            gen_cfg = result.get("generation_config") or {}
+            gen_args = gen_cfg.get("generation_args") or {}
+            details = gen_cfg.get("additional_details") or {}
+
+            # Check generation_args first (new pipeline), fall back to additional_details
+            n_shot_val = gen_args.get("shots") or details.get("n_shot", "")
+            has_n_shot += 1 if (n_shot_val not in ("", None)) else 0
+
+            has_harness += 1 if harness_known else 0
+
+            # "standard" is a generic placeholder, not a real template
+            pt = details.get("prompt_template", "")
+            has_prompt_template += 1 if (pt not in ("", None, "standard")) else 0
+
+            # Check both locations for temperature
+            temp = gen_args.get("temperature") or details.get("temperature")
+            has_temperature += 1 if (temp not in ("", None)) else 0
+
+            # top_k
+            top_k = gen_args.get("top_k") or details.get("top_k")
+            has_top_k += 1 if (top_k not in ("", None)) else 0
+
+            # reasoning_mode
+            rm = gen_args.get("reasoning_mode")
+            has_reasoning_mode += 1 if (rm not in ("", None)) else 0
+
+    if n_records == 0:
+        return {
+            "source": source_dir.name,
+            "n_records": 0,
+            "pct_n_shot": 0.0,
+            "pct_harness": 0.0,
+            "pct_prompt_template": 0.0,
+            "pct_temperature": 0.0,
+            "pct_top_k": 0.0,
+            "pct_reasoning_mode": 0.0,
+        }
+
+    return {
+        "source": source_dir.name,
+        "n_records": n_records,
+        "pct_n_shot": round(100 * has_n_shot / n_records, 1),
+        "pct_harness": round(100 * has_harness / n_records, 1),
+        "pct_prompt_template": round(100 * has_prompt_template / n_records, 1),
+        "pct_temperature": round(100 * has_temperature / n_records, 1),
+        "pct_top_k": round(100 * has_top_k / n_records, 1),
+        "pct_reasoning_mode": round(100 * has_reasoning_mode / n_records, 1),
+    }
+
+
+def main():
+    OUT_DIR.mkdir(exist_ok=True)
+    rows = []
+    for source_dir in sorted(DATA_DIR.iterdir()):
+        if source_dir.is_dir():
+            rows.append(audit_source(source_dir))
+
+    df = pd.DataFrame(rows)
+    df = df.sort_values("n_records", ascending=False)
+
+    out_path = OUT_DIR / "coverage_stats.csv"
+    df.to_csv(out_path, index=False)
+    print(f"Coverage audit saved → {out_path}")
+    print()
+    print(df.to_string(index=False))
+
+
+if __name__ == "__main__":
+    main()

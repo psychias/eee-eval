@@ -1,0 +1,120 @@
+{
+  "n_records_validated": 2514,
+  "sources_sampled": [
+    "open_llm_leaderboard_v2",
+    "papers_with_code",
+    "alpacaeval2",
+    "bfcl",
+    "bigcodebench",
+    "chatbot_arena",
+    "evalplus",
+    "hf_model_card",
+    "wildbench",
+    "swe_bench",
+    "mt_bench"
+  ],
+  "compliance_breakdown": {
+    "required_tier": {
+      "count": 0,
+      "percent": "0.0%"
+    },
+    "recommended_tier": {
+      "count": 0,
+      "percent": "0.0%"
+    },
+    "full_tier": {
+      "count": 0,
+      "percent": "0.0%"
+    },
+    "none": {
+      "count": 2514,
+      "percent": "100.0%"
+    }
+  },
+  "mean_completeness_score": 0.86,
+  "notes": [
+    "0% Required-tier compliance is consistent with paper findings (Table 3/4).",
+    "All records lack scoring_mode, eval_library.version, date, and random_seed.",
+    "Mean completeness score 0.86 reflects most records having only harness documented.",
+    "OLv2 (n=1000 sampled) achieves completeness=1.0 (harness+n_shot); still fails Required tier."
+  ],
+  "per_source": {
+    "open_llm_leaderboard_v2": {
+      "n_records_sampled": 1000,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "papers_with_code": {
+      "n_records_sampled": 460,
+      "mean_completeness_score": 0.23,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "alpacaeval2": {
+      "n_records_sampled": 223,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "bfcl": {
+      "n_records_sampled": 109,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "bigcodebench": {
+      "n_records_sampled": 156,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "chatbot_arena": {
+      "n_records_sampled": 218,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "evalplus": {
+      "n_records_sampled": 125,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "hf_model_card": {
+      "n_records_sampled": 11,
+      "mean_completeness_score": 0.91,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "wildbench": {
+      "n_records_sampled": 61,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "swe_bench": {
+      "n_records_sampled": 117,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    },
+    "mt_bench": {
+      "n_records_sampled": 34,
+      "mean_completeness_score": 1.0,
+      "required_tier_compliant": 0,
+      "required_tier_percent": "0.0%",
+      "none_percent": "100.0%"
+    }
+  }
+}

@@ -1,0 +1,228 @@
+================================================================================
+HARNESS RE-EVALUATION EXPERIMENT — PAIR REPORT
+================================================================================
+
+Exact pairs (same model + same benchmark): 1
+Near pairs (similar benchmark names):       4
+Models in both known & unknown harness:     14
+
+------------------------------------------------------------
+EXACT PAIRS
+------------------------------------------------------------
+
+  Pair 1:
+    Model:        qwen2.5-72b-instruct (Qwen2.5-72B-Instruct)
+    Benchmark:    gpqa
+    Known:        harness=lm_eval, score=16.67, shots=0, CoT=True, source=open_llm_leaderboard_v2
+    Unknown:      harness=unknown, score=49.0, shots=None, CoT=None, source=papers_with_code
+    Delta:        |32.33|
+    File known:   data\open_llm_leaderboard_v2\Qwen\Qwen2.5-72B-Instruct\c9325daa-7e4d-4e5a-8d1f-e978a510a68f.json
+    File unknown: data\papers_with_code\Qwen\Qwen2.5-72B-Instruct\79f27555-6c60-458a-8e3a-2ccaf5305af8.json
+
+------------------------------------------------------------
+NEAR-MATCH PAIRS (different but related benchmarks)
+------------------------------------------------------------
+
+  Near-pair 1:
+    Model:        llama-13b (llama-13B)
+    Known bench:  MATH-500 (harness=lm_eval, score=2.04)
+    Unknown bench: MATH (score=13.0)
+
+  Near-pair 2:
+    Model:        llama-7b (llama-7B)
+    Known bench:  MATH-500 (harness=lm_eval, score=0.83)
+    Unknown bench: MATH (score=7.0)
+
+  Near-pair 3:
+    Model:        mistral-7b (Mistral-7B)
+    Known bench:  HumanEval+ (harness=evalplus, score=23.8)
+    Unknown bench: HumanEval (score=93.9)
+
+  Near-pair 4:
+    Model:        llama-65b (llama-65B)
+    Known bench:  MATH-500 (harness=lm_eval, score=3.1)
+    Unknown bench: MATH (score=65.0)
+
+------------------------------------------------------------
+ALL MODELS WITH BOTH KNOWN & UNKNOWN HARNESS
+------------------------------------------------------------
+
+  bloom-3b (bloom-3B)
+    Known sources:      ['open_llm_leaderboard_v2']
+    Unknown sources:    ['hf_model_card']
+    Known harnesses:    ['lm_eval']
+    Known benchmarks:   ['bbh', 'gpqa', 'ifeval', 'math_500', 'mmlu_pro', 'musr']
+    Unknown benchmarks: ['arc_challenge', 'arc_easy', 'axb', 'axg', 'boolq', 'cb', 'cola', 'copa', 'crows_pairs_english', 'crows_pairs_french', 'diabla', 'gsarti/flores_101_afr', 'gsarti/flores_101_amh', 'gsarti/flores_101_ara', 'gsarti/flores_101_asm', 'gsarti/flores_101_ast', 'gsarti/flores_101_azj', 'gsarti/flores_101_bel', 'gsarti/flores_101_ben', 'gsarti/flores_101_bos', 'gsarti/flores_101_bul', 'gsarti/flores_101_cat', 'gsarti/flores_101_ceb', 'gsarti/flores_101_ces', 'gsarti/flores_101_ckb', 'gsarti/flores_101_cym', 'gsarti/flores_101_dan', 'gsarti/flores_101_deu', 'gsarti/flores_101_ell', 'gsarti/flores_101_eng', 'gsarti/flores_101_est', 'gsarti/flores_101_fas', 'gsarti/flores_101_fin', 'gsarti/flores_101_fra', 'gsarti/flores_101_ful', 'gsarti/flores_101_gle', 'gsarti/flores_101_glg', 'gsarti/flores_101_guj', 'gsarti/flores_101_hau', 'gsarti/flores_101_heb', 'gsarti/flores_101_hin', 'gsarti/flores_101_hrv', 'gsarti/flores_101_hun', 'gsarti/flores_101_hye', 'gsarti/flores_101_ibo', 'gsarti/flores_101_ind', 'gsarti/flores_101_isl', 'gsarti/flores_101_ita', 'gsarti/flores_101_jav', 'gsarti/flores_101_jpn', 'gsarti/flores_101_kam', 'gsarti/flores_101_kan', 'gsarti/flores_101_kat', 'gsarti/flores_101_kaz', 'gsarti/flores_101_kea', 'gsarti/flores_101_kir', 'gsarti/flores_101_kor', 'gsarti/flores_101_lao', 'gsarti/flores_101_lav', 'gsarti/flores_101_lin', 'gsarti/flores_101_lit', 'gsarti/flores_101_ltz', 'gsarti/flores_101_lug', 'gsarti/flores_101_luo', 'gsarti/flores_101_mal', 'gsarti/flores_101_mar', 'gsarti/flores_101_mkd', 'gsarti/flores_101_mlt', 'gsarti/flores_101_mon', 'gsarti/flores_101_mri', 'gsarti/flores_101_msa', 'gsarti/flores_101_mya', 'gsarti/flores_101_nld', 'gsarti/flores_101_nob', 'gsarti/flores_101_npi', 'gsarti/flores_101_nso', 'gsarti/flores_101_nya', 'gsarti/flores_101_oci', 'gsarti/flores_101_orm', 'gsarti/flores_101_ory', 'gsarti/flores_101_pan', 'gsarti/flores_101_pol', 'gsarti/flores_101_por', 'gsarti/flores_101_pus', 'gsarti/flores_101_ron', 'gsarti/flores_101_rus', 'gsarti/flores_101_slk', 'gsarti/flores_101_slv', 'gsarti/flores_101_sna', 'gsarti/flores_101_snd', 'gsarti/flores_101_som', 'gsarti/flores_101_spa', 'gsarti/flores_101_srp', 'gsarti/flores_101_swe', 'gsarti/flores_101_swh', 'gsarti/flores_101_tam', 'gsarti/flores_101_tel', 'gsarti/flores_101_tgk', 'gsarti/flores_101_tgl', 'gsarti/flores_101_tha', 'gsarti/flores_101_tur', 'gsarti/flores_101_ukr', 'gsarti/flores_101_umb', 'gsarti/flores_101_urd', 'gsarti/flores_101_uzb', 'gsarti/flores_101_vie', 'gsarti/flores_101_wol', 'gsarti/flores_101_xho', 'gsarti/flores_101_yor', 'gsarti/flores_101_zho_simpl', 'gsarti/flores_101_zho_trad', 'gsarti/flores_101_zul', 'headqa', 'hellaswag', 'humaneval', 'logiqa', 'mathqa', 'mc_taco', 'mnli', 'mnli_mismatched', 'mrpc', 'multirc', 'openbookqa', 'piqa', 'prost', 'pubmedqa', 'qnli', 'qqp', 'race', 'rte', 'sciq', 'sst', 'triviaqa', 'tydiqa_primary', 'webqs', 'wic', 'winogrande', 'wnli', 'wsc']
+    Benchmark overlap:  []
+    Re-eval candidates (4):
+      - arc_challenge (current score=0.27986348122866894)
+        lm_eval task: arc_challenge (ARC Challenge 25-shot)
+      - hellaswag (current score=0.41236805417247563)
+        lm_eval task: hellaswag (HellaSwag 10-shot)
+      - humaneval (current score=0.15524390243902436)
+        lm_eval task: humaneval (HumanEval (pass@1))
+      - winogrande (current score=0.5864246250986582)
+        lm_eval task: winogrande (WinoGrande 5-shot)
+
+  claude (claude)
+    Known sources:      ['alpacaeval2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['alpaca_eval']
+    Known benchmarks:   ['alpacaeval_2.0', 'alpacaeval_2.0_lc']
+    Unknown benchmarks: ['mbpp']
+    Benchmark overlap:  []
+    Re-eval candidates (1):
+      - mbpp (current score=71.4)
+        lm_eval task: mbpp (MBPP 3-shot)
+
+  gpt-4 (gpt-4)
+    Known sources:      ['mt_bench']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['fastchat']
+    Known benchmarks:   ['mt_bench']
+    Unknown benchmarks: ['gsm8k', 'ifeval', 'math']
+    Benchmark overlap:  []
+    Re-eval candidates (3):
+      - gsm8k (current score=87.1)
+        lm_eval task: gsm8k (GSM8K 5-shot CoT)
+      - ifeval (current score=76.89)
+        lm_eval task: ifeval (IFEval 0-shot)
+      - math (current score=42.5)
+        lm_eval task: minerva_math (MATH 4-shot)
+
+  gpt-j-6b (GPT-J-6B)
+    Known sources:      ['evalplus', 'open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['evalplus', 'lm_eval']
+    Known benchmarks:   ['bbh', 'gpqa', 'humaneval+', 'ifeval', 'math_500', 'mmlu_pro', 'musr']
+    Unknown benchmarks: ['truthfulqa']
+    Benchmark overlap:  []
+    Re-eval candidates (1):
+      - truthfulqa (current score=26.68)
+        lm_eval task: truthfulqa_mc2 (TruthfulQA MC2 0-shot)
+
+  llama-13b (LLaMA-13B)
+    Known sources:      ['chatbot_arena', 'mt_bench', 'open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['fastchat', 'lm_eval']
+    Known benchmarks:   ['arena_elo', 'bbh', 'gpqa', 'ifeval', 'math_500', 'mmlu_pro', 'mt_bench', 'musr']
+    Unknown benchmarks: ['gsm8k', 'math', 'truthfulqa']
+    Benchmark overlap:  []
+    Re-eval candidates (3):
+      - gsm8k (current score=17.8)
+        lm_eval task: gsm8k (GSM8K 5-shot CoT)
+      - math (current score=3.9)
+        lm_eval task: minerva_math (MATH 4-shot)
+      - truthfulqa (current score=47.0)
+        lm_eval task: truthfulqa_mc2 (TruthfulQA MC2 0-shot)
+
+  llama-65b (llama-65B)
+    Known sources:      ['open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['lm_eval']
+    Known benchmarks:   ['bbh', 'gpqa', 'ifeval', 'math_500', 'mmlu_pro', 'musr']
+    Unknown benchmarks: ['gsm8k', 'math', 'truthfulqa']
+    Benchmark overlap:  []
+    Re-eval candidates (3):
+      - gsm8k (current score=50.9)
+        lm_eval task: gsm8k (GSM8K 5-shot CoT)
+      - math (current score=10.6)
+        lm_eval task: minerva_math (MATH 4-shot)
+      - truthfulqa (current score=57.0)
+        lm_eval task: truthfulqa_mc2 (TruthfulQA MC2 0-shot)
+
+  llama-7b (llama-7B)
+    Known sources:      ['open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['lm_eval']
+    Known benchmarks:   ['bbh', 'gpqa', 'ifeval', 'math_500', 'mmlu_pro', 'musr']
+    Unknown benchmarks: ['gsm8k', 'math', 'truthfulqa']
+    Benchmark overlap:  []
+    Re-eval candidates (3):
+      - gsm8k (current score=11.0)
+        lm_eval task: gsm8k (GSM8K 5-shot CoT)
+      - math (current score=2.9)
+        lm_eval task: minerva_math (MATH 4-shot)
+      - truthfulqa (current score=33.0)
+        lm_eval task: truthfulqa_mc2 (TruthfulQA MC2 0-shot)
+
+  mistral-7b (Mistral-7B)
+    Known sources:      ['evalplus']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['evalplus']
+    Known benchmarks:   ['humaneval+', 'mbpp+']
+    Unknown benchmarks: ['humaneval']
+    Benchmark overlap:  []
+    Re-eval candidates (1):
+      - humaneval (current score=93.9)
+        lm_eval task: humaneval (HumanEval (pass@1))
+
+  orca-2-13b (Orca-2-13B)
+    Known sources:      ['open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['lm_eval']
+    Known benchmarks:   ['bbh', 'gpqa', 'ifeval', 'math_500', 'mmlu_pro', 'musr']
+    Unknown benchmarks: ['gsm8k']
+    Benchmark overlap:  []
+    Re-eval candidates (1):
+      - gsm8k (current score=59.14)
+        lm_eval task: gsm8k (GSM8K 5-shot CoT)
+
+  orca-2-7b (Orca-2-7B)
+    Known sources:      ['open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['lm_eval']
+    Known benchmarks:   ['bbh', 'gpqa', 'ifeval', 'math_500', 'mmlu_pro', 'musr']
+    Unknown benchmarks: ['gsm8k']
+    Benchmark overlap:  []
+    Re-eval candidates (1):
+      - gsm8k (current score=47.23)
+        lm_eval task: gsm8k (GSM8K 5-shot CoT)
+
+  phi-2 (phi-2)
+    Known sources:      ['alpacaeval2', 'open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['alpaca_eval', 'lm_eval']
+    Known benchmarks:   ['alpacaeval_2.0', 'alpacaeval_2.0_lc', 'bbh', 'gpqa', 'ifeval', 'math_500', 'mmlu_pro', 'musr']
+    Unknown benchmarks: ['humaneval']
+    Benchmark overlap:  []
+    Re-eval candidates (1):
+      - humaneval (current score=98.2)
+        lm_eval task: humaneval (HumanEval (pass@1))
+
+  qwen2.5-72b-instruct (Qwen2.5-72B-Instruct)
+    Known sources:      ['bigcodebench', 'chatbot_arena', 'open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['bigcodebench', 'fastchat', 'lm_eval']
+    Known benchmarks:   ['arena_elo', 'bbh', 'bigcodebench_complete', 'bigcodebench_instruct', 'gpqa', 'ifeval', 'math_500', 'mmlu_pro', 'musr']
+    Unknown benchmarks: ['gpqa']
+    Benchmark overlap:  ['gpqa']
+    Re-eval candidates (1):
+      - gpqa (current score=49.0)
+        lm_eval task: gpqa_main_zeroshot (GPQA main (0-shot))
+
+  santacoder-1.1b (SantaCoder-1.1B)
+    Known sources:      ['evalplus']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['evalplus']
+    Known benchmarks:   ['humaneval+']
+    Unknown benchmarks: ['mbpp']
+    Benchmark overlap:  []
+    Re-eval candidates (1):
+      - mbpp (current score=35.0)
+        lm_eval task: mbpp (MBPP 3-shot)
+
+  starcoder2-15b (StarCoder2-15B)
+    Known sources:      ['bigcodebench', 'evalplus', 'hf_model_card', 'open_llm_leaderboard_v2']
+    Unknown sources:    ['papers_with_code']
+    Known harnesses:    ['bigcodebench', 'evalplus', 'lm_eval', 'transformers']
+    Known benchmarks:   ['bbh', 'bigcodebench_complete', 'cruxeval_i', 'ds_1000', 'gpqa', 'gsm8k', 'humaneval', 'humaneval+', 'ifeval', 'math_500', 'mmlu_pro', 'musr', 'repobench_v1.1']
+    Unknown benchmarks: ['mbpp']
+    Benchmark overlap:  []
+    Re-eval candidates (1):
+      - mbpp (current score=66.2)
+        lm_eval task: mbpp (MBPP 3-shot)
+
+------------------------------------------------------------
+TOTAL RE-EVALUATION CANDIDATES: 25
+------------------------------------------------------------

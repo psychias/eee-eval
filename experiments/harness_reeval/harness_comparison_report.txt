@@ -1,0 +1,268 @@
+====================================================================================================
+COMPREHENSIVE HARNESS EFFECT EXPERIMENT REPORT
+====================================================================================================
+
+Total cross-harness pairs discovered: 21
+  Direct pairs (explicit harness diff):    20
+  Implicit pairs (source-inferred harness): 1
+  Config-matched (pure harness effect):     2
+  Config-mismatched (harness+config):       19
+
+Unique models involved:    7
+Unique benchmarks:         7
+Unique harness combos:     3
+  evalplus vs transformers: 10 pairs
+  lm_eval vs unknown_papers_with_code: 1 pairs
+  lm_eval vs vllm: 10 pairs
+
+----------------------------------------------------------------------------------------------------
+OVERALL STATISTICS (ALL PAIRS)
+----------------------------------------------------------------------------------------------------
+  N pairs:         21
+  Mean delta:      -1.4462
+  Median delta:    +0.0000
+  Std delta:       7.2451
+  Mean |delta|:    2.2290
+  Median |delta|:  0.0000
+  Max |delta|:     32.3300
+  t-test: t=-0.915, p=0.371236 ns
+  Wilcoxon: W=26.500, p=0.943359 ns
+
+  Per-harness-pair breakdown:
+    evalplus_vs_transformers: n=10, mean|Δ|=1.380, max|Δ|=3.900
+    lm_eval_vs_unknown_papers_with_code: n=1, mean|Δ|=32.330, max|Δ|=32.330
+    lm_eval_vs_vllm: n=10, mean|Δ|=0.068, max|Δ|=0.230
+
+----------------------------------------------------------------------------------------------------
+CONFIG-MATCHED PAIRS (pure harness effect)
+----------------------------------------------------------------------------------------------------
+  N pairs:         2
+  Mean delta:      +0.0600
+  Median delta:    +0.0600
+  Std delta:       0.0849
+  Mean |delta|:    0.0600
+  Median |delta|:  0.0600
+  Max |delta|:     0.1200
+
+  Per-harness-pair breakdown:
+    lm_eval_vs_vllm: n=2, mean|Δ|=0.060, max|Δ|=0.120
+
+----------------------------------------------------------------------------------------------------
+CONFIG-MISMATCHED PAIRS (harness + config confounded)
+----------------------------------------------------------------------------------------------------
+  N pairs:         19
+  Mean delta:      -1.6047
+  Median delta:    +0.0000
+  Std delta:       7.6188
+  Mean |delta|:    2.4574
+  Median |delta|:  0.0000
+  Max |delta|:     32.3300
+  t-test: t=-0.918, p=0.370699 ns
+  Wilcoxon: W=20.500, p=0.843750 ns
+
+  Per-harness-pair breakdown:
+    evalplus_vs_transformers: n=10, mean|Δ|=1.380, max|Δ|=3.900
+    lm_eval_vs_unknown_papers_with_code: n=1, mean|Δ|=32.330, max|Δ|=32.330
+    lm_eval_vs_vllm: n=8, mean|Δ|=0.070, max|Δ|=0.230
+
+----------------------------------------------------------------------------------------------------
+ALL PAIRS (sorted by |delta|)
+----------------------------------------------------------------------------------------------------
+
+    1. Qwen2.5-72B-Instruct
+       Benchmark: GPQA (norm: gpqa)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      16.67  metric=accuracy
+       unknown_papers_with_code (from papers_with_code         ) =      49.00  metric=Accuracy
+       Delta: -32.33  |Delta|: 32.33  Type: implicit  Config: DIFF
+       Config diffs: shots: 0 vs None; CoT: True vs None
+       Files: open_llm_leaderboard_v2\Qwen\Qwen2.5-72B-Instruct\c9325daa-7e4d-4e5a-8d1f-e978a510a68f.json
+              papers_with_code\Qwen\Qwen2.5-72B-Instruct\79f27555-6c60-458a-8e3a-2ccaf5305af8.json
+
+    2. starcoder2-15B-instruct-v0.1
+       Benchmark: MBPP+ (norm: mbpp_plus)
+       evalplus             (from evalplus                 ) =      65.10  metric=pass@1
+       transformers         (from hf_model_card            ) =      61.20  metric=pass@1
+       Delta: +3.90  |Delta|: 3.90  Type: direct  Config: DIFF
+       Config diffs: shots: 3 vs None
+       Files: evalplus\bigcode\starcoder2-15B-instruct-v0.1\1f5d8592-8536-4a83-b875-27f3a23c3f97.json
+              hf_model_card\bigcode\StarCoder2-15B-Instruct-v0.1\0fe3e3d7-c176-40e1-a15b-a259e0229d9e.json
+
+    3. starcoder2-15B-instruct-v0.1
+       Benchmark: MBPP+ (norm: mbpp_plus)
+       evalplus             (from evalplus                 ) =      65.10  metric=pass@1
+       transformers         (from hf_model_card            ) =      61.20  metric=pass@1
+       Delta: +3.90  |Delta|: 3.90  Type: direct  Config: DIFF
+       Config diffs: shots: 3 vs None
+       Files: evalplus\bigcode\starcoder2-15B-instruct-v0.1\1f5d8592-8536-4a83-b875-27f3a23c3f97.json
+              hf_model_card\bigcode\StarCoder2-15B-Instruct-v0.1\785faece-3baa-46c4-8b7f-c528080334e9.json
+
+    4. starcoder2-15B-instruct-v0.1
+       Benchmark: HumanEval+ (norm: humaneval_plus)
+       evalplus             (from evalplus                 ) =      60.40  metric=pass@1
+       transformers         (from hf_model_card            ) =      63.40  metric=pass@1
+       Delta: -3.00  |Delta|: 3.00  Type: direct  Config: DIFF
+       Config diffs: shots: 0 vs None
+       Files: evalplus\bigcode\starcoder2-15B-instruct-v0.1\1f5d8592-8536-4a83-b875-27f3a23c3f97.json
+              hf_model_card\bigcode\StarCoder2-15B-Instruct-v0.1\0fe3e3d7-c176-40e1-a15b-a259e0229d9e.json
+
+    5. starcoder2-15B-instruct-v0.1
+       Benchmark: HumanEval+ (norm: humaneval_plus)
+       evalplus             (from evalplus                 ) =      60.40  metric=pass@1
+       transformers         (from hf_model_card            ) =      63.40  metric=pass@1
+       Delta: -3.00  |Delta|: 3.00  Type: direct  Config: DIFF
+       Config diffs: shots: 0 vs None
+       Files: evalplus\bigcode\starcoder2-15B-instruct-v0.1\1f5d8592-8536-4a83-b875-27f3a23c3f97.json
+              hf_model_card\bigcode\StarCoder2-15B-Instruct-v0.1\785faece-3baa-46c4-8b7f-c528080334e9.json
+
+    6. Llama-3.1-Tulu-3-8B
+       Benchmark: GPQA (norm: gpqa)
+       lm_eval              (from open_llm_leaderboard_v2  ) =       6.49  metric=accuracy
+       vllm                 (from hf_model_card            ) =       6.26  metric=acc_norm
+       Delta: +0.23  |Delta|: 0.23  Type: direct  Config: DIFF
+       Config diffs: CoT: True vs None
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-8B\87e746b0-6548-4248-b1ad-97128afad515.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-8B\66306650-e0a6-47ac-a073-d7ce41b40907.json
+
+    7. Llama-3.1-Tulu-3-8B
+       Benchmark: BBH (norm: bbh)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      16.67  metric=accuracy
+       vllm                 (from hf_model_card            ) =      16.86  metric=normalized accuracy
+       Delta: -0.19  |Delta|: 0.19  Type: direct  Config: DIFF
+       Config diffs: CoT: True vs None
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-8B\87e746b0-6548-4248-b1ad-97128afad515.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-8B\66306650-e0a6-47ac-a073-d7ce41b40907.json
+
+    8. Llama-3.1-Tulu-3-8B
+       Benchmark: IFEval (norm: ifeval)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      82.67  metric=prompt_level_strict_acc
+       vllm                 (from hf_model_card            ) =      82.55  metric=averaged accuracy
+       Delta: +0.12  |Delta|: 0.12  Type: direct  Config: MATCH
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-8B\87e746b0-6548-4248-b1ad-97128afad515.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-8B\66306650-e0a6-47ac-a073-d7ce41b40907.json
+
+    9. Llama-3.1-Tulu-3-8B
+       Benchmark: MuSR (norm: musr)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      10.45  metric=accuracy
+       vllm                 (from hf_model_card            ) =      10.52  metric=acc_norm
+       Delta: -0.07  |Delta|: 0.07  Type: direct  Config: DIFF
+       Config diffs: CoT: True vs None
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-8B\87e746b0-6548-4248-b1ad-97128afad515.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-8B\66306650-e0a6-47ac-a073-d7ce41b40907.json
+
+   10. Llama-3.1-Tulu-3-8B
+       Benchmark: MMLU-Pro (norm: mmlu_pro)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      20.30  metric=accuracy
+       vllm                 (from hf_model_card            ) =      20.23  metric=accuracy
+       Delta: +0.07  |Delta|: 0.07  Type: direct  Config: DIFF
+       Config diffs: CoT: True vs None
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-8B\87e746b0-6548-4248-b1ad-97128afad515.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-8B\66306650-e0a6-47ac-a073-d7ce41b40907.json
+
+   11. StarCoder2-15B
+       Benchmark: HumanEval+ (norm: humaneval_plus)
+       evalplus             (from evalplus                 ) =      37.80  metric=pass@1
+       transformers         (from hf_model_card            ) =      37.80  metric=pass@1
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: shots: 0 vs None
+       Files: evalplus\bigcode\StarCoder2-15B\9e6b55f6-03b1-474a-8dbc-defe1dd27423.json
+              hf_model_card\bigcode\StarCoder2-15B\177bab07-99da-465d-b6ae-94dcf376e57f.json
+
+   12. StarCoder2-15B
+       Benchmark: HumanEval+ (norm: humaneval_plus)
+       evalplus             (from evalplus                 ) =      37.80  metric=pass@1
+       transformers         (from hf_model_card            ) =      37.80  metric=pass@1
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: shots: 0 vs None
+       Files: evalplus\bigcode\StarCoder2-15B\9e6b55f6-03b1-474a-8dbc-defe1dd27423.json
+              hf_model_card\bigcode\StarCoder2-15B\cf555ff8-f603-47b8-ad2d-c9cc4aedb5d5.json
+
+   13. StarCoder2-3B
+       Benchmark: HumanEval+ (norm: humaneval_plus)
+       evalplus             (from evalplus                 ) =      27.40  metric=pass@1
+       transformers         (from hf_model_card            ) =      27.40  metric=pass@1
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: shots: 0 vs None
+       Files: evalplus\bigcode\StarCoder2-3B\f087a8fc-d69c-4c96-a064-df1334fd374e.json
+              hf_model_card\bigcode\StarCoder2-3B\1c7bcd96-910b-42c5-9b15-1c51bb9d02d7.json
+
+   14. StarCoder2-3B
+       Benchmark: HumanEval+ (norm: humaneval_plus)
+       evalplus             (from evalplus                 ) =      27.40  metric=pass@1
+       transformers         (from hf_model_card            ) =      27.40  metric=pass@1
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: shots: 0 vs None
+       Files: evalplus\bigcode\StarCoder2-3B\f087a8fc-d69c-4c96-a064-df1334fd374e.json
+              hf_model_card\bigcode\StarCoder2-3B\8a8a59e7-78ec-4b5b-9d35-d0d74cb03b73.json
+
+   15. StarCoder2-7B
+       Benchmark: HumanEval+ (norm: humaneval_plus)
+       evalplus             (from evalplus                 ) =      29.90  metric=pass@1
+       transformers         (from hf_model_card            ) =      29.90  metric=pass@1
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: shots: 0 vs None
+       Files: evalplus\bigcode\StarCoder2-7B\30f992f1-e84f-4a3b-ac3a-7387990d8fd8.json
+              hf_model_card\bigcode\StarCoder2-7B\bbcb6f31-1e43-4fef-bc04-90659e0c4ce8.json
+
+   16. StarCoder2-7B
+       Benchmark: HumanEval+ (norm: humaneval_plus)
+       evalplus             (from evalplus                 ) =      29.90  metric=pass@1
+       transformers         (from hf_model_card            ) =      29.90  metric=pass@1
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: shots: 0 vs None
+       Files: evalplus\bigcode\StarCoder2-7B\30f992f1-e84f-4a3b-ac3a-7387990d8fd8.json
+              hf_model_card\bigcode\StarCoder2-7B\c64320dc-b263-4cad-956a-314c1337df97.json
+
+   17. Llama-3.1-Tulu-3-70B-SFT
+       Benchmark: IFEval (norm: ifeval)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      80.51  metric=prompt_level_strict_acc
+       vllm                 (from hf_model_card            ) =      80.51  metric=strict accuracy
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: MATCH
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-70B-SFT\f718ae88-5c2c-4ba2-8de1-0c925f0c92b4.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-70B-SFT\35173779-c8ac-4928-8011-f46000bd8fec.json
+
+   18. Llama-3.1-Tulu-3-70B-SFT
+       Benchmark: BBH (norm: bbh)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      42.02  metric=accuracy
+       vllm                 (from hf_model_card            ) =      42.02  metric=normalized accuracy
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: CoT: True vs None
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-70B-SFT\f718ae88-5c2c-4ba2-8de1-0c925f0c92b4.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-70B-SFT\35173779-c8ac-4928-8011-f46000bd8fec.json
+
+   19. Llama-3.1-Tulu-3-70B-SFT
+       Benchmark: GPQA (norm: gpqa)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      12.64  metric=accuracy
+       vllm                 (from hf_model_card            ) =      12.64  metric=acc_norm
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: CoT: True vs None
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-70B-SFT\f718ae88-5c2c-4ba2-8de1-0c925f0c92b4.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-70B-SFT\35173779-c8ac-4928-8011-f46000bd8fec.json
+
+   20. Llama-3.1-Tulu-3-70B-SFT
+       Benchmark: MuSR (norm: musr)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      24.49  metric=accuracy
+       vllm                 (from hf_model_card            ) =      24.49  metric=acc_norm
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: CoT: True vs None
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-70B-SFT\f718ae88-5c2c-4ba2-8de1-0c925f0c92b4.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-70B-SFT\35173779-c8ac-4928-8011-f46000bd8fec.json
+
+   21. Llama-3.1-Tulu-3-70B-SFT
+       Benchmark: MMLU-Pro (norm: mmlu_pro)
+       lm_eval              (from open_llm_leaderboard_v2  ) =      40.27  metric=accuracy
+       vllm                 (from hf_model_card            ) =      40.27  metric=accuracy
+       Delta: +0.00  |Delta|: 0.00  Type: direct  Config: DIFF
+       Config diffs: CoT: True vs None
+       Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-70B-SFT\f718ae88-5c2c-4ba2-8de1-0c925f0c92b4.json
+              hf_model_card\allenai\Llama-3.1-Tulu-3-70B-SFT\35173779-c8ac-4928-8011-f46000bd8fec.json
+
+====================================================================================================
+RE-EVALUATION CANDIDATES
+====================================================================================================
+Models currently evaluated without a known harness that could be
+re-evaluated using the paired harness configuration:
+
+  Model: Qwen2.5-72B-Instruct
+    Benchmark: gpqa
+    Known harness: lm_eval (from open_llm_leaderboard_v2, score=16.67)
+    Reference file: open_llm_leaderboard_v2\Qwen\Qwen2.5-72B-Instruct\c9325daa-7e4d-4e5a-8d1f-e978a510a68f.json

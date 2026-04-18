@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\caption{Collision pairs with metadata completeness and score divergence, sorted by completeness.}
+\label{tab:collision_completeness}
+\small
+\begin{tabular}{llrrrrrrrrr}
+\toprule
+Model & Bench & $s_1$ & $s_2$ & H & S & C & T & P & Compl. & $|\Delta|$ \\
+\midrule
+Tulu-3-8B & GPQA & 6.26 & 6.49 & 1 & 1 & 0 & 0 & 0 & 2 & 0.23 \\
+Tulu-3-8B & BBH & 16.86 & 16.67 & 1 & 1 & 0 & 0 & 0 & 2 & 0.19 \\
+Tulu-3-8B & IFEval & 82.55 & 82.67 & 1 & 1 & 0 & 0 & 0 & 2 & 0.12 \\
+Tulu-3-8B & MMLU-Pro & 20.23 & 20.30 & 1 & 1 & 0 & 0 & 0 & 2 & 0.07 \\
+Tulu-3-8B & MuSR & 10.52 & 10.45 & 1 & 1 & 0 & 0 & 0 & 2 & 0.07 \\
+SC2-15B & MBPP+ & 65.10 & 61.20 & 1 & 0 & 0 & 0 & 0 & 1 & 3.90 \\
+SC2-15B & HumanE+ & 60.40 & 63.40 & 1 & 0 & 0 & 0 & 0 & 1 & 3.00 \\
+\textbf{Qwen2.5-72B} & \textbf{GPQA} & \textbf{16.67} & \textbf{49.00} & \textbf{0} & \textbf{0} & \textbf{0} & \textbf{0} & \textbf{0} & \textbf{0} & \textbf{32.33} \\
+\bottomrule
+\end{tabular}
+\end{table}

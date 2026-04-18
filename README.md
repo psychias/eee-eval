@@ -1,4 +1,4 @@
-# Every Eval Ever (EEE)
+﻿# Every Eval Ever (EEE)
 
 **A unified schema and pipeline for collecting, standardising, and analysing LLM evaluation results at scale.**
 
@@ -25,7 +25,7 @@ eval.schema.json              # EEE JSON Schema v0.2.1
 eval_types.py                 # Pydantic models (auto-generated from schema)
 instance_level_types.py       # Instance-level schema types
 
-scripts/
+src/                          # All source code
 ├── extraction/               # Paper extraction engine (Docling + LLM)
 │   ├── pipeline.py           #   Orchestration & CLI entry point
 │   ├── docling_parser.py     #   PDF table extraction via Docling
@@ -46,46 +46,34 @@ scripts/
 │   └── ...
 ├── figures/                  # Publication figure generators
 │   ├── fig1_score_deltas.py
-│   ├── fig4_coverage_bar.py
+│   ├── gen_scatter.py        #   Metadata completeness vs. delta scatter
+│   ├── gen_sensitivity.py    #   Cinelli-Hazlett sensitivity contour
+│   ├── gen_config_vs_crosssource.py  # Config effect vs. cross-source
 │   └── ...
 ├── scrapers/                 # Leaderboard scrapers
 │   ├── hfopenllm_v2_scraper.py
 │   ├── alpacaeval2_scraper.py
 │   ├── chatbot_arena_scraper.py
-│   ├── bigcodebench_scraper.py
-│   ├── wildbench_scraper.py
-│   ├── mtbench_scraper.py
 │   └── base.py
-├── add_leaderboard_records.py  # Fetch live leaderboard data → EEE JSON
-├── hf_model_card_fetcher.py    # Extract results from HF model cards
-├── pwc_fetcher.py              # Fetch Papers With Code results
-├── extract_paper.py            # arXiv paper extraction (main entry point)
-├── validate_outputs.py         # Schema validation
-├── validate_all.py             # Batch validation with auto-fix
-├── aggregate_results.py        # Flatten JSON → CSV
-├── generate_figures.py         # Generate paper figures
-├── fix_data_quality.py         # Post-hoc data quality fixes
-├── quality_audit.py            # Comprehensive data quality audit
-├── run_hf_pipeline.py          # End-to-end HF data collection
-├── convert_eval_logs.py        # Convert eval framework logs → EEE
-└── preflight_check.py          # Environment verification
-
-eval_converters/              # Framework log → EEE schema converters
-├── lm_eval/                  #   lm-evaluation-harness adapter
-├── inspect/                  #   Inspect AI adapter
-├── helm/                     #   CRFM HELM adapter
-└── common/                   #   Shared base classes & utilities
-
-eee_inspect_adapter/          # Inspect AI scorer → EEE (pip-installable)
-
-utils/                        # Shared utilities & additional adapters
-├── helpers/                  #   Schema validation, developer mapping, I/O
-├── global-mmlu-lite/         #   Global-MMLU-Lite adapter
-├── helm/                     #   HELM leaderboard parser
-├── hfopenllm_v2/             #   HF Open LLM v2 adapter
-├── proprietary_template/     #   Template for proprietary model evals
-├── rewardbench/              #   RewardBench adapter
-└── livecodebenchpro/         #   LiveCodeBench-Pro adapter
+├── converters/               # Framework log → EEE schema converters
+│   ├── lm_eval/              #   lm-evaluation-harness adapter
+│   ├── inspect/              #   Inspect AI adapter
+│   ├── helm/                 #   CRFM HELM adapter
+│   └── common/               #   Shared base classes & utilities
+├── inspect_adapter/          # Inspect AI scorer → EEE (pip-installable)
+├── utils/                    # Shared utilities & additional adapters
+│   ├── helpers/              #   Schema validation, developer mapping, I/O
+│   ├── helm/                 #   HELM leaderboard parser
+│   ├── hfopenllm_v2/        #   HF Open LLM v2 adapter
+│   └── ...
+├── extract_paper.py          # arXiv paper extraction (main entry point)
+├── validate_outputs.py       # Schema validation
+├── aggregate_results.py      # Flatten JSON → CSV
+├── generate_figures.py       # Generate paper figures
+├── run_analysis.py           # Tasks 1-5 comprehensive analysis
+├── run_collision_analysis.py # Collision-pair metadata analysis
+├── convert_eval_logs.py      # Convert eval framework logs → EEE
+└── preflight_check.py        # Environment verification
 
 data/                         # Evaluation records (EEE JSON, per-source)
 ├── open_llm_leaderboard_v2/  #   26,790 records — lm_eval harness
@@ -101,8 +89,16 @@ data/                         # Evaluation records (EEE JSON, per-source)
 ├── mt_bench/                 #   34 records — fastchat
 └── aggregated/               #   all_results.csv + coverage_stats.json
 
-figures/                      # Generated analysis figures (PDF)
+outputs/                      # Task analysis outputs (tables, reports)
+analysis_output/              # Statistical analysis CSV results
+harness_experiment_output/    # Harness re-evaluation experiment data
+experiments/                  # Controlled evaluation experiment
+├── results/                  #   JSONL results + LaTeX macros
+└── figures/                  #   Experiment figures
+evalspec/                     # Schema validation framework
 submission/latex/             # ACL 2026 paper source (LaTeX)
+├── figures/                  #   All publication figures (PDF/PNG)
+└── experiments/              #   Robustness experiment scripts
 tests/                        # Unit tests for converters and extraction
 ```
 
@@ -121,29 +117,29 @@ pip install -r requirements.txt
 
 ```bash
 # 1. Fetch leaderboard data (requires HF_TOKEN in .env)
-python scripts/add_leaderboard_records.py
+python src/add_leaderboard_records.py
 
 # 2. Fetch HuggingFace model card results
-python scripts/hf_model_card_fetcher.py
+python src/hf_model_card_fetcher.py
 
 # 3. Fetch Papers With Code results
-python scripts/pwc_fetcher.py
+python src/pwc_fetcher.py
 
 # 4. Validate all records against the EEE schema
-python scripts/validate_outputs.py
+python src/validate_outputs.py
 
 # 5. Aggregate into a single CSV
-python scripts/aggregate_results.py
+python src/aggregate_results.py
 
 # 6. Generate publication figures
-python scripts/generate_figures.py
+python src/generate_figures.py
 ```
 
 ### Extract Results from arXiv Papers
 
 ```bash
 # Requires OPENROUTER_API_KEY in .env for LLM-augmented extraction
-python scripts/extract_paper.py --batch scripts/arxiv_ids_full.txt \
+python src/extract_paper.py --batch src/arxiv_ids_full.txt \
     --llm-fallback --llm-model meta-llama/llama-3.3-70b-instruct
 ```
 
@@ -151,13 +147,13 @@ python scripts/extract_paper.py --batch scripts/arxiv_ids_full.txt \
 
 ```bash
 # lm-evaluation-harness
-python -m eval_converters.lm_eval --log_path <results.json>
+python -m src.converters.lm_eval --log_path <results.json>
 
 # Inspect AI
-python -m eval_converters.inspect --log_path <eval.log>
+python -m src.converters.inspect --log_path <eval.log>
 
 # HELM
-python -m eval_converters.helm --log_path <run_dir/>
+python -m src.converters.helm --log_path <run_dir/>
 ```
 
 Each converter accepts `--output_dir`, `--evaluator_relationship`, and other metadata flags. Run with `--help` for details.

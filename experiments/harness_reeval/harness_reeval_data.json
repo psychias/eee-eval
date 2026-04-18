@@ -1,0 +1,894 @@
+{
+  "exact_pairs": [
+    {
+      "type": "exact",
+      "model_norm": "qwen2.5-72b-instruct",
+      "model_id": "Qwen/Qwen2.5-72B-Instruct",
+      "model_name": "Qwen2.5-72B-Instruct",
+      "bench_norm": "gpqa",
+      "benchmark_known": "GPQA",
+      "benchmark_unknown": "GPQA",
+      "harness_known": "lm_eval",
+      "harness_version": "unknown",
+      "score_known": 16.67,
+      "score_unknown": 49.0,
+      "delta": 32.33,
+      "shots_known": 0,
+      "shots_unknown": null,
+      "cot_known": true,
+      "cot_unknown": null,
+      "source_known": "open_llm_leaderboard_v2",
+      "source_unknown": "papers_with_code",
+      "file_known": "data\\open_llm_leaderboard_v2\\Qwen\\Qwen2.5-72B-Instruct\\c9325daa-7e4d-4e5a-8d1f-e978a510a68f.json",
+      "file_unknown": "data\\papers_with_code\\Qwen\\Qwen2.5-72B-Instruct\\79f27555-6c60-458a-8e3a-2ccaf5305af8.json"
+    }
+  ],
+  "near_pairs": [
+    {
+      "type": "near",
+      "model_norm": "llama-13b",
+      "model_id": "meta-llama/llama-13B",
+      "model_name": "llama-13B",
+      "bench_norm_known": "math_500",
+      "bench_norm_unknown": "math",
+      "benchmark_known": "MATH-500",
+      "benchmark_unknown": "MATH",
+      "harness_known": "lm_eval",
+      "score_known": 2.04,
+      "score_unknown": 13.0,
+      "source_known": "open_llm_leaderboard_v2",
+      "source_unknown": "papers_with_code"
+    },
+    {
+      "type": "near",
+      "model_norm": "llama-7b",
+      "model_id": "meta-llama/llama-7B",
+      "model_name": "llama-7B",
+      "bench_norm_known": "math_500",
+      "bench_norm_unknown": "math",
+      "benchmark_known": "MATH-500",
+      "benchmark_unknown": "MATH",
+      "harness_known": "lm_eval",
+      "score_known": 0.83,
+      "score_unknown": 7.0,
+      "source_known": "open_llm_leaderboard_v2",
+      "source_unknown": "papers_with_code"
+    },
+    {
+      "type": "near",
+      "model_norm": "mistral-7b",
+      "model_id": "mistralai/Mistral-7B",
+      "model_name": "Mistral-7B",
+      "bench_norm_known": "humaneval+",
+      "bench_norm_unknown": "humaneval",
+      "benchmark_known": "HumanEval+",
+      "benchmark_unknown": "HumanEval",
+      "harness_known": "evalplus",
+      "score_known": 23.8,
+      "score_unknown": 93.9,
+      "source_known": "evalplus",
+      "source_unknown": "papers_with_code"
+    },
+    {
+      "type": "near",
+      "model_norm": "llama-65b",
+      "model_id": "meta-llama/llama-65B",
+      "model_name": "llama-65B",
+      "bench_norm_known": "math_500",
+      "bench_norm_unknown": "math",
+      "benchmark_known": "MATH-500",
+      "benchmark_unknown": "MATH",
+      "harness_known": "lm_eval",
+      "score_known": 3.1,
+      "score_unknown": 65.0,
+      "source_known": "open_llm_leaderboard_v2",
+      "source_unknown": "papers_with_code"
+    }
+  ],
+  "model_overlap": [
+    {
+      "model_norm": "bloom-3b",
+      "model_id": "bigscience/bloom-3B",
+      "model_name": "bloom-3B",
+      "known_sources": [
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "hf_model_card"
+      ],
+      "known_harnesses": [
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "bbh",
+        "gpqa",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "arc_challenge",
+        "arc_easy",
+        "axb",
+        "axg",
+        "boolq",
+        "cb",
+        "cola",
+        "copa",
+        "crows_pairs_english",
+        "crows_pairs_french",
+        "diabla",
+        "gsarti/flores_101_afr",
+        "gsarti/flores_101_amh",
+        "gsarti/flores_101_ara",
+        "gsarti/flores_101_asm",
+        "gsarti/flores_101_ast",
+        "gsarti/flores_101_azj",
+        "gsarti/flores_101_bel",
+        "gsarti/flores_101_ben",
+        "gsarti/flores_101_bos",
+        "gsarti/flores_101_bul",
+        "gsarti/flores_101_cat",
+        "gsarti/flores_101_ceb",
+        "gsarti/flores_101_ces",
+        "gsarti/flores_101_ckb",
+        "gsarti/flores_101_cym",
+        "gsarti/flores_101_dan",
+        "gsarti/flores_101_deu",
+        "gsarti/flores_101_ell",
+        "gsarti/flores_101_eng",
+        "gsarti/flores_101_est",
+        "gsarti/flores_101_fas",
+        "gsarti/flores_101_fin",
+        "gsarti/flores_101_fra",
+        "gsarti/flores_101_ful",
+        "gsarti/flores_101_gle",
+        "gsarti/flores_101_glg",
+        "gsarti/flores_101_guj",
+        "gsarti/flores_101_hau",
+        "gsarti/flores_101_heb",
+        "gsarti/flores_101_hin",
+        "gsarti/flores_101_hrv",
+        "gsarti/flores_101_hun",
+        "gsarti/flores_101_hye",
+        "gsarti/flores_101_ibo",
+        "gsarti/flores_101_ind",
+        "gsarti/flores_101_isl",
+        "gsarti/flores_101_ita",
+        "gsarti/flores_101_jav",
+        "gsarti/flores_101_jpn",
+        "gsarti/flores_101_kam",
+        "gsarti/flores_101_kan",
+        "gsarti/flores_101_kat",
+        "gsarti/flores_101_kaz",
+        "gsarti/flores_101_kea",
+        "gsarti/flores_101_kir",
+        "gsarti/flores_101_kor",
+        "gsarti/flores_101_lao",
+        "gsarti/flores_101_lav",
+        "gsarti/flores_101_lin",
+        "gsarti/flores_101_lit",
+        "gsarti/flores_101_ltz",
+        "gsarti/flores_101_lug",
+        "gsarti/flores_101_luo",
+        "gsarti/flores_101_mal",
+        "gsarti/flores_101_mar",
+        "gsarti/flores_101_mkd",
+        "gsarti/flores_101_mlt",
+        "gsarti/flores_101_mon",
+        "gsarti/flores_101_mri",
+        "gsarti/flores_101_msa",
+        "gsarti/flores_101_mya",
+        "gsarti/flores_101_nld",
+        "gsarti/flores_101_nob",
+        "gsarti/flores_101_npi",
+        "gsarti/flores_101_nso",
+        "gsarti/flores_101_nya",
+        "gsarti/flores_101_oci",
+        "gsarti/flores_101_orm",
+        "gsarti/flores_101_ory",
+        "gsarti/flores_101_pan",
+        "gsarti/flores_101_pol",
+        "gsarti/flores_101_por",
+        "gsarti/flores_101_pus",
+        "gsarti/flores_101_ron",
+        "gsarti/flores_101_rus",
+        "gsarti/flores_101_slk",
+        "gsarti/flores_101_slv",
+        "gsarti/flores_101_sna",
+        "gsarti/flores_101_snd",
+        "gsarti/flores_101_som",
+        "gsarti/flores_101_spa",
+        "gsarti/flores_101_srp",
+        "gsarti/flores_101_swe",
+        "gsarti/flores_101_swh",
+        "gsarti/flores_101_tam",
+        "gsarti/flores_101_tel",
+        "gsarti/flores_101_tgk",
+        "gsarti/flores_101_tgl",
+        "gsarti/flores_101_tha",
+        "gsarti/flores_101_tur",
+        "gsarti/flores_101_ukr",
+        "gsarti/flores_101_umb",
+        "gsarti/flores_101_urd",
+        "gsarti/flores_101_uzb",
+        "gsarti/flores_101_vie",
+        "gsarti/flores_101_wol",
+        "gsarti/flores_101_xho",
+        "gsarti/flores_101_yor",
+        "gsarti/flores_101_zho_simpl",
+        "gsarti/flores_101_zho_trad",
+        "gsarti/flores_101_zul",
+        "headqa",
+        "hellaswag",
+        "humaneval",
+        "logiqa",
+        "mathqa",
+        "mc_taco",
+        "mnli",
+        "mnli_mismatched",
+        "mrpc",
+        "multirc",
+        "openbookqa",
+        "piqa",
+        "prost",
+        "pubmedqa",
+        "qnli",
+        "qqp",
+        "race",
+        "rte",
+        "sciq",
+        "sst",
+        "triviaqa",
+        "tydiqa_primary",
+        "webqs",
+        "wic",
+        "winogrande",
+        "wnli",
+        "wsc"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "arc_challenge",
+          "benchmark_original": "arc_challenge",
+          "current_score": 0.27986348122866894,
+          "lm_eval_task": {
+            "task": "arc_challenge",
+            "shots": 25,
+            "note": "ARC Challenge 25-shot"
+          }
+        },
+        {
+          "benchmark": "hellaswag",
+          "benchmark_original": "hellaswag",
+          "current_score": 0.41236805417247563,
+          "lm_eval_task": {
+            "task": "hellaswag",
+            "shots": 10,
+            "note": "HellaSwag 10-shot"
+          }
+        },
+        {
+          "benchmark": "humaneval",
+          "benchmark_original": "humaneval",
+          "current_score": 0.15524390243902436,
+          "lm_eval_task": {
+            "task": "humaneval",
+            "shots": 0,
+            "note": "HumanEval (pass@1)"
+          }
+        },
+        {
+          "benchmark": "winogrande",
+          "benchmark_original": "winogrande",
+          "current_score": 0.5864246250986582,
+          "lm_eval_task": {
+            "task": "winogrande",
+            "shots": 5,
+            "note": "WinoGrande 5-shot"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "claude",
+      "model_id": "anthropic/claude",
+      "model_name": "claude",
+      "known_sources": [
+        "alpacaeval2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "alpaca_eval"
+      ],
+      "known_benchmarks": [
+        "alpacaeval_2.0",
+        "alpacaeval_2.0_lc"
+      ],
+      "unknown_benchmarks": [
+        "mbpp"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "mbpp",
+          "benchmark_original": "MBPP",
+          "current_score": 71.4,
+          "lm_eval_task": {
+            "task": "mbpp",
+            "shots": 3,
+            "note": "MBPP 3-shot"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "gpt-4",
+      "model_id": "openai/gpt-4",
+      "model_name": "gpt-4",
+      "known_sources": [
+        "mt_bench"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "fastchat"
+      ],
+      "known_benchmarks": [
+        "mt_bench"
+      ],
+      "unknown_benchmarks": [
+        "gsm8k",
+        "ifeval",
+        "math"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "gsm8k",
+          "benchmark_original": "GSM8K",
+          "current_score": 87.1,
+          "lm_eval_task": {
+            "task": "gsm8k",
+            "shots": 5,
+            "note": "GSM8K 5-shot CoT"
+          }
+        },
+        {
+          "benchmark": "ifeval",
+          "benchmark_original": "IFEval",
+          "current_score": 76.89,
+          "lm_eval_task": {
+            "task": "ifeval",
+            "shots": 0,
+            "note": "IFEval 0-shot"
+          }
+        },
+        {
+          "benchmark": "math",
+          "benchmark_original": "MATH",
+          "current_score": 42.5,
+          "lm_eval_task": {
+            "task": "minerva_math",
+            "shots": 4,
+            "note": "MATH 4-shot"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "gpt-j-6b",
+      "model_id": "EleutherAI/GPT-J-6B",
+      "model_name": "GPT-J-6B",
+      "known_sources": [
+        "evalplus",
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "evalplus",
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "bbh",
+        "gpqa",
+        "humaneval+",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "truthfulqa"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "truthfulqa",
+          "benchmark_original": "TruthfulQA",
+          "current_score": 26.68,
+          "lm_eval_task": {
+            "task": "truthfulqa_mc2",
+            "shots": 0,
+            "note": "TruthfulQA MC2 0-shot"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "llama-13b",
+      "model_id": "meta-llama/LLaMA-13B",
+      "model_name": "LLaMA-13B",
+      "known_sources": [
+        "chatbot_arena",
+        "mt_bench",
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "fastchat",
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "arena_elo",
+        "bbh",
+        "gpqa",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "mt_bench",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "gsm8k",
+        "math",
+        "truthfulqa"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "gsm8k",
+          "benchmark_original": "GSM8K",
+          "current_score": 17.8,
+          "lm_eval_task": {
+            "task": "gsm8k",
+            "shots": 5,
+            "note": "GSM8K 5-shot CoT"
+          }
+        },
+        {
+          "benchmark": "math",
+          "benchmark_original": "MATH",
+          "current_score": 3.9,
+          "lm_eval_task": {
+            "task": "minerva_math",
+            "shots": 4,
+            "note": "MATH 4-shot"
+          }
+        },
+        {
+          "benchmark": "truthfulqa",
+          "benchmark_original": "TruthfulQA",
+          "current_score": 47.0,
+          "lm_eval_task": {
+            "task": "truthfulqa_mc2",
+            "shots": 0,
+            "note": "TruthfulQA MC2 0-shot"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "llama-65b",
+      "model_id": "meta-llama/llama-65B",
+      "model_name": "llama-65B",
+      "known_sources": [
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "bbh",
+        "gpqa",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "gsm8k",
+        "math",
+        "truthfulqa"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "gsm8k",
+          "benchmark_original": "GSM8K",
+          "current_score": 50.9,
+          "lm_eval_task": {
+            "task": "gsm8k",
+            "shots": 5,
+            "note": "GSM8K 5-shot CoT"
+          }
+        },
+        {
+          "benchmark": "math",
+          "benchmark_original": "MATH",
+          "current_score": 10.6,
+          "lm_eval_task": {
+            "task": "minerva_math",
+            "shots": 4,
+            "note": "MATH 4-shot"
+          }
+        },
+        {
+          "benchmark": "truthfulqa",
+          "benchmark_original": "TruthfulQA",
+          "current_score": 57.0,
+          "lm_eval_task": {
+            "task": "truthfulqa_mc2",
+            "shots": 0,
+            "note": "TruthfulQA MC2 0-shot"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "llama-7b",
+      "model_id": "meta-llama/llama-7B",
+      "model_name": "llama-7B",
+      "known_sources": [
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "bbh",
+        "gpqa",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "gsm8k",
+        "math",
+        "truthfulqa"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "gsm8k",
+          "benchmark_original": "GSM8K",
+          "current_score": 11.0,
+          "lm_eval_task": {
+            "task": "gsm8k",
+            "shots": 5,
+            "note": "GSM8K 5-shot CoT"
+          }
+        },
+        {
+          "benchmark": "math",
+          "benchmark_original": "MATH",
+          "current_score": 2.9,
+          "lm_eval_task": {
+            "task": "minerva_math",
+            "shots": 4,
+            "note": "MATH 4-shot"
+          }
+        },
+        {
+          "benchmark": "truthfulqa",
+          "benchmark_original": "TruthfulQA",
+          "current_score": 33.0,
+          "lm_eval_task": {
+            "task": "truthfulqa_mc2",
+            "shots": 0,
+            "note": "TruthfulQA MC2 0-shot"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "mistral-7b",
+      "model_id": "mistralai/Mistral-7B",
+      "model_name": "Mistral-7B",
+      "known_sources": [
+        "evalplus"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "evalplus"
+      ],
+      "known_benchmarks": [
+        "humaneval+",
+        "mbpp+"
+      ],
+      "unknown_benchmarks": [
+        "humaneval"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "humaneval",
+          "benchmark_original": "HumanEval",
+          "current_score": 93.9,
+          "lm_eval_task": {
+            "task": "humaneval",
+            "shots": 0,
+            "note": "HumanEval (pass@1)"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "orca-2-13b",
+      "model_id": "microsoft/Orca-2-13B",
+      "model_name": "Orca-2-13B",
+      "known_sources": [
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "bbh",
+        "gpqa",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "gsm8k"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "gsm8k",
+          "benchmark_original": "GSM8K",
+          "current_score": 59.14,
+          "lm_eval_task": {
+            "task": "gsm8k",
+            "shots": 5,
+            "note": "GSM8K 5-shot CoT"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "orca-2-7b",
+      "model_id": "microsoft/Orca-2-7B",
+      "model_name": "Orca-2-7B",
+      "known_sources": [
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "bbh",
+        "gpqa",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "gsm8k"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "gsm8k",
+          "benchmark_original": "GSM8K",
+          "current_score": 47.23,
+          "lm_eval_task": {
+            "task": "gsm8k",
+            "shots": 5,
+            "note": "GSM8K 5-shot CoT"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "phi-2",
+      "model_id": "microsoft/phi-2",
+      "model_name": "phi-2",
+      "known_sources": [
+        "alpacaeval2",
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "alpaca_eval",
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "alpacaeval_2.0",
+        "alpacaeval_2.0_lc",
+        "bbh",
+        "gpqa",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "humaneval"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "humaneval",
+          "benchmark_original": "HumanEval",
+          "current_score": 98.2,
+          "lm_eval_task": {
+            "task": "humaneval",
+            "shots": 0,
+            "note": "HumanEval (pass@1)"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "qwen2.5-72b-instruct",
+      "model_id": "Qwen/Qwen2.5-72B-Instruct",
+      "model_name": "Qwen2.5-72B-Instruct",
+      "known_sources": [
+        "bigcodebench",
+        "chatbot_arena",
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "bigcodebench",
+        "fastchat",
+        "lm_eval"
+      ],
+      "known_benchmarks": [
+        "arena_elo",
+        "bbh",
+        "bigcodebench_complete",
+        "bigcodebench_instruct",
+        "gpqa",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr"
+      ],
+      "unknown_benchmarks": [
+        "gpqa"
+      ],
+      "benchmark_overlap": [
+        "gpqa"
+      ],
+      "reeval_candidates": [
+        {
+          "benchmark": "gpqa",
+          "benchmark_original": "GPQA",
+          "current_score": 49.0,
+          "lm_eval_task": {
+            "task": "gpqa_main_zeroshot",
+            "shots": 0,
+            "note": "GPQA main (0-shot)"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "santacoder-1.1b",
+      "model_id": "unknown/SantaCoder-1.1B",
+      "model_name": "SantaCoder-1.1B",
+      "known_sources": [
+        "evalplus"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "evalplus"
+      ],
+      "known_benchmarks": [
+        "humaneval+"
+      ],
+      "unknown_benchmarks": [
+        "mbpp"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "mbpp",
+          "benchmark_original": "MBPP",
+          "current_score": 35.0,
+          "lm_eval_task": {
+            "task": "mbpp",
+            "shots": 3,
+            "note": "MBPP 3-shot"
+          }
+        }
+      ]
+    },
+    {
+      "model_norm": "starcoder2-15b",
+      "model_id": "bigcode/StarCoder2-15B",
+      "model_name": "StarCoder2-15B",
+      "known_sources": [
+        "bigcodebench",
+        "evalplus",
+        "hf_model_card",
+        "open_llm_leaderboard_v2"
+      ],
+      "unknown_sources": [
+        "papers_with_code"
+      ],
+      "known_harnesses": [
+        "bigcodebench",
+        "evalplus",
+        "lm_eval",
+        "transformers"
+      ],
+      "known_benchmarks": [
+        "bbh",
+        "bigcodebench_complete",
+        "cruxeval_i",
+        "ds_1000",
+        "gpqa",
+        "gsm8k",
+        "humaneval",
+        "humaneval+",
+        "ifeval",
+        "math_500",
+        "mmlu_pro",
+        "musr",
+        "repobench_v1.1"
+      ],
+      "unknown_benchmarks": [
+        "mbpp"
+      ],
+      "benchmark_overlap": [],
+      "reeval_candidates": [
+        {
+          "benchmark": "mbpp",
+          "benchmark_original": "MBPP",
+          "current_score": 66.2,
+          "lm_eval_task": {
+            "task": "mbpp",
+            "shots": 3,
+            "note": "MBPP 3-shot"
+          }
+        }
+      ]
+    }
+  ]
+}

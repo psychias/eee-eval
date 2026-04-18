@@ -1,0 +1,17 @@
+benchmark,total,artefacts,rate_%
+MBPP,80,1,1.25
+GSM8K,111,1,0.9009009009009009
+DROP,1,0,0.0
+ARC-Challenge,35,0,0.0
+GPQA,4,0,0.0
+HellaSwag,82,0,0.0
+HumanEval,7,0,0.0
+BBH,1,0,0.0
+IFEval,4,0,0.0
+MATH,100,0,0.0
+MATH-500,1,0,0.0
+MMLU,1,0,0.0
+MMLU-Pro,1,0,0.0
+NaturalQuestions,50,0,0.0
+TruthfulQA,29,0,0.0
+WinoGrande,69,0,0.0

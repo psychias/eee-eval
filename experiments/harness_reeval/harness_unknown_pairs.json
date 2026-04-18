@@ -1,0 +1,18 @@
+[
+  {
+    "model_norm": "qwen2.5-72b-instruct",
+    "bench_norm": "gpqa",
+    "model_name_known": "Qwen2.5-72B-Instruct",
+    "model_name_unknown": "Qwen2.5-72B-Instruct",
+    "benchmark_known": "GPQA",
+    "benchmark_unknown": "GPQA",
+    "harness_known": "lm_eval",
+    "score_known": 16.67,
+    "score_unknown": 49.0,
+    "delta": 32.33,
+    "source_known": "open_llm_leaderboard_v2",
+    "source_unknown": "papers_with_code",
+    "file_known": "data\\open_llm_leaderboard_v2\\Qwen\\Qwen2.5-72B-Instruct\\c9325daa-7e4d-4e5a-8d1f-e978a510a68f.json",
+    "file_unknown": "data\\papers_with_code\\Qwen\\Qwen2.5-72B-Instruct\\79f27555-6c60-458a-8e3a-2ccaf5305af8.json"
+  }
+]

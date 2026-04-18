@@ -1,4 +1,4 @@
-# EEE Pipeline — Copilot Agent Instructions
+﻿# EEE Pipeline — Copilot Agent Instructions
 
 You are the autonomous operator of this LLM evaluation extraction pipeline.
 When asked to run the experiments, you take full ownership: you run every
@@ -15,7 +15,7 @@ Each command activates the venv and loads the .env file first.
 
 ### Activation preamble (prepend to every command)
 ```powershell
-.venv\Scripts\Activate.ps1
+.venv\src\Activate.ps1
 if (Test-Path .env) {
     Get-Content .env | Where-Object { $_ -match '=' -and $_ -notmatch '^#' } |
     ForEach-Object { $k,$v = $_ -split '=',2;
@@ -32,7 +32,7 @@ pip install -q docling huggingface_hub openai requests jsonschema pandas matplot
 
 ### Stage 1 — Extract (test batch)
 ```powershell
-python scripts/extract_paper.py --batch scripts/arxiv_ids_test.txt --llm-fallback --llm-model meta-llama/llama-3.3-70b-instruct
+python src/extract_paper.py --batch src/arxiv_ids_test.txt --llm-fallback --llm-model meta-llama/llama-3.3-70b-instruct
 ```
 This takes several minutes per paper. Watch for:
 - `results tables accepted:` — should be > 0 for each paper
@@ -42,20 +42,20 @@ This takes several minutes per paper. Watch for:
 
 ### Stage 2 — Validate
 ```powershell
-python scripts/validate_outputs.py
+python src/validate_outputs.py
 ```
 Must exit with code 0. If any files fail, read them and fix.
 
 ### Stage 3 — Aggregate
 ```powershell
-python scripts/aggregate_results.py
+python src/aggregate_results.py
 ```
 Produces `data/aggregated/all_results.csv` and `coverage_stats.json`.
 Read the metadata documentation rates printed at the end.
 
 ### Stage 4 — Generate figures
 ```powershell
-python scripts/generate_figures.py
+python src/generate_figures.py
 ```
 Produces 5 figures in `data/figures/`.
 
@@ -91,14 +91,14 @@ Common causes:
 
 ### Zero data points extracted for a paper
 This means both LLM and Docling found nothing. Steps:
-1. Check if the PDF downloaded: `scripts/scrapers/raw/papers/<arxiv_id>.pdf`
+1. Check if the PDF downloaded: `src/scrapers/raw/papers/<arxiv_id>.pdf`
 2. Run with `--no-llm` flag to test Docling alone
 3. Check if the paper has machine-readable text (not scanned):
    ```powershell
-   python -c "from docling.document_converter import DocumentConverter; r = DocumentConverter().convert('scripts/scrapers/raw/papers/<id>.pdf'); print(r.document.export_to_markdown()[:500])"
+   python -c "from docling.document_converter import DocumentConverter; r = DocumentConverter().convert('src/scrapers/raw/papers/<id>.pdf'); print(r.document.export_to_markdown()[:500])"
    ```
 4. If scanned PDF: Docling needs OCR enabled. Edit `DoclingParser.__init__` in
-   `scripts/extract_paper.py` and set `pipeline_options.do_ocr = True`
+   `src/extract_paper.py` and set `pipeline_options.do_ocr = True`
 
 ### LLM rate limit (429)
 The pipeline already retries with exponential backoff and model fallbacks.
@@ -180,7 +180,7 @@ has a bug — read that function and fix it.
 - **Maximum 3 fix attempts per stage.** If a stage fails 3 times with
   different errors, report what you tried and ask the user for guidance.
 - **LLM cache is your friend.** Already-processed chunks cost nothing to
-  re-run — the cache in `scripts/scrapers/raw/llm_cache/` is always used.
+  re-run — the cache in `src/scrapers/raw/llm_cache/` is always used.
 - **After fixing a script**, always show the diff of what you changed and why.
 
 ---

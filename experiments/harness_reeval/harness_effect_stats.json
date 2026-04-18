@@ -1,0 +1,95 @@
+{
+  "overall": {
+    "n": 21,
+    "mean_delta": -1.4461904761904765,
+    "median_delta": 0.0,
+    "std_delta": 7.245140768950232,
+    "mean_abs_delta": 2.2290476190476185,
+    "median_abs_delta": 0.0,
+    "max_abs_delta": 32.33,
+    "min_abs_delta": 0.0,
+    "ttest_stat": -0.9147202984473323,
+    "ttest_p": 0.37123559048612814,
+    "wilcoxon_stat": 26.5,
+    "wilcoxon_p": 0.943359375,
+    "per_harness_pair": {
+      "evalplus_vs_transformers": {
+        "n": 10,
+        "mean_delta": 0.1799999999999983,
+        "mean_abs_delta": 1.3799999999999983,
+        "median_abs_delta": 0.0,
+        "max_abs_delta": 3.8999999999999915
+      },
+      "lm_eval_vs_unknown_papers_with_code": {
+        "n": 1,
+        "mean_delta": -32.33,
+        "mean_abs_delta": 32.33,
+        "median_abs_delta": 32.33,
+        "max_abs_delta": 32.33
+      },
+      "lm_eval_vs_vllm": {
+        "n": 10,
+        "mean_delta": 0.016000000000000725,
+        "mean_abs_delta": 0.06800000000000032,
+        "median_abs_delta": 0.03500000000000014,
+        "max_abs_delta": 0.23000000000000043
+      }
+    }
+  },
+  "config_matched": {
+    "n": 2,
+    "mean_delta": 0.060000000000002274,
+    "median_delta": 0.060000000000002274,
+    "std_delta": 0.08485281374238891,
+    "mean_abs_delta": 0.060000000000002274,
+    "median_abs_delta": 0.060000000000002274,
+    "max_abs_delta": 0.12000000000000455,
+    "min_abs_delta": 0.0,
+    "per_harness_pair": {
+      "lm_eval_vs_vllm": {
+        "n": 2,
+        "mean_delta": 0.060000000000002274,
+        "mean_abs_delta": 0.060000000000002274,
+        "median_abs_delta": 0.060000000000002274,
+        "max_abs_delta": 0.12000000000000455
+      }
+    }
+  },
+  "config_mismatched": {
+    "n": 19,
+    "mean_delta": -1.604736842105264,
+    "median_delta": 0.0,
+    "std_delta": 7.618760739429894,
+    "mean_abs_delta": 2.4573684210526308,
+    "median_abs_delta": 0.0,
+    "max_abs_delta": 32.33,
+    "min_abs_delta": 0.0,
+    "ttest_stat": -0.918113321174705,
+    "ttest_p": 0.3706987951133292,
+    "wilcoxon_stat": 20.5,
+    "wilcoxon_p": 0.84375,
+    "per_harness_pair": {
+      "evalplus_vs_transformers": {
+        "n": 10,
+        "mean_delta": 0.1799999999999983,
+        "mean_abs_delta": 1.3799999999999983,
+        "median_abs_delta": 0.0,
+        "max_abs_delta": 3.8999999999999915
+      },
+      "lm_eval_vs_unknown_papers_with_code": {
+        "n": 1,
+        "mean_delta": -32.33,
+        "mean_abs_delta": 32.33,
+        "median_abs_delta": 32.33,
+        "max_abs_delta": 32.33
+      },
+      "lm_eval_vs_vllm": {
+        "n": 8,
+        "mean_delta": 0.0050000000000003375,
+        "mean_abs_delta": 0.06999999999999984,
+        "median_abs_delta": 0.03500000000000014,
+        "max_abs_delta": 0.23000000000000043
+      }
+    }
+  }
+}

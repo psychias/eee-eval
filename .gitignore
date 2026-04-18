@@ -46,7 +46,7 @@ htmlcov/
 data/
 
 # Raw scraper output (large JSON dumps)
-scripts/scrapers/raw/
+src/scrapers/raw/
 
 # Caches
 .cache/

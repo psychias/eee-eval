@@ -1,0 +1,35 @@
+{
+  "n_total_pairs": 11,
+  "n_config_matched": 0,
+  "n_config_mismatched": 11,
+  "mean_delta": -3.5018181818181815,
+  "median_delta": 0.0,
+  "std_delta": 9.635221656175657,
+  "mean_abs_delta": 3.5018181818181815,
+  "median_abs_delta": 0.0,
+  "max_abs_delta": 32.33,
+  "ttest_1samp_t": -1.2053917810693402,
+  "ttest_1samp_p": 0.2558004045103413,
+  "wilcoxon_stat": 0.0,
+  "wilcoxon_p": 0.125,
+  "per_harness_pair": {
+    "evalplus vs transformers": {
+      "n": 8,
+      "mean_abs_delta": 0.75,
+      "median_abs_delta": 0.0,
+      "max_abs_delta": 3.0
+    },
+    "lm_eval vs unknown": {
+      "n": 1,
+      "mean_abs_delta": 32.33,
+      "median_abs_delta": 32.33,
+      "max_abs_delta": 32.33
+    },
+    "lm_eval vs vllm": {
+      "n": 2,
+      "mean_abs_delta": 0.09499999999999886,
+      "median_abs_delta": 0.09499999999999886,
+      "max_abs_delta": 0.18999999999999773
+    }
+  }
+}

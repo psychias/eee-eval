@@ -1,0 +1,23 @@
+\begin{longtable}{llrl}
+\caption{EEE Minimum Viable Report: Reproducibility Checklist.}
+\label{tab:reproducibility_checklist} \\
+\toprule
+Field & Difficulty & Coverage (\%) & Implementation Note \\
+\midrule
+\endfirsthead
+\toprule
+Field & Difficulty & Coverage (\%) & Implementation Note \\
+\midrule
+\endhead
+eval\_library.name & Low & 97.6 & Already logged by all dedicated leaderboards \\
+eval\_library.version & Low & 97.6 & One git tag or pip show away \\
+generation\_args.n\_shot & Low & 96.7 & Already logged by most sources \\
+generation\_args.temperature & Medium & 0.0 & Requires per-run capture, not post-hoc \\
+generation\_args.prompt\_template & High & 0.0 & Requires versioned template storage \\
+additional\_details.cot & Medium & 76.3 & Boolean flag, easy once pipeline supports it \\
+scoring\_mode & High & 0.0 & Not yet a schema field; requires definition \\
+provenance\_link & Medium & 0.0 & URL or DOI to upstream score source \\
+\midrule
+\textbf{Minimum viable report} & — & — & eval\_library.name, eval\_library.version, generation\_args.n\_shot, additional\_details.cot \\
+\bottomrule
+\end{longtable}

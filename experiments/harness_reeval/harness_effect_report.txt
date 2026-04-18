@@ -1,0 +1,161 @@
+================================================================================
+HARNESS EFFECT EXPERIMENT REPORT
+================================================================================
+
+Total evaluation entries scanned:    30105
+Cross-harness pairs found:           11
+  Config-matched (pure harness):     0
+  Config-mismatched (harness+config): 11
+
+────────────────────────────────────────────────────────────────────────────────
+SCORE DELTA STATISTICS
+────────────────────────────────────────────────────────────────────────────────
+  Mean delta:        -3.5018
+  Median delta:      +0.0000
+  Std delta:         9.6352
+  Mean |delta|:      3.5018
+  Median |delta|:    0.0000
+  Max |delta|:       32.3300
+
+────────────────────────────────────────────────────────────────────────────────
+STATISTICAL TESTS
+────────────────────────────────────────────────────────────────────────────────
+  One-sample t-test (H0: mean delta = 0):
+    t = -1.2054, p = 0.255800 ns
+  Wilcoxon signed-rank test:
+    W = 0.0000, p = 0.125000 ns
+
+────────────────────────────────────────────────────────────────────────────────
+PER-HARNESS-PAIR BREAKDOWN
+────────────────────────────────────────────────────────────────────────────────
+  evalplus vs transformers:
+    n=8, mean|Δ|=0.7500, median|Δ|=0.0000, max|Δ|=3.0000
+  lm_eval vs unknown:
+    n=1, mean|Δ|=32.3300, median|Δ|=32.3300, max|Δ|=32.3300
+  lm_eval vs vllm:
+    n=2, mean|Δ|=0.0950, median|Δ|=0.0950, max|Δ|=0.1900
+
+────────────────────────────────────────────────────────────────────────────────
+ALL CROSS-HARNESS PAIRS (sorted by |delta|)
+────────────────────────────────────────────────────────────────────────────────
+   1. Qwen2.5-72B-Instruct
+      Benchmark: GPQA
+      lm_eval         (from open_llm_leaderboard_v2) = 16.67
+      unknown         (from papers_with_code) = 49.00
+      Delta: -32.33  |Delta|: 32.33  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None; CoT: True vs None
+      Files: open_llm_leaderboard_v2\Qwen\Qwen2.5-72B-Instruct\c9325daa-7e4d-4e5a-8d1f-e978a510a68f.json
+             papers_with_code\Qwen\Qwen2.5-72B-Instruct\79f27555-6c60-458a-8e3a-2ccaf5305af8.json
+
+   2. starcoder2-15B-instruct-v0.1
+      Benchmark: HumanEval+
+      evalplus        (from evalplus) = 60.40
+      transformers    (from hf_model_card) = 63.40
+      Delta: -3.00  |Delta|: 3.00  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None
+      Files: evalplus\bigcode\starcoder2-15B-instruct-v0.1\1f5d8592-8536-4a83-b875-27f3a23c3f97.json
+             hf_model_card\bigcode\StarCoder2-15B-Instruct-v0.1\0fe3e3d7-c176-40e1-a15b-a259e0229d9e.json
+
+   3. starcoder2-15B-instruct-v0.1
+      Benchmark: HumanEval+
+      evalplus        (from evalplus) = 60.40
+      transformers    (from hf_model_card) = 63.40
+      Delta: -3.00  |Delta|: 3.00  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None
+      Files: evalplus\bigcode\starcoder2-15B-instruct-v0.1\1f5d8592-8536-4a83-b875-27f3a23c3f97.json
+             hf_model_card\bigcode\StarCoder2-15B-Instruct-v0.1\785faece-3baa-46c4-8b7f-c528080334e9.json
+
+   4. Llama-3.1-Tulu-3-8B
+      Benchmark: BBH
+      lm_eval         (from open_llm_leaderboard_v2) = 16.67
+      vllm            (from hf_model_card) = 16.86
+      Delta: -0.19  |Delta|: 0.19  [CONFIG-DIFF]
+      Config diffs: CoT: True vs None
+      Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-8B\87e746b0-6548-4248-b1ad-97128afad515.json
+             hf_model_card\allenai\Llama-3.1-Tulu-3-8B\66306650-e0a6-47ac-a073-d7ce41b40907.json
+
+   5. Llama-3.1-Tulu-3-70B-SFT
+      Benchmark: BBH
+      lm_eval         (from open_llm_leaderboard_v2) = 42.02
+      vllm            (from hf_model_card) = 42.02
+      Delta: +0.00  |Delta|: 0.00  [CONFIG-DIFF]
+      Config diffs: CoT: True vs None
+      Files: open_llm_leaderboard_v2\allenai\Llama-3.1-Tulu-3-70B-SFT\f718ae88-5c2c-4ba2-8de1-0c925f0c92b4.json
+             hf_model_card\allenai\Llama-3.1-Tulu-3-70B-SFT\35173779-c8ac-4928-8011-f46000bd8fec.json
+
+   6. StarCoder2-15B
+      Benchmark: HumanEval+
+      evalplus        (from evalplus) = 37.80
+      transformers    (from hf_model_card) = 37.80
+      Delta: +0.00  |Delta|: 0.00  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None
+      Files: evalplus\bigcode\StarCoder2-15B\9e6b55f6-03b1-474a-8dbc-defe1dd27423.json
+             hf_model_card\bigcode\StarCoder2-15B\177bab07-99da-465d-b6ae-94dcf376e57f.json
+
+   7. StarCoder2-15B
+      Benchmark: HumanEval+
+      evalplus        (from evalplus) = 37.80
+      transformers    (from hf_model_card) = 37.80
+      Delta: +0.00  |Delta|: 0.00  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None
+      Files: evalplus\bigcode\StarCoder2-15B\9e6b55f6-03b1-474a-8dbc-defe1dd27423.json
+             hf_model_card\bigcode\StarCoder2-15B\cf555ff8-f603-47b8-ad2d-c9cc4aedb5d5.json
+
+   8. StarCoder2-3B
+      Benchmark: HumanEval+
+      evalplus        (from evalplus) = 27.40
+      transformers    (from hf_model_card) = 27.40
+      Delta: +0.00  |Delta|: 0.00  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None
+      Files: evalplus\bigcode\StarCoder2-3B\f087a8fc-d69c-4c96-a064-df1334fd374e.json
+             hf_model_card\bigcode\StarCoder2-3B\1c7bcd96-910b-42c5-9b15-1c51bb9d02d7.json
+
+   9. StarCoder2-3B
+      Benchmark: HumanEval+
+      evalplus        (from evalplus) = 27.40
+      transformers    (from hf_model_card) = 27.40
+      Delta: +0.00  |Delta|: 0.00  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None
+      Files: evalplus\bigcode\StarCoder2-3B\f087a8fc-d69c-4c96-a064-df1334fd374e.json
+             hf_model_card\bigcode\StarCoder2-3B\8a8a59e7-78ec-4b5b-9d35-d0d74cb03b73.json
+
+  10. StarCoder2-7B
+      Benchmark: HumanEval+
+      evalplus        (from evalplus) = 29.90
+      transformers    (from hf_model_card) = 29.90
+      Delta: +0.00  |Delta|: 0.00  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None
+      Files: evalplus\bigcode\StarCoder2-7B\30f992f1-e84f-4a3b-ac3a-7387990d8fd8.json
+             hf_model_card\bigcode\StarCoder2-7B\bbcb6f31-1e43-4fef-bc04-90659e0c4ce8.json
+
+  11. StarCoder2-7B
+      Benchmark: HumanEval+
+      evalplus        (from evalplus) = 29.90
+      transformers    (from hf_model_card) = 29.90
+      Delta: +0.00  |Delta|: 0.00  [CONFIG-DIFF]
+      Config diffs: shots: 0 vs None
+      Files: evalplus\bigcode\StarCoder2-7B\30f992f1-e84f-4a3b-ac3a-7387990d8fd8.json
+             hf_model_card\bigcode\StarCoder2-7B\c64320dc-b263-4cad-956a-314c1337df97.json
+
+────────────────────────────────────────────────────────────────────────────────
+KEY FINDINGS
+────────────────────────────────────────────────────────────────────────────────
+  2. Config-mismatched pairs (n=11):
+     Mean |Δ| = 3.5018
+     → Config differences (shots, CoT, etc.) amplify score variation.
+  3. Largest delta: Qwen2.5-72B-Instruct on GPQA
+     lm_eval=16.67 vs unknown=49.00 (Δ=-32.33)
+     Config diffs: shots: 0 vs None; CoT: True vs None
+     → This large delta likely reflects config differences, not pure harness effect.
+
+────────────────────────────────────────────────────────────────────────────────
+RECOMMENDATIONS FOR EVALUATION REPRODUCIBILITY
+────────────────────────────────────────────────────────────────────────────────
+  1. Always record the evaluation harness name AND version.
+  2. Always record generation config (shots, CoT, temperature).
+  3. When comparing across sources, verify config equivalence first.
+  4. Score deltas < 0.5 between harnesses (config-matched) suggest
+     the harness choice itself is not a major confounder.
+  5. Large deltas (> 3 pts) almost always co-occur with config differences.
+
+================================================================================

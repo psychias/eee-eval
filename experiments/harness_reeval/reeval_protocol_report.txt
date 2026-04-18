@@ -1,0 +1,290 @@
+====================================================================================================
+HARNESS RE-EVALUATION PROTOCOL & COMPARISON REPORT
+====================================================================================================
+
+1. DISCOVERED HARNESS PAIRS SUMMARY
+------------------------------------------------------------
+   Total cross-harness pairs:     21
+   Unique models:                 7
+   Unique benchmarks:             7
+   Config-matched (pure harness):  2
+   Mean |delta| (all):            2.2290
+   Max |delta|:                   32.3300
+
+2. PER-MODEL HARNESS EFFECT ANALYSIS
+------------------------------------------------------------
+
+   Model: Llama-3.1-Tulu-3-70B-SFT
+   Benchmark            Harness A               Score A Harness B                    Score B      Delta
+   -------------------- -------------------- ---------- ------------------------- ---------- ----------
+   ifeval               lm_eval                   80.51 vllm                           80.51      +0.00
+   bbh                  lm_eval                   42.02 vllm                           42.02      +0.00
+   gpqa                 lm_eval                   12.64 vllm                           12.64      +0.00
+   musr                 lm_eval                   24.49 vllm                           24.49      +0.00
+   mmlu_pro             lm_eval                   40.27 vllm                           40.27      +0.00
+   AVERAGE                                                                                        +0.00
+   Mean |delta| for Llama-3.1-Tulu-3-70B-SFT: 0.0000
+
+   Model: Llama-3.1-Tulu-3-8B
+   Benchmark            Harness A               Score A Harness B                    Score B      Delta
+   -------------------- -------------------- ---------- ------------------------- ---------- ----------
+   ifeval               lm_eval                   82.67 vllm                           82.55      +0.12
+   bbh                  lm_eval                   16.67 vllm                           16.86      -0.19
+   gpqa                 lm_eval                    6.49 vllm                            6.26      +0.23
+   musr                 lm_eval                   10.45 vllm                           10.52      -0.07
+   mmlu_pro             lm_eval                   20.30 vllm                           20.23      +0.07
+   AVERAGE                                                                                        +0.03
+   Mean |delta| for Llama-3.1-Tulu-3-8B: 0.1360
+
+   Model: Qwen2.5-72B-Instruct
+   Benchmark            Harness A               Score A Harness B                    Score B      Delta
+   -------------------- -------------------- ---------- ------------------------- ---------- ----------
+   gpqa                 lm_eval                   16.67 unknown_papers_with_code       49.00     -32.33
+
+   Model: StarCoder2-15B
+   Benchmark            Harness A               Score A Harness B                    Score B      Delta
+   -------------------- -------------------- ---------- ------------------------- ---------- ----------
+   humaneval_plus       evalplus                  37.80 transformers                   37.80      +0.00
+   humaneval_plus       evalplus                  37.80 transformers                   37.80      +0.00
+   AVERAGE                                                                                        +0.00
+   Mean |delta| for StarCoder2-15B: 0.0000
+
+   Model: StarCoder2-3B
+   Benchmark            Harness A               Score A Harness B                    Score B      Delta
+   -------------------- -------------------- ---------- ------------------------- ---------- ----------
+   humaneval_plus       evalplus                  27.40 transformers                   27.40      +0.00
+   humaneval_plus       evalplus                  27.40 transformers                   27.40      +0.00
+   AVERAGE                                                                                        +0.00
+   Mean |delta| for StarCoder2-3B: 0.0000
+
+   Model: StarCoder2-7B
+   Benchmark            Harness A               Score A Harness B                    Score B      Delta
+   -------------------- -------------------- ---------- ------------------------- ---------- ----------
+   humaneval_plus       evalplus                  29.90 transformers                   29.90      +0.00
+   humaneval_plus       evalplus                  29.90 transformers                   29.90      +0.00
+   AVERAGE                                                                                        +0.00
+   Mean |delta| for StarCoder2-7B: 0.0000
+
+   Model: starcoder2-15B-instruct-v0.1
+   Benchmark            Harness A               Score A Harness B                    Score B      Delta
+   -------------------- -------------------- ---------- ------------------------- ---------- ----------
+   humaneval_plus       evalplus                  60.40 transformers                   63.40      -3.00
+   humaneval_plus       evalplus                  60.40 transformers                   63.40      -3.00
+   mbpp_plus            evalplus                  65.10 transformers                   61.20      +3.90
+   mbpp_plus            evalplus                  65.10 transformers                   61.20      +3.90
+   AVERAGE                                                                                        +0.45
+   Mean |delta| for starcoder2-15B-instruct-v0.1: 3.4500
+
+3. HARNESS COMBINATION ANALYSIS
+------------------------------------------------------------
+
+   evalplus vs transformers:
+     N pairs:      10
+     Mean delta:   +0.1800
+     Mean |delta|: 1.3800
+     Max |delta|:  3.9000
+     Std delta:    2.3117
+
+   lm_eval vs vllm:
+     N pairs:      10
+     Mean delta:   +0.0160
+     Mean |delta|: 0.0680
+     Max |delta|:  0.2300
+     Std delta:    0.1109
+
+   lm_eval vs unknown_papers_with_code:
+     N pairs:      1
+     Mean delta:   -32.3300
+     Mean |delta|: 32.3300
+     Max |delta|:  32.3300
+
+4. KEY FINDINGS
+------------------------------------------------------------
+   Excluding outliers (|delta| > 30):
+     N pairs:      20
+     Mean |delta|: 0.7240
+     Max |delta|:  3.9000
+     Median |delta|: 0.0000
+
+   Score agreement breakdown:
+     Exact match (delta=0):         11 (52%)
+     Close (0 < |delta| <= 1):       5 (24%)
+     Moderate (1 < |delta| <= 5):    4 (19%)
+     Large (|delta| > 5):            1 (5%)
+
+5. CONCLUSIONS
+------------------------------------------------------------
+   The majority of pairs (52%) show EXACT score agreement
+   across different harnesses, suggesting that harness choice has
+   minimal impact on standard benchmark scores.
+
+   NOTABLE DISCREPANCIES:
+     Qwen2.5-72B-Instruct on gpqa:
+       lm_eval=16.67 vs unknown_papers_with_code=49.00 (delta=-32.33)
+       This likely reflects config differences (shots, CoT, prompting)
+       rather than a pure harness effect.
+
+6. RE-EVALUATION PROTOCOL
+------------------------------------------------------------
+   32 re-evaluation configurations generated.
+   See reeval_scripts/ directory for executable commands.
+
+   [transformers] StarCoder2-15B on humaneval_plus
+     Current: evalplus = 37.8
+     Expected under transformers: 37.8
+     Command: python eval_with_transformers.py --model bigcode/StarCoder2-15B --task humaneval+ --shots 0
+
+   [evalplus] StarCoder2-15B on humaneval_plus
+     Current: transformers = 37.8
+     Expected under evalplus: 37.8
+     Command: evalplus.evaluate --model bigcode/StarCoder2-15B --dataset humaneval --backend vllm
+
+   [transformers] starcoder2-15B-instruct-v0.1 on humaneval_plus
+     Current: evalplus = 60.4
+     Expected under transformers: 63.4
+     Command: python eval_with_transformers.py --model bigcode/starcoder2-15B-instruct-v0.1 --task humaneval+ --shots 0
+
+   [evalplus] starcoder2-15B-instruct-v0.1 on humaneval_plus
+     Current: transformers = 63.4
+     Expected under evalplus: 60.4
+     Command: evalplus.evaluate --model bigcode/starcoder2-15B-instruct-v0.1 --dataset humaneval --backend vllm
+
+   [transformers] starcoder2-15B-instruct-v0.1 on mbpp_plus
+     Current: evalplus = 65.1
+     Expected under transformers: 61.2
+     Command: python eval_with_transformers.py --model bigcode/starcoder2-15B-instruct-v0.1 --task mbpp+ --shots 3
+
+   [evalplus] starcoder2-15B-instruct-v0.1 on mbpp_plus
+     Current: transformers = 61.2
+     Expected under evalplus: 65.1
+     Command: evalplus.evaluate --model bigcode/starcoder2-15B-instruct-v0.1 --dataset mbpp --backend vllm
+
+   [transformers] StarCoder2-3B on humaneval_plus
+     Current: evalplus = 27.4
+     Expected under transformers: 27.4
+     Command: python eval_with_transformers.py --model bigcode/StarCoder2-3B --task humaneval+ --shots 0
+
+   [evalplus] StarCoder2-3B on humaneval_plus
+     Current: transformers = 27.4
+     Expected under evalplus: 27.4
+     Command: evalplus.evaluate --model bigcode/StarCoder2-3B --dataset humaneval --backend vllm
+
+   [transformers] StarCoder2-7B on humaneval_plus
+     Current: evalplus = 29.9
+     Expected under transformers: 29.9
+     Command: python eval_with_transformers.py --model bigcode/StarCoder2-7B --task humaneval+ --shots 0
+
+   [evalplus] StarCoder2-7B on humaneval_plus
+     Current: transformers = 29.9
+     Expected under evalplus: 29.9
+     Command: evalplus.evaluate --model bigcode/StarCoder2-7B --dataset humaneval --backend vllm
+
+   [vllm] Llama-3.1-Tulu-3-70B-SFT on ifeval
+     Current: lm_eval = 80.51
+     Expected under vllm: 80.51
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks ifeval --num_fewshot 0 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-70B-SFT on ifeval
+     Current: vllm = 80.51
+     Expected under lm_eval: 80.51
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks ifeval --num_fewshot 0 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-70B-SFT/ifeval
+
+   [vllm] Llama-3.1-Tulu-3-70B-SFT on bbh
+     Current: lm_eval = 42.02
+     Expected under vllm: 42.02
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks bbh --num_fewshot 3 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-70B-SFT on bbh
+     Current: vllm = 42.02
+     Expected under lm_eval: 42.02
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks bbh --num_fewshot 3 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-70B-SFT/bbh
+
+   [vllm] Llama-3.1-Tulu-3-70B-SFT on gpqa
+     Current: lm_eval = 12.64
+     Expected under vllm: 12.64
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks gpqa_main_zeroshot --num_fewshot 0 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-70B-SFT on gpqa
+     Current: vllm = 12.64
+     Expected under lm_eval: 12.64
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks gpqa_main_zeroshot --num_fewshot 0 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-70B-SFT/gpqa_main_zeroshot
+
+   [vllm] Llama-3.1-Tulu-3-70B-SFT on musr
+     Current: lm_eval = 24.49
+     Expected under vllm: 24.49
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks musr --num_fewshot 0 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-70B-SFT on musr
+     Current: vllm = 24.49
+     Expected under lm_eval: 24.49
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks musr --num_fewshot 0 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-70B-SFT/musr
+
+   [vllm] Llama-3.1-Tulu-3-70B-SFT on mmlu_pro
+     Current: lm_eval = 40.27
+     Expected under vllm: 40.27
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks mmlu_pro --num_fewshot 5 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-70B-SFT on mmlu_pro
+     Current: vllm = 40.27
+     Expected under lm_eval: 40.27
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-70B-SFT --tasks mmlu_pro --num_fewshot 5 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-70B-SFT/mmlu_pro
+
+   [vllm] Llama-3.1-Tulu-3-8B on ifeval
+     Current: lm_eval = 82.67
+     Expected under vllm: 82.55
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks ifeval --num_fewshot 0 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-8B on ifeval
+     Current: vllm = 82.55
+     Expected under lm_eval: 82.67
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks ifeval --num_fewshot 0 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-8B/ifeval
+
+   [vllm] Llama-3.1-Tulu-3-8B on bbh
+     Current: lm_eval = 16.67
+     Expected under vllm: 16.86
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks bbh --num_fewshot 3 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-8B on bbh
+     Current: vllm = 16.86
+     Expected under lm_eval: 16.67
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks bbh --num_fewshot 3 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-8B/bbh
+
+   [vllm] Llama-3.1-Tulu-3-8B on gpqa
+     Current: lm_eval = 6.49
+     Expected under vllm: 6.26
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks gpqa_main_zeroshot --num_fewshot 0 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-8B on gpqa
+     Current: vllm = 6.26
+     Expected under lm_eval: 6.49
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks gpqa_main_zeroshot --num_fewshot 0 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-8B/gpqa_main_zeroshot
+
+   [vllm] Llama-3.1-Tulu-3-8B on musr
+     Current: lm_eval = 10.45
+     Expected under vllm: 10.52
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks musr --num_fewshot 0 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-8B on musr
+     Current: vllm = 10.52
+     Expected under lm_eval: 10.45
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks musr --num_fewshot 0 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-8B/musr
+
+   [vllm] Llama-3.1-Tulu-3-8B on mmlu_pro
+     Current: lm_eval = 20.3
+     Expected under vllm: 20.23
+     Command: python -m lm_eval --model vllm --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks mmlu_pro --num_fewshot 5 --batch_size auto
+
+   [lm_eval] Llama-3.1-Tulu-3-8B on mmlu_pro
+     Current: vllm = 20.23
+     Expected under lm_eval: 20.3
+     Command: lm_eval --model hf --model_args pretrained=allenai/Llama-3.1-Tulu-3-8B --tasks mmlu_pro --num_fewshot 5 --batch_size auto --output_path results/allenai_Llama-3.1-Tulu-3-8B/mmlu_pro
+
+   [unknown_papers_with_code] Qwen2.5-72B-Instruct on gpqa
+     Current: lm_eval = 16.67
+     Expected under unknown_papers_with_code: 49.0
+     Command: # No known command template for harness: unknown_papers_with_code
+
+   [lm_eval] Qwen2.5-72B-Instruct on gpqa
+     Current: unknown_papers_with_code = 49.0
+     Expected under lm_eval: 16.67
+     Command: lm_eval --model hf --model_args pretrained=Qwen/Qwen2.5-72B-Instruct --tasks gpqa_main_zeroshot --num_fewshot 0 --batch_size auto --output_path results/Qwen_Qwen2.5-72B-Instruct/gpqa_main_zeroshot

@@ -1,16 +1,5 @@
 % custom.bib — citations not found in the ACL Anthology (anthology.bib)
-%
-% FIXES applied (do not revert):
-%   - All "and et al. s" corrected to "and others"  (12 entries; trailing "s" was a typo)
-%   - All "and et al."  corrected to "and others"   ( 4 entries; BibTeX requires this form)
-%   - alzahrani-2024-benchmarks: "Nobari, Arash et al." → "Nobari, Arash and others"
-%     (BibTeX was treating "et al." as part of an author surname)
-%   - sainz-2023-contamination: already correct, retained as-is
-%   - jackal-2024: "and et al." corrected; entry retained (unused but harmless)
 
-% ------------------------------------------------------------------
-% BENCHMARK SENSITIVITY
-% ------------------------------------------------------------------
 
 @inproceedings{alzahrani-2024-benchmarks,
   author    = {Alzahrani, Norah and Alyafeai, Zaid and Nobari, Arash and others},
@@ -114,9 +103,6 @@
   url       = {https://arxiv.org/abs/1907.01027},
 }
 
-% ------------------------------------------------------------------
-% DOCUMENTATION STANDARDS
-% ------------------------------------------------------------------
 
 @article{mitchell-2019-modelcards,
   author    = {Mitchell, Margaret and Wu, Simone and Zaldivar, Andrew and
@@ -141,9 +127,6 @@
   year      = {2021},
 }
 
-% ------------------------------------------------------------------
-% CONTAMINATION
-% ------------------------------------------------------------------
 
 @inproceedings{sainz-2023-contamination,
   author    = {Sainz, Oscar and Campos, Jon Ander and Garc{\'{\i}}a-Ferrero, Iker and
@@ -156,9 +139,6 @@
   url       = {https://arxiv.org/abs/2310.18018},
 }
 
-% ------------------------------------------------------------------
-% CORE BENCHMARKS (MMLU, HumanEval, GSM8K)
-% ------------------------------------------------------------------
 
 @inproceedings{hendrycks-2021-mmlu,
   author    = {Hendrycks, Dan and Burns, Collin and Basart, Steven and others},
@@ -184,9 +164,6 @@
   url       = {https://arxiv.org/abs/2110.14168},
 }
 
-% ------------------------------------------------------------------
-% LEADERBOARD PLATFORMS
-% ------------------------------------------------------------------
 
 @article{li-2023-alpacaeval,
   author    = {Li, Xuechen and Zhang, Tianyi and Dubois, Yann and others},
@@ -233,10 +210,6 @@
   url       = {https://arxiv.org/abs/2406.11939},
 }
 
-% ------------------------------------------------------------------
-% MODELS (cited in passing; unused entries retained for completeness)
-% ------------------------------------------------------------------
-
 @article{touvron-2023-llama2,
   author    = {Touvron, Hugo and Martin, Louis and Stone, Kevin and others},
   title     = {Llama~2: Open Foundation and Fine-Tuned Chat Models},
@@ -269,10 +242,6 @@
   url       = {https://arxiv.org/abs/2403.05530},
 }
 
-% ------------------------------------------------------------------
-% METHODS
-% ------------------------------------------------------------------
-
 @article{wei-2022-chain,
   author    = {Wei, Jason and Wang, Xuezhi and Schuurmans, Dale and
                Bosma, Maarten and Ichter, Brian and Xia, Fei and
@@ -294,9 +263,32 @@
   url       = {https://arxiv.org/abs/2308.11696},
 }
 
-% ------------------------------------------------------------------
-% UNUSED / RETAINED FOR COMPLETENESS
-% ------------------------------------------------------------------
+
+
+@inproceedings{recht-2019-imagenet,
+  author    = {Recht, Benjamin and Roelofs, Rebecca and Schmidt, Ludwig and Shankar, Vaishaal},
+  title     = {Do {ImageNet} Classifiers Generalize to {ImageNet}?},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  year      = {2019},
+  url       = {https://arxiv.org/abs/1902.10811},
+}
+
+@article{bouthillier-2021-reproducibility,
+  author    = {Bouthillier, Xavier and Delaunay, Pierre and Bronzi, Mirko and others},
+  title     = {Accounting for Variance in Machine Learning Benchmarks},
+  journal   = {Proceedings of Machine Learning and Systems (MLSys)},
+  year      = {2021},
+  url       = {https://arxiv.org/abs/2103.03098},
+}
+
+@inproceedings{dodge-2019-reporting,
+  author    = {Dodge, Jesse and Gururangan, Suchin and Card, Dallas and others},
+  title     = {Show Your Work: Improved Reporting of Experimental Results},
+  booktitle = {Proceedings of the 2019 Conference on Empirical Methods in
+               Natural Language Processing (EMNLP)},
+  year      = {2019},
+  url       = {https://arxiv.org/abs/1909.03004},
+}
 
 @article{jackal-2024,
   author    = {Mangrulkar, Sourab Vivek and Guha, Arjun and others},
@@ -304,4 +296,72 @@
   journal   = {arXiv preprint arXiv:2410.10921},
   year      = {2024},
   url       = {https://arxiv.org/abs/2410.10921},
+}
+
+@inproceedings{singh-2025-illusion,
+   title     = {The Leaderboard Illusion},
+   author    = {Singh, Shivalika and others},
+   booktitle = {Advances in Neural Information Processing Systems
+                (Datasets and Benchmarks Track)},
+   year      = {2025},
+}
+
+% ------------------------------------------------------------------
+% REFRAME 9: New entries for causal reframing and EvalSpec positioning
+% ------------------------------------------------------------------
+
+@article{feder2022causal,
+  title     = {Causal Inference in Natural Language Processing:
+               Estimation, Prediction, Interpretation and Beyond},
+  author    = {Feder, Amir and Keith, Katherine A and Arbour, David
+               and others},
+  journal   = {Transactions of the Association for Computational
+               Linguistics},
+  volume    = {10},
+  pages     = {1138--1158},
+  year      = {2022},
+}
+
+@inproceedings{sokol2025benchmarkcards,
+  title     = {{BenchmarkCards}: Standardized Documentation for
+               Large Language Model Benchmarks},
+  author    = {Sokol, Anna and others},
+  booktitle = {Advances in Neural Information Processing Systems
+               (NeurIPS 2025)},
+  year      = {2025},
+}
+
+@article{dhar2025evalcards,
+  title     = {{EvalCards}: A Framework for Standardized Evaluation
+               Reporting},
+  author    = {Dhar, Priyanka and others},
+  journal   = {arXiv preprint arXiv:2511.21695},
+  year      = {2025},
+}
+
+@article{bordes2025factsheets,
+  title     = {Eval {Factsheets}: A Structured Framework for
+               Documenting {AI} Evaluations},
+  author    = {Bordes, Florian and others},
+  journal   = {arXiv preprint arXiv:2512.04062},
+  year      = {2025},
+}
+
+@article{cinelli2020sensitivity,
+  title     = {Making Sense of Sensitivity: Extending Omitted
+               Variable Bias},
+  author    = {Cinelli, Carlos and Hazlett, Chad},
+  journal   = {Journal of the Royal Statistical Society: Series B},
+  volume    = {82},
+  number    = {1},
+  pages     = {39--67},
+  year      = {2020},
+}
+
+@book{pearl-2009-causality,
+  title     = {Causality: Models, Reasoning and Inference},
+  author    = {Pearl, Judea},
+  edition   = {2nd},
+  publisher = {Cambridge University Press},
+  year      = {2009},
 }
