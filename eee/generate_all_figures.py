@@ -219,7 +219,7 @@ def fig3_metadata_coverage(df: pd.DataFrame) -> None:
         n = len(sub)
         src_rates = []
         for f in fields:
-            filled = sub[f].notna() & (sub[f].astype(str).str.strip() != "")
+            filled = sub[f].notna() & (sub[f].astype(str).str.strip() != "") & (sub[f].astype(str).str.strip() != "unknown")
             src_rates.append(filled.sum() / n * 100 if n > 0 else 0)
         rates[pretty_source(src)] = src_rates
 
@@ -799,7 +799,7 @@ def fig15_schema_completeness_radar(df: pd.DataFrame) -> None:
         n = len(sub)
         rates = []
         for f in fields:
-            filled = sub[f].notna() & (sub[f].astype(str).str.strip() != "")
+            filled = sub[f].notna() & (sub[f].astype(str).str.strip() != "") & (sub[f].astype(str).str.strip() != "unknown")
             rates.append(filled.sum() / n * 100 if n > 0 else 0)
         data[pretty_source(src)] = rates
 
@@ -960,7 +960,7 @@ def fig18_summary_table(df: pd.DataFrame) -> None:
         fields = ["shots", "temperature", "prompt_template"]
         meta_pct = 0
         for f in fields:
-            filled = sub[f].notna() & (sub[f].astype(str).str.strip() != "")
+            filled = sub[f].notna() & (sub[f].astype(str).str.strip() != "") & (sub[f].astype(str).str.strip() != "unknown")
             meta_pct += filled.sum()
         meta_pct = meta_pct / (n_rec * len(fields)) * 100 if n_rec > 0 else 0
 

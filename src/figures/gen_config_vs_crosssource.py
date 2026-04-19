@@ -78,12 +78,12 @@ else:
             fm = sm.OLS(y, Xf).fit()
             pr2 = max(0.0, (ssr_base - float(np.sum(fm.resid**2))) / ssr_base)
             sensitivity[var] = round(pr2, 4)
-        overturn = round(0.871**2, 4)
+        overturn = round(0.850**2, 4)
         sensitivity.update(r2_base=round(r2_base, 4), overturn=overturn)
         for var in ('temperature', 'prompt_format', 'n_shot'):
             flag = '  *** EXCEEDS OVERTURN BOUND' if sensitivity[var] >= overturn else ''
             print(f'  Partial R² [{var:14s}]: {sensitivity[var]:.4f}{flag}')
-        print(f'  Overturn bound (0.871²):    {overturn:.4f}')
+        print(f'  Overturn bound (0.850²):    {overturn:.4f}')
     except ImportError:
         print('  statsmodels not available — skipping')
 

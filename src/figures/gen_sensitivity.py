@@ -3,8 +3,8 @@ Generate fig_sensitivity.pdf — Cinelli-Hazlett sensitivity contour for
 the EMNLP paper §5.7 Controlled Configuration Sensitivity.
 
 Shows partial R² of temperature, prompt_format, and n_shot (5-shot GSM8K
-analysis) against the overturn bound ρ² = 0.759 that would flip the
-observational ρ = -0.871 finding.
+analysis) against the overturn bound ρ² = 0.723 that would flip the
+observational ρ = -0.850 finding.
 
 Inputs: hardcoded from the analysis of controlled_eval_results.jsonl
         (3 models × 54 runs, Mistral-7B + Qwen2.5-7B + Llama-3.1-8B)
@@ -22,16 +22,16 @@ ROOT = Path(__file__).resolve().parents[2]
 # ── Inputs from Cell 8 of controlled_eval_vllm_v3.ipynb ────────────
 # Primary specification: 5-shot GSM8K, n=54 records, 3 models
 PARTIAL_R2 = {
-    'temperature':   0.022,   # \prtwotempfive
-    'prompt_format': 0.270,   # \prtwofmtfive
+    'temperature':   0.030,   # \prtwotempfive
+    'prompt_format': 0.285,   # \prtwofmtfive
 }
 # Full-data n_shot value is shown separately (it's a 0-shot
 # extraction artefact; see paper §5.7 "Caveat" paragraph)
-NSHOT_FULL = 0.863
+NSHOT_FULL = 0.873
 
-# Overturn bound: ρ² where ρ = -0.871 from Table 6 observational finding
-SPEARMAN_RHO = 0.871
-OVERTURN = SPEARMAN_RHO ** 2   # = 0.7586
+# Overturn bound: ρ² where ρ = -0.850 from Table 6 observational finding
+SPEARMAN_RHO = 0.850
+OVERTURN = SPEARMAN_RHO ** 2   # = 0.7225
 
 # Output location
 FIGURES_DIR = ROOT / 'submission' / 'latex' / 'figures'
@@ -99,7 +99,7 @@ ax.set_xlabel(r'Partial $R^2$: confounder $\to$ treatment  ($R^2_{D \sim Z | X}$
               fontsize=10)
 ax.set_ylabel(r'Partial $R^2$: confounder $\to$ outcome  ($R^2_{Y \sim Z | X}$)',
               fontsize=10)
-ax.set_title('Cinelli-Hazlett sensitivity for $\\rho = -0.871$\n'
+ax.set_title('Cinelli-Hazlett sensitivity for $\\rho = -0.850$\n'
              '(5-shot GSM8K, 3 models, $n = 54$ runs)',
              fontsize=11)
 ax.set_xlim(0, 1.0)

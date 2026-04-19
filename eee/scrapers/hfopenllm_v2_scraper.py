@@ -100,9 +100,14 @@ _SOURCE_METADATA = SourceMetadata(
     evaluator_relationship=EvaluatorRelationship.third_party,
 )
 
-# shared eval_library for all HF Open LLM v2 records
-# the leaderboard uses lighteval internally but the version is not exposed by API
-_EVAL_LIBRARY = EvalLibrary(name="lighteval", version="unknown")
+# The HF Open LLM v2 API does not expose which evaluation harness was used.
+# We know from the leaderboard documentation that it uses lighteval internally,
+# but since the API does not return this information, we record it as "unknown"
+# and store the inferred value in additional_details for transparency.
+_EVAL_LIBRARY = EvalLibrary(
+    name="unknown", version="unknown",
+    additional_details={"inferred_harness": "lighteval"},
+)
 
 
 # ---------------------------------------------------------------------------

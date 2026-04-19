@@ -219,7 +219,7 @@ def fig3_metadata_coverage(df: pd.DataFrame) -> None:
         n = len(sub)
         src_rates = []
         for f in fields:
-            filled = sub[f].notna() & (sub[f].astype(str).str.strip() != "")
+            filled = sub[f].notna() & (sub[f].astype(str).str.strip() != "") & (sub[f].astype(str).str.strip() != "unknown")
             src_rates.append(filled.sum() / n * 100 if n > 0 else 0)
         rates[pretty_source(src)] = src_rates
 

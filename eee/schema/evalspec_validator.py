@@ -238,13 +238,13 @@ def compute_completeness_score(flat: dict) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Divergence risk prediction (based on ρ = −0.871 observational mapping)
+# Divergence risk prediction (based on ρ = −0.850 observational mapping)
 # ---------------------------------------------------------------------------
 
 def predict_divergence_risk(completeness: int) -> str:
     """
     Map completeness score to predicted divergence risk.
-    Based on the ρ = −0.871 observational association (§5.5):
+    Based on the ρ = −0.850 observational association (§5.5):
       completeness 0 → high (|Δ| up to 32 pp)
       completeness 1-2 → medium
       completeness 3-5 → low (|Δ| ≤ 0.23 pp)

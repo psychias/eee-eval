@@ -101,7 +101,13 @@ _SOURCE_METADATA = SourceMetadata(
     evaluator_relationship=EvaluatorRelationship.third_party,
 )
 
-_EVAL_LIBRARY = EvalLibrary(name="chatbot_arena", version="unknown")
+# The Chatbot Arena API does not expose which evaluation harness was used.
+# We know it uses fastchat internally, but record "unknown" since the API
+# does not return this; the inferred value is stored in additional_details.
+_EVAL_LIBRARY = EvalLibrary(
+    name="unknown", version="unknown",
+    additional_details={"inferred_harness": "fastchat"},
+)
 
 # --------------------------------------------------------------------------
 # Hardcoded Elo snapshot — used only when all live sources are unreachable.

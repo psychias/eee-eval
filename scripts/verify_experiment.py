@@ -90,8 +90,8 @@ try:
     pr2_temp = (no_temp.ssr - full.ssr) / no_temp.ssr
     pr2_fmt = (no_fmt.ssr - full.ssr) / no_fmt.ssr
 
-    print(f"\n  Partial R² (temperature): {pr2_temp:.3f} (paper: 0.073)")
-    print(f"  Partial R² (prompt_format): {pr2_fmt:.3f} (paper: 0.159)")
+    print(f"\n  Partial R² (temperature): {pr2_temp:.3f} (paper: 0.030)")
+    print(f"  Partial R² (prompt_format): {pr2_fmt:.3f} (paper: 0.285)")
     print(f"  Full model R²: {full.rsquared:.3f}")
 except Exception as e:
     print(f"  OLS failed: {e}")
@@ -116,8 +116,8 @@ try:
     pr2_fmt_all = (no_fmt_all.ssr - full_all.ssr) / no_fmt_all.ssr
     pr2_nshot_all = (no_nshot_all.ssr - full_all.ssr) / no_nshot_all.ssr
 
-    print(f"  Partial R² (temperature): {pr2_temp_all:.3f} (paper: 0.002)")
-    print(f"  Partial R² (prompt_format): {pr2_fmt_all:.3f} (paper: 0.004)")
-    print(f"  Partial R² (n_shot): {pr2_nshot_all:.3f} (paper: 0.935)")
+    print(f"  Partial R² (temperature): {pr2_temp_all:.3f} (paper: 0.006)")
+    print(f"  Partial R² (prompt_format): {pr2_fmt_all:.3f} (paper: 0.075)")
+    print(f"  Partial R² (n_shot): {pr2_nshot_all:.3f} (paper: 0.873)")
 except Exception as e:
     print(f"  OLS failed: {e}")

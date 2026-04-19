@@ -115,10 +115,16 @@ _SOURCE_METADATA = SourceMetadata(
     },
 )
 
+# The BigCodeBench API does not expose which evaluation harness was used.
+# We know it uses bigcodebench internally, but record "unknown" since the API
+# does not return this; the inferred value is stored in additional_details.
 _EVAL_LIBRARY = EvalLibrary(
-    name="bigcodebench",
-    version="0.1.0",
-    additional_details={"metric": "pass@1 (execution-based)"},
+    name="unknown",
+    version="unknown",
+    additional_details={
+        "metric": "pass@1 (execution-based)",
+        "inferred_harness": "bigcodebench",
+    },
 )
 
 # ---------------------------------------------------------------------------

@@ -150,6 +150,7 @@ for f in (ROOT / "data").rglob("*.json"):
                 # evaluator_relationship: EvaluatorRelationship enum → string
                 "evaluator_relationship": src.get("evaluator_relationship", ""),
                 "eval_library":           lib.get("name", ""),
+                "eval_library_version":   lib.get("version", ""),
 
                 # ── Record provenance ───────────────────────────────────────
                 "evaluation_id":          rec.get("evaluation_id", ""),
@@ -164,7 +165,7 @@ for f in (ROOT / "data").rglob("*.json"):
                           "prompt_template", "harness", "chain_of_thought",
                           "reasoning"):
                 val = row.get(field, "")
-                if val not in ("", None):
+                if val not in ("", None, "unknown"):
                     coverage[b][field] += 1
             coverage[b]["total"] += 1
 

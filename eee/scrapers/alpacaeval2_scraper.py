@@ -139,7 +139,13 @@ _SOURCE_METADATA = SourceMetadata(
     evaluator_relationship=EvaluatorRelationship.third_party,
 )
 
-_EVAL_LIBRARY = EvalLibrary(name="alpaca_eval", version="2.0")
+# The AlpacaEval API does not expose which evaluation harness was used.
+# We know it uses alpaca_eval internally, but record "unknown" since the API
+# does not return this; the inferred value is stored in additional_details.
+_EVAL_LIBRARY = EvalLibrary(
+    name="unknown", version="unknown",
+    additional_details={"inferred_harness": "alpaca_eval"},
+)
 
 _TIMEOUT = 30  # seconds
 

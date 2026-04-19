@@ -33,7 +33,7 @@ for var, col in [
     pr2 = max(0.0, (ssr_base - float(np.sum(fm.resid**2))) / ssr_base)
     print(f"  Partial R² [{var:14s}]: {pr2:.4f}")
 
-print(f"  Overturn bound: {0.871**2:.4f}")
+print(f"  Overturn bound: {0.850**2:.4f}")
 
 # All generative (GSM8K)
 print(f"\nAll GSM8K: {sum(1 for r in records if r['benchmark']=='gsm8k')} records")

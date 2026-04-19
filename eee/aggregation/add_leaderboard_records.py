@@ -169,6 +169,7 @@ def _record(
     results: list[dict],
     evaluator_relationship: str = "third_party",
     eval_date: str = "",
+    eval_library_version: str = "unknown",
 ) -> dict:
     ts = str(int(time.time()))
     return {
@@ -185,7 +186,7 @@ def _record(
             "source_organization_url": source_org_url,
             "evaluator_relationship": evaluator_relationship,
         },
-        "eval_library": {"name": eval_library, "version": "unknown"},
+        "eval_library": {"name": eval_library, "version": eval_library_version},
         "model_info": {"name": model_name, "id": model_id, "developer": developer},
         "evaluation_results": [
             {
@@ -231,13 +232,14 @@ def _add(
     results: list[dict],
     evaluator_relationship: str = "third_party",
     eval_date: str = "",
+    eval_library_version: str = "unknown",
 ) -> int:
     if _already_exists(source_dir, model_id):
         return 0
     rec = _record(
         source_dir, source_name, source_org, source_org_url,
         eval_library, model_id, model_name, developer, results,
-        evaluator_relationship, eval_date,
+        evaluator_relationship, eval_date, eval_library_version,
     )
     slug = model_id.split("/", 1)[-1]
     _save(rec, source_dir, developer, slug)
@@ -367,6 +369,7 @@ class LiveLeaderboardFetcher(ABC):
     SOURCE_ORG:  str = ""
     SOURCE_URL:  str = ""
     EVAL_LIB:    str = "unknown"
+    EVAL_LIB_VERSION: str = "unknown"
     CACHE_KEY:   str = ""
 
     def fetch(self, force_refresh: bool = False) -> list[FetchedRow]:
@@ -439,7 +442,8 @@ class LiveLeaderboardFetcher(ABC):
             if results:
                 n += _add(self.SOURCE_DIR, self.SOURCE_NAME, self.SOURCE_ORG,
                           self.SOURCE_URL, self.EVAL_LIB, mid, mn, dev, results,
-                          eval_date=row.eval_date)
+                          eval_date=row.eval_date,
+                          eval_library_version=self.EVAL_LIB_VERSION)
         return n
 
     def probe_columns(self) -> None:
@@ -726,6 +730,7 @@ class OpenLLMLeaderboardV2Fetcher(LiveLeaderboardFetcher):
     SOURCE_ORG  = "HuggingFace"
     SOURCE_URL  = "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard"
     EVAL_LIB    = "lm_eval"
+    EVAL_LIB_VERSION = "unknown"
     CACHE_KEY   = "open_llm_v2"
 
     _DATASET_ID = "open-llm-leaderboard/contents"

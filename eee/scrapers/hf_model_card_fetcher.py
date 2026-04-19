@@ -86,6 +86,7 @@ class ModelCardData:
     paper_url:  str = ""
     tags:       list[str] = field(default_factory=list)
     library:    str = ""
+    eval_lib_version: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -232,13 +233,19 @@ def _extract_temperature_from_text(text: str) -> float | None:
 
 
 def _extract_eval_lib_from_readme(text: str) -> str:
-    """Detect eval framework from README text."""
+    """Detect eval framework from README text.
+
+    Only matches harness names that appear in an evaluation context
+    (e.g. "evaluated using lm-eval-harness").  Does NOT match
+    inference-serving libraries like vllm or transformers, nor the
+    YAML ``library_name`` field — those indicate how to *load* the
+    model, not which harness produced the benchmark scores.
+    """
     lower = text.lower()
     for lib, patterns in [
         ("lm-eval-harness", [r"lm[_-]?eval", r"eleutherai.*harness", r"lm[_-]?harness"]),
         ("helm", [r"\bhelm\b", r"stanford.*helm"]),
         ("inspect", [r"\binspect\b.*eval", r"uk\s*aisi.*inspect"]),
-        ("vllm", [r"\bvllm\b"]),
         ("fastchat", [r"\bfastchat\b", r"mt[_-]?bench"]),
         ("alpaca_eval", [r"alpaca[_-]?eval"]),
         ("bigcode-evaluation-harness", [r"bigcode.*harness", r"bigcodebench"]),
@@ -246,6 +253,29 @@ def _extract_eval_lib_from_readme(text: str) -> str:
         for pat in patterns:
             if re.search(pat, lower):
                 return lib
+    return ""
+
+
+def _extract_eval_lib_version_from_readme(text: str) -> str:
+    """Extract eval framework version from README text.
+
+    Looks for patterns like:
+      - lm-eval-harness v0.4.2, lm_eval 0.4.11
+      - evaluated using lm-evaluation-harness (v0.4.3)
+      - helm v1.2.0, HELM 0.3.0
+    """
+    # Pattern: library name mention followed (within ~40 chars) by a version
+    version_patterns = [
+        r"lm[_-]?eval[a-z_-]*\s*[v(]?\s*(\d+\.\d+(?:\.\d+)?)",
+        r"eleutherai[/\s]*[a-z_-]*harness\s*[v(]?\s*(\d+\.\d+(?:\.\d+)?)",
+        r"\bhelm\s*[v(]?\s*(\d+\.\d+(?:\.\d+)?)",
+        r"alpaca[_-]?eval\s*[v(]?\s*(\d+\.\d+(?:\.\d+)?)",
+        r"bigcode[a-z_-]*\s*[v(]?\s*(\d+\.\d+(?:\.\d+)?)",
+    ]
+    for pat in version_patterns:
+        m = re.search(pat, text, re.IGNORECASE)
+        if m:
+            return m.group(1)
     return ""
 
 
@@ -329,6 +359,7 @@ class HFModelCardFetcher:
 
         # Detect eval framework from README text
         eval_lib = _extract_eval_lib_from_readme(readme)
+        eval_lib_version = _extract_eval_lib_version_from_readme(readme)
         if eval_lib:
             for r in results:
                 if not r.eval_lib:
@@ -354,6 +385,7 @@ class HFModelCardFetcher:
             paper_url=paper_url,
             tags=tags if isinstance(tags, list) else [],
             library=str(library),
+            eval_lib_version=eval_lib_version,
         )
 
 
@@ -425,13 +457,16 @@ def write_model_card_record(mcd: ModelCardData) -> int:
             rd["eval_lib"] = r.eval_lib
         result_dicts.append(rd)
 
-    # Determine the best eval library name
+    # Determine the best eval library name.
+    # Only use detected_lib (from README regex matching actual eval harness names).
+    # Do NOT fall back to mcd.library (YAML library_name) — that field indicates
+    # the inference library (transformers, vllm, etc.), not the eval harness.
     detected_lib = ""
     for r in mcd.results:
         if r.eval_lib:
             detected_lib = r.eval_lib
             break
-    lib_name = detected_lib or mcd.library or "unknown"
+    lib_name = detected_lib or "unknown"
 
     rec = {
         "schema_version": "0.2.1",
@@ -451,7 +486,7 @@ def write_model_card_record(mcd: ModelCardData) -> int:
                 "library": mcd.library,
             },
         },
-        "eval_library": {"name": lib_name, "version": "unknown"},
+        "eval_library": {"name": lib_name, "version": mcd.eval_lib_version or "unknown"},
         "model_info": {
             "name": mcd.model_name,
             "id": mcd.model_id,

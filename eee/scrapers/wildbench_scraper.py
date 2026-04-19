@@ -108,10 +108,16 @@ _SOURCE_METADATA = SourceMetadata(
     },
 )
 
+# The WildBench API does not expose which evaluation harness was used.
+# We know it uses wildbench/wildeval internally, but record "unknown" since
+# the API does not return this; the inferred value is stored in additional_details.
 _EVAL_LIBRARY = EvalLibrary(
-    name="wildbench",
-    version="2.0",
-    additional_details={"metric": "WB-Score (length-controlled win margin)"},
+    name="unknown",
+    version="unknown",
+    additional_details={
+        "metric": "WB-Score (length-controlled win margin)",
+        "inferred_harness": "wildeval",
+    },
 )
 
 # GPT-4-Turbo was the judge in WildBench v2.0

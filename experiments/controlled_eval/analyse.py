@@ -77,7 +77,7 @@ def compute_sensitivity(records: list[dict]) -> dict:
     """
     Regress score on model_id (fixed effect) to remove model-level variance.
     Compute partial R² of each configuration variable on the residuals.
-    Report the minimum partial R² needed to overturn ρ = −0.871.
+    Report the minimum partial R^2 needed to overturn rho = -0.850.
     """
     if not records:
         return {}
@@ -110,7 +110,7 @@ def compute_sensitivity(records: list[dict]) -> dict:
     partial_r2 = {}
     for var, col in [
         ("temperature", df["temperature"]),
-        ("prompt_format", pd.Categorical(df["prompt_format"]).codes),
+        ("prompt_format", pd.Series(pd.Categorical(df["prompt_format"]).codes, index=df.index, name="prompt_format")),
         ("n_shot", df["n_shot"]),
     ]:
         X_full = pd.concat([X_base, col.rename(var)], axis=1).astype(float)
@@ -123,12 +123,12 @@ def compute_sensitivity(records: list[dict]) -> dict:
             pr2 = float("nan")
         partial_r2[var] = max(0.0, pr2)
 
-    # Overturn threshold: ρ = -0.871 was computed over n=8 pairs.
-    # Using Cinelli & Hazlett (2020): the partial R² of unmeasured confounders
-    # needed to reduce |ρ| to 0 is approximately |ρ|² = 0.759.
-    # With effective n ≈ 3, significance threshold is very low.
-    rho_observed = -0.871
-    overturn_threshold = rho_observed ** 2  # ≈ 0.759
+    # Overturn threshold: rho = -0.850 was computed over n=8 collision pairs.
+    # Using Cinelli & Hazlett (2020): the partial R^2 of unmeasured confounders
+    # needed to reduce |rho| to 0 is approximately |rho|^2 = 0.723.
+    # With effective n ~ 3, significance threshold is very low.
+    rho_observed = -0.850
+    overturn_threshold = rho_observed ** 2  # = 0.723
 
     return {
         "r2_base_model": round(r2_base, 4),
@@ -179,7 +179,7 @@ def _compute_sensitivity_numpy(records: list[dict]) -> dict:
     except Exception:  # pylint: disable=broad-except
         return {"error": "numerical failure in OLS"}
 
-    rho_observed = -0.871
+    rho_observed = -0.850
     return {
         "r2_base_model": round(r2_base, 4),
         "partial_r2_temperature": round(partial_r2.get("temperature", float("nan")), 4),
@@ -406,7 +406,7 @@ def _fig_sensitivity(sensitivity: dict, plt) -> None:
 
     ax.set_xlabel(r"Partial $R^2$ of confounder with score ($R^2_{Y \sim Z|X}$)", fontsize=9)
     ax.set_ylabel(r"Partial $R^2$ of confounder with metadata ($R^2_{D \sim Z|X}$)", fontsize=9)
-    ax.set_title("Sensitivity analysis: robustness of ρ = −0.871\n"
+    ax.set_title("Sensitivity analysis: robustness of \u03c1 = \u22120.850\n"
                  "(Cinelli & Hazlett 2020)", fontsize=10)
     ax.legend(fontsize=8, loc="upper left")
     ax.set_xlim(0, 1)
@@ -484,8 +484,8 @@ def write_latex_summary(records: list[dict],
         "\\centering\\small",
         "\\caption{Sensitivity analysis results (Cinelli \\& Hazlett 2020). Partial $R^2$ of",
         "each measured configuration variable on score residuals after removing model fixed effects.",
-        "The overturn bound is $\\rho^2 = 0.759$: unmeasured confounders would need",
-        "to explain at least this fraction of score variance to overturn $\\rho = -0.871$.}",
+        "The overturn bound is $\\rho^2 = 0.723$: unmeasured confounders would need",
+        "to explain at least this fraction of score variance to overturn $\\rho = -0.850$.}",
         "\\label{tab:sensitivity}",
         "\\begin{tabular}{lrr}",
         "\\toprule",

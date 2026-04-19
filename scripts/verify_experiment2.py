@@ -105,8 +105,8 @@ def partial_r2_numpy(recs):
 
 print("\n=== PARTIAL R² (5-shot GSM8K, n={}) ===".format(len(gsm5)))
 pr2_5 = partial_r2_numpy(gsm5)
-print(f"  temperature:   {pr2_5['temperature']:.4f}  (macro: 0.073)")
-print(f"  prompt_format: {pr2_5['prompt_format']:.4f}  (macro: 0.159)")
+print(f"  temperature:   {pr2_5['temperature']:.4f}  (macro: 0.030)")
+print(f"  prompt_format: {pr2_5['prompt_format']:.4f}  (macro: 0.285)")
 
 print("\n=== PARTIAL R² (all records, n={}) ===".format(len(records)))
 pr2_all = partial_r2_numpy(records)
@@ -123,7 +123,7 @@ print(f"  prompt_format: {pr2_gsm['prompt_format']:.4f}")
 print(f"  n_shot:        {pr2_gsm['n_shot']:.4f}")
 
 # Overturn bound
-rho = -0.871
+rho = -0.850
 overturn = rho ** 2
 print(f"\n=== OVERTURN BOUND ===")
-print(f"  rho^2 = {overturn:.4f}  (macro: 0.759)")
+print(f"  rho^2 = {overturn:.4f}  (macro: 0.723)")

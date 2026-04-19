@@ -105,7 +105,13 @@ _SOURCE_METADATA = SourceMetadata(
     },
 )
 
-_EVAL_LIBRARY = EvalLibrary(name="mt_bench", version="unknown")
+# The MT-Bench API does not expose which evaluation harness was used.
+# We know it uses fastchat internally, but record "unknown" since the API
+# does not return this; the inferred value is stored in additional_details.
+_EVAL_LIBRARY = EvalLibrary(
+    name="unknown", version="unknown",
+    additional_details={"inferred_harness": "fastchat"},
+)
 
 # GPT-4-0314 was the judge model used in the original MT-Bench paper.
 _JUDGE_MODEL = ModelInfo(

@@ -17,8 +17,8 @@
 \newcommand{\collisionn}{8}
 
 % Primary correlation statistic (always qualified in text)
-\newcommand{\spearmanrho}{-0.871}
-\newcommand{\spearmanp}{0.005}
+\newcommand{\spearmanrho}{-0.850}
+\newcommand{\spearmanp}{0.007}
 \newcommand{\effectiven}{3}  % effective DoF ≈ 2-3
 
 % Fragmentation test
@@ -33,39 +33,39 @@
 % Collision magnitudes
 \newcommand{\gpqagap}{32.3}
 \newcommand{\tulumean}{0.14}
-\newcommand{\tuluadvantage}{$-$0.032}
+\newcommand{\tuluadvantage}{$+$0.032}
 
-% ─── Controlled experiment results (actual run, 2026-04-17/18) ─────
+% ─── Controlled experiment results (actual run, 2026-04-17/19) ─────
 % Executed on Colab A100 with vLLM backend;
-% Mistral-7B + Qwen2.5-7B + Llama-3.1-8B completed.
-\newcommand{\expmodels}{3}
-\newcommand{\expbenches}{2}         % GSM8K generative, MMLU loglikelihood
+% Mistral-7B + Qwen2.5-7B + Llama-3.1-8B + Qwen2.5-14B completed.
+\newcommand{\expmodels}{4}
+\newcommand{\expbenches}{3}         % GSM8K generative, BBH generative, MMLU loglikelihood
 \newcommand{\expconfigs}{12}        % 2 temps × 3 formats × 2 n-shots
-\newcommand{\expruns}{125}          % 108 GSM8K + 17 MMLU, OK only
-\newcommand{\expgenruns}{108}
-\newcommand{\expllruns}{17}
+\newcommand{\expruns}{306}          % 144 GSM8K + 144 BBH + 18 MMLU, OK only
+\newcommand{\expgenruns}{288}
+\newcommand{\expllruns}{18}
 
 % Partial R² on 5-shot GSM8K (the primary specification)
-\newcommand{\prtwotempfive}{0.022}
-\newcommand{\prtwofmtfive}{0.270}
+\newcommand{\prtwotempfive}{0.003}
+\newcommand{\prtwofmtfive}{0.367}
 
 % Partial R² on all generative data (for appendix / robustness)
 \newcommand{\prtwotempall}{0.001}
-\newcommand{\prtwofmtall}{0.010}
-\newcommand{\prtwonshotall}{0.863}
+\newcommand{\prtwofmtall}{0.037}
+\newcommand{\prtwonshotall}{0.706}
 
 % Overturn bound from Cinelli & Hazlett
-\newcommand{\overturnbound}{0.759}  % = ρ² = 0.871²
+\newcommand{\overturnbound}{0.722}  % = rho² = 0.850²
 
 % Mean |max-min| effect per axis (5-shot GSM8K)
-\newcommand{\tempeffectfive}{3.41}
-\newcommand{\fmteffectfive}{11.14}
+\newcommand{\tempeffectfive}{3.01}
+\newcommand{\fmteffectfive}{22.33}
 
 % Mean |max-min| effect per axis (all GSM8K)
-\newcommand{\tempeffectall}{1.70}
-\newcommand{\fmteffectall}{5.57}
-\newcommand{\nshoteffectall}{28.07}
+\newcommand{\tempeffectall}{1.51}
+\newcommand{\fmteffectall}{11.17}
+\newcommand{\nshoteffectall}{30.73}
 
-% Seed-only noise floor (GSM8K, 3 seeds per cell)
-\newcommand{\noisefloor}{1.75}
+% Seed-only noise floor (GSM8K, 3 seeds per cell, within-cell range)
+\newcommand{\noisefloor}{3.10}
 \newcommand{\noisefloormax}{13.50}

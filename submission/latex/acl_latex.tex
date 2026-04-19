@@ -68,8 +68,8 @@ $\overturnbound{}$. This association matters because independent
 re-evaluation is structurally impossible (only \collisionpairs{}
 collision pairs from \totalrecords{} records), pipeline artefact
 rates are high (\pwcartifacts{} of Papers With Code records fail
-semantic validation), and prompt template and temperature have
-\textbf{\promptcoverage{}} valid coverage. We propose
+semantic validation), and harness identity, prompt template, and
+temperature have \textbf{\promptcoverage{}} valid coverage. We propose
 \textbf{EvalSpec~v0.1}, a machine-readable specification that
 converts unmeasured confounders into required fields, and release
 our dataset, pipeline, and analysis code under CC-BY-4.0.
@@ -123,10 +123,10 @@ comparability.
 coverage: ingesting \totalrecords{}~records from
 \totalsources{}~sources into the Every Eval Ever (EEE) schema
 \citep{evaleval-2026} (\totalmodels{}~models,
-\totalbenchmarks{}~benchmarks), we find prompt template and
-temperature have 0\% valid coverage.
+\totalbenchmarks{}~benchmarks), we find harness identity, prompt
+template, and temperature have 0\% valid coverage.
 \textbf{(C2)}~Observational evidence that metadata completeness
-predicts score divergence (Spearman $\rho = -0.871$, $n = 8$,
+predicts score divergence (Spearman $\rho = -0.850$, $n = 8$,
 effective $n \approx 3$), supported by a controlled experiment on
 \expmodels{} models (\expruns{} runs) showing partial $R^2$ values
 for temperature and prompt format fall below the overturn bound.
@@ -151,8 +151,9 @@ from one source via four blocks: \texttt{model\_info},
 \texttt{evaluation\_results}. Different harnesses can produce
 different scores for the same model--benchmark because they
 differ in tokenisation, prompt formatting, and answer extraction
-\citep{biderman-2024-lessons}; we identify 11~distinct harnesses
-(Table~\ref{tab:sources}). We describe as the \emph{structural
+\citep{biderman-2024-lessons}; while each leaderboard is known to
+use a specific harness (e.g.\ OLv2 uses lighteval), none of the
+11~source APIs expose this information as a metadata field. We describe as the \emph{structural
 wall} the phenomenon that sources measuring the same constructs
 may still be uncomparable because they evaluate non-overlapping
 model subsets---a data-collection problem that no amount of
@@ -189,7 +190,7 @@ $^\dagger$Proposed addition; not in current EEE schema.}
 \textbf{Concept} & \textbf{EEE field} & \textbf{Example} \\
 \midrule
 Harness        & \texttt{eval\_library.name}    & lm\_eval \\
-Harness ver.   & \texttt{eval\_library.version} & (unversioned) \\
+Harness ver.   & \texttt{eval\_library.version} & (unreported) \\
 N-shot         & \texttt{generation\_args.n\_shot} & 5 \\
 Prompt tpl.    & \texttt{generation\_args.prompt\_template} & mcq\_v2 \\
 Temperature    & \texttt{generation\_args.temperature} & 0.0 \\
@@ -204,9 +205,9 @@ Scoring mode$^\dagger$ & \texttt{evaluation\_results.scoring\_mode}
 Cross-source comparison is equivalent to estimating the ATE of
 $M$ on $S$ while $C$ varies freely between sources, which is
 non-identifiable without recording $C$. The
-$\rho = -0.871$ association (\S\ref{sec:collisions}) is
+$\rho = -0.850$ association (\S\ref{sec:collisions}) is
 consistent with this framing: partial measurement of $C$
-(Tulu-3-8B pairs, harness~+~n-shot documented) coincides with
+(Tulu-3-8B pairs, n-shot documented, completeness = 1) coincides with
 low divergence; full omission (Qwen2.5-72B, completeness = 0)
 coincides with maximum divergence ($|\Delta| = 32.3$~pp). The
 causal model is used here as a diagnostic and as a field-selection
@@ -230,7 +231,8 @@ measure ecosystem compliance.
 MMLU preserves ranking order under consistent conditions, a
 property that breaks under methodology divergence. We quantify how
 often the ecosystem records these axes
-($<$0.1\% for prompt template and temperature) and show that the
+($<$0.1\% for prompt template and temperature; 0\% for harness
+identity) and show that the
 public ecosystem is too fragmented for within-benchmark comparisons
 to arise naturally at scale (16~collision pairs from
 \totalrecords{}~records; driven by OLv2, $z=1.4$ n.s.\ without it).
@@ -339,8 +341,12 @@ Appendix~\ref{app:evalspec}.
 
 Retrofitting EvalSpec to the 29{,}331 records yields 0\%
 compliance on \texttt{prompt\_template} and \texttt{temperature}
-(once artefacts are excluded) and $\sim$2\% on
-\texttt{eval\_library.version} (unknown in 8 of 11 sources).
+(once artefacts are excluded), 0\% on
+\texttt{eval\_library.name} (no source
+self-reports the harness), and \texttt{eval\_library.version}
+is reported by 0 of 11~sources---none of the APIs or metadata
+formats expose the harness identity or version used to produce
+the scores.
 A reference validator is released at
 \url{https://github.com/evaleval/every\_eval\_ever}.
 
@@ -371,21 +377,25 @@ Sources are ordered by record count.}
 \textbf{Source} & \textbf{Rec} & \textbf{Mod} & \textbf{Ben}
   & \textbf{Harness} \\
 \midrule
-Open LLM LB v2   & 26,790 & 4,465 &   6 & lm\_eval \\
+Open LLM LB v2   & 26,790 & 4,465 &   6 & unknown$^\ast$ \\
 Papers w/ Code    &    576 &   383 &  16 & unknown \\
-AlpacaEval 2      &    446 &   223 &   2 & alpaca\_eval \\
-BFCL              &    327 &   109 &   3 & gorilla\_eval \\
-BigCodeBench      &    280 &   156 &   2 & bigcodebench \\
-Chatbot Arena     &    218 &   218 &   1 & fastchat \\
-EvalPlus          &    214 &   125 &   2 & evalplus \\
-HF Model Card     &    207 &    11 & 156 & varies \\
-WildBench         &    122 &    61 &   2 & wildeval \\
-SWE-Bench         &    117 &   117 &   1 & swebench \\
-MT-Bench          &     34 &    34 &   1 & fastchat \\
+AlpacaEval 2      &    446 &   223 &   2 & unknown$^\ast$ \\
+BFCL              &    327 &   109 &   3 & unknown$^\ast$ \\
+BigCodeBench      &    280 &   156 &   2 & unknown$^\ast$ \\
+Chatbot Arena     &    218 &   218 &   1 & unknown$^\ast$ \\
+EvalPlus          &    214 &   125 &   2 & unknown$^\ast$ \\
+HF Model Card     &    207 &    11 & 156 & unknown \\
+WildBench         &    122 &    61 &   2 & unknown$^\ast$ \\
+SWE-Bench         &    117 &   117 &   1 & unknown$^\ast$ \\
+MT-Bench          &     34 &    34 &   1 & unknown$^\ast$ \\
 \midrule
 \textbf{Total} & \textbf{29,331} & \textbf{5,672} &
-  \textbf{180} & \textbf{11 distinct} \\
+  \textbf{180} & \textbf{0 self-reported} \\
 \bottomrule
+\multicolumn{5}{p{0.95\columnwidth}}{\footnotesize $^\ast$Harness
+  is \emph{inferrable} from platform documentation (e.g.\ OLv2 uses
+  lighteval) but is not returned by any source API or metadata format.
+  No source self-reports the evaluation harness in its API or metadata.}
 \end{tabular}
 \end{table}
 
@@ -408,15 +418,36 @@ nearly all evaluation-context metadata is absent.
 \textbf{N-shot} (96.7\% with OLv2) is documented in all
 leaderboards with few-shot benchmarks; the gap comes from
 preference-based sources (Chatbot Arena, WildBench, MT-Bench)
-where the concept does not apply. \textbf{Harness identity}
-(98\%) is identified in all dedicated leaderboards; the 2\% gap
-comes from PWC (harness genuinely unknown) and HF Model Cards
-(32\%, after we tightened parsing to exclude
-\texttt{library\_name} values that name \emph{inference} frameworks
-rather than evaluation harnesses). \textbf{Crucially, no source
-documents the harness \emph{version}}: all 29{,}331 records
-carry \texttt{eval\_library.version = "unknown"}, an
-ecosystem-wide gap.
+where the concept does not apply.
+
+\paragraph{Harness identity: inferrable but not documented.}
+\textbf{Harness identity} is self-reported in 0\% of
+records (0/29{,}331). No
+source API or metadata format exposes a harness field. We
+verified this directly: the HuggingFace Open LLM Leaderboard
+v2 API returns model metadata and scores but no evaluation
+configuration (no \texttt{eval\_library}, \texttt{harness}, or
+equivalent field). The same holds for all other leaderboard
+APIs we ingested. The harness is \emph{inferrable} for most
+sources from platform documentation (e.g., OLv2 uses
+lighteval; AlpacaEval uses alpaca\_eval), but this knowledge
+exists only in external documentation, not in the evaluation
+records themselves. An earlier version of our pipeline
+hardcoded these inferred values into the
+\texttt{eval\_library.name} field; we have corrected this:
+all non-self-reported harness values are now recorded as
+\texttt{"unknown"} with the inferred identity stored
+separately in
+\texttt{eval\_library.additional\_details.inferred\_harness}.
+\textbf{No source documents the harness \emph{version}}:
+all 29{,}331 records carry
+\texttt{eval\_library.version = "unknown"} because none of the
+11~source APIs or metadata formats expose this field.
+We attempted regex-based version extraction from 199~HuggingFace
+model-card READMEs (matching patterns for lm-eval, HELM,
+AlpacaEval, and BigCode harness versions); none contained an
+extractable version string. Harness identity and version are
+both ecosystem-wide gaps.
 
 \paragraph{Severely under-documented fields.}
 \textbf{Chain-of-thought} (76.3\%) is documented only in OLv2
@@ -427,7 +458,10 @@ contain prompt information (all PWC)---the most impactful
 undocumented axis \citep{alzahrani-2024-benchmarks}. Manual audit
 confirms that all 14 non-null \texttt{prompt\_template} values
 are extraction artefacts; the \emph{valid} coverage rate is
-therefore 0/29{,}331 (0.00\%), the most consequential metadata
+therefore 0/29{,}331 (0.00\%) for both prompt template and
+temperature. Together with harness identity (0\%),
+three of the five core evaluation confounders have
+zero coverage---the most consequential metadata
 gap in the dataset. Table~\ref{tab:ablation} confirms the
 qualitative pattern is stable across source ablations.
 
@@ -436,18 +470,19 @@ qualitative pattern is stable across source ablations.
 \small
 \setlength{\tabcolsep}{3pt}
 \caption{Sensitivity of metadata coverage (\%) to source
-composition. Temperature and prompt are absent under all
-ablations; n-shot and CoT depend heavily on OLv2.}
+composition. Harness, temperature, and prompt are absent or
+near-absent under all ablations; n-shot and CoT depend heavily
+on OLv2.}
 \label{tab:ablation}
 \begin{tabular}{lrrrrr}
 \toprule
 \textbf{Subset} & \textbf{H} & \textbf{S} & \textbf{C}
   & \textbf{T} & \textbf{P} \\
 \midrule
-All (29,331)             &  98 & 96.7 & 76.3 & 0.0 & 0.0 \\
-$-$\,OLv2 (2,541)       &  72 & 62.2 &  1.1 & 0.2 & 0.6 \\
-$-$\,PWC (28,755)        & 100 & 98.0 & 77.7 & 0.0 & 0.0 \\
-$-$\,OLv2$-$PWC (1,965) &  93 & 71.0 &  0.0 & 0.0 & 0.0 \\
+All (29,331)             & 0.0 & 96.7 & 76.3 & 0.0 & 0.0 \\
+$-$\,OLv2 (2,541)       & 0.0 & 62.2 &  1.1 & 0.2 & 0.6 \\
+$-$\,PWC (28,755)        & 0.0 & 98.0 & 77.7 & 0.0 & 0.0 \\
+$-$\,OLv2$-$PWC (1,965) & 0.0 & 71.0 &  0.0 & 0.0 & 0.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -466,19 +501,19 @@ Bold = 100\%.}
 \textbf{Source} & \textbf{H} & \textbf{S} & \textbf{C}
   & \textbf{T} & \textbf{P} \\
 \midrule
-Open LLM LB v2 & \textbf{100} & \textbf{100} & 83.4 & 0.0 & 0.0 \\
+Open LLM LB v2 &  0.0 & \textbf{100} & 83.4 & 0.0 & 0.0 \\
 Papers w/ Code &     0 & 32.1 & 4.9 & 1.0 & 2.4 \\
-AlpacaEval 2   & \textbf{100} & \textbf{100} & 0.0 & 0.0 & 0.0 \\
-BFCL           & \textbf{100} & \textbf{100} & 0.0 & 0.0 & 0.0 \\
-BigCodeBench   & \textbf{100} & \textbf{100} & 0.0 & 0.0 & 0.0 \\
-Chatbot Arena  & \textbf{100} &  0.0 & 0.0 & 0.0 & 0.0 \\
-EvalPlus       & \textbf{100} & \textbf{100} & 0.0 & 0.0 & 0.0 \\
-HF Model Card  &    32 &  5.8 & 0.0 & 0.0 & 0.0 \\
-WildBench      & \textbf{100} &  0.0 & 0.0 & 0.0 & 0.0 \\
-SWE-Bench      & \textbf{100} & \textbf{100} & 0.0 & 0.0 & 0.0 \\
-MT-Bench       & \textbf{100} &  0.0 & 0.0 & 0.0 & 0.0 \\
+AlpacaEval 2   &  0.0 & \textbf{100} & 0.0 & 0.0 & 0.0 \\
+BFCL           &  0.0 & \textbf{100} & 0.0 & 0.0 & 0.0 \\
+BigCodeBench   &  0.0 & \textbf{100} & 0.0 & 0.0 & 0.0 \\
+Chatbot Arena  &  0.0 &  0.0 & 0.0 & 0.0 & 0.0 \\
+EvalPlus       &  0.0 & \textbf{100} & 0.0 & 0.0 & 0.0 \\
+HF Model Card  &  0.0 &  5.8 & 0.0 & 0.0 & 0.0 \\
+WildBench      &  0.0 &  0.0 & 0.0 & 0.0 & 0.0 \\
+SWE-Bench      &  0.0 & \textbf{100} & 0.0 & 0.0 & 0.0 \\
+MT-Bench       &  0.0 &  0.0 & 0.0 & 0.0 & 0.0 \\
 \midrule
-\textbf{Overall} & \textbf{98} & \textbf{96.7} & \textbf{76.3}
+\textbf{Overall} & \textbf{0.0} & \textbf{96.7} & \textbf{76.3}
   & \textbf{$<$0.1} & \textbf{$<$0.1} \\
 \bottomrule
 \end{tabular}
@@ -488,7 +523,9 @@ MT-Bench       & \textbf{100} &  0.0 & 0.0 & 0.0 & 0.0 \\
 \centering
 \includegraphics[width=\columnwidth]{figures/fig2_metadata_coverage.png}
 \caption{Metadata documentation rates by source. Harness is
-identified in most sources (98\% overall); n-shot is nearly
+not self-reported by any source;
+it is \emph{inferrable} from platform documentation for most
+sources but not returned by any API. N-shot is nearly
 complete. Temperature and prompt template---the fields most
 critical for understanding score differences---are virtually
 absent.}
@@ -582,12 +619,13 @@ We computed a per-pair metadata completeness score (sum of
 documented fields across harness, n-shot, CoT, temperature, and
 prompt template; range 0--5) and the absolute divergence
 $|\Delta|$ (Table~\ref{tab:attribution_extended}). Completeness
-varied from 0 (Qwen2.5-72B) to 2 (all Tulu-3-8B pairs);
+varied from 0 (Qwen2.5-72B, SC2-15B) to 1 (all Tulu-3-8B pairs,
+where only n-shot is documented);
 $|\Delta|$ ranged 0.07--32.33~pp. Across this near-exhaustive
 set---confounded by model identity (the low-delta group is
 entirely Tulu-3-8B) and source quality (the high-delta group
 involves PWC, our least reliable source)---Spearman
-$\rho = -0.871$ ($n=8$, $p = 0.005$; Fig.~\ref{fig:completeness}).
+$\rho = -0.850$ ($n=8$, $p = 0.007$; Fig.~\ref{fig:completeness}).
 The five Tulu-3-8B pairs share a model family and two sources,
 so effective DoF is approximately 2--3, not 8; we report the
 $p$-value descriptively. The practical implication: in the
@@ -599,15 +637,16 @@ confirm.
 \paragraph{First-party vs.\ third-party asymmetry.}
 The five Tulu-3-8B pairs compare first-party (authors, vllm-based,
 HF Model Card) against third-party (OLv2, lm\_eval) evaluation.
-Mean first-party advantage is $-0.032$~pp (range $[-0.23, +0.19]$),
-with 2/5 higher first-party. Direction inconsistent, magnitude
+Mean first-party advantage is $+0.032$~pp (range $[-0.19, +0.23]$),
+with 3/5 higher first-party. Direction inconsistent, magnitude
 negligible---suggesting that for well-documented evaluations
 using compatible harnesses, first- and third-party scores
 converge.
 
 \paragraph{Attribution gaps and scoring mode.}
-Temperature and prompt template are unknown in \emph{every}
-pair; n-shot is documented for only 5/8 (all Tulu-3-8B).
+Harness identity, temperature, and prompt template are unknown in
+\emph{every} pair; n-shot is documented for only 5/8 (all
+Tulu-3-8B).
 The GPQA gap is not a temperature or prompt-template problem:
 OLv2 uses log-likelihood ranking via lm\_eval, while the PWC
 score (verified against arXiv:2412.15115) reflects
@@ -625,7 +664,7 @@ row~$\dagger$).
 \includegraphics[width=\columnwidth]{figures/fig_completeness_vs_delta.png}
 \caption{Metadata completeness score (0--5) vs.\ absolute score
 divergence $|\Delta|$ across the 8 independent collision pairs.
-Spearman $\rho = -0.871$ ($n = 8$, $p = 0.005$), confounded by
+Spearman $\rho = -0.850$ ($n = 8$, $p = 0.007$), confounded by
 model identity (five Tulu-3-8B points form the lower-right
 cluster; effective $n \approx 3$) and source quality.}
 \label{fig:completeness}
@@ -649,10 +688,12 @@ We evaluate \expmodels{}~instruction-tuned open-weight models
 (Mistral-7B-Instruct-v0.3, Qwen2.5-7B-Instruct,
 Llama-3.1-8B-Instruct) on
 \expbenches{}~benchmarks spanning two scoring paradigms---GSM8K
-\citep{cobbe-2021-gsm8k} (generative) and MMLU
+\citep{cobbe-2021-gsm8k} and BIG-Bench Hard (BBH)
+\citep{suzgun-2023-bbh} (both generative), and MMLU
 \citep{hendrycks-2021-mmlu} (loglikelihood)---under a factorial
 design: temperature $\{0.0, 0.7\}$ $\times$ prompt format
-$\{$plain, instruct, cot$\}$ $\times$ n-shot $\{0, 5\}$, with
+$\{$plain, instruct, cot$\}$ $\times$ n-shot $\{0, 5\}$ (BBH:
+$\{0, 3\}$), with
 three random seeds per generative cell (MMLU is deterministic
 given the same prompt). The
 dataset comprises \expruns{}~runs
@@ -664,30 +705,47 @@ compare against the overturn bound
 $\rho^2 = \overturnbound{}$.
 
 \paragraph{Configuration effects fall below the overturn bound.}
-On 5-shot GSM8K (where all three models produce extractable answers),
+On 5-shot GSM8K (where all four models produce extractable answers),
 mean within-cell variation is $\tempeffectfive{}$~pp across
-temperature and $\fmteffectfive{}$~pp across prompt format, both
-an order of magnitude below the \gpqagap{}~point cross-source
+temperature and $\fmteffectfive{}$~pp across prompt format---both
+substantially below the \gpqagap{}~point cross-source
 divergence (Fig.~\ref{fig:config_vs_crosssource}). Seed variance
 at fixed configuration averages $\noisefloor{}$~pp
-(max $\noisefloormax{}$~pp across 24~cells), establishing the
+(max $\noisefloormax{}$~pp across 18~cells), establishing the
 noise floor. The Cinelli--Hazlett regression yields partial
 $R^2 = \prtwotempfive{}$ (temperature) and $\prtwofmtfive{}$
 (prompt format)---both well below $\overturnbound{}$
 (Fig.~\ref{fig:sensitivity}). An unmeasured within-source
-confounder would need to be 4--10$\times$ stronger than the axes
+confounder would need to be 2--240$\times$ stronger than the axes
 we measured to overturn the observational finding, a magnitude
 inconsistent with the controlled literature on harness choice
 \citep{alzahrani-2024-benchmarks, biderman-2024-lessons}.
 
 \paragraph{Caveats.}
 \textit{(n-shot on generative benchmarks.)} Including 0-shot
-runs, n-shot explains $R^2 = \prtwonshotall{}$---above the
-bound---but this reflects a threshold effect specific to
-Mistral-7B-Instruct, which fails to produce extractable answers
-on 0-shot GSM8K under lm-evaluation-harness's default extraction
-(the apparent effect is ``no output'' vs.\ ``output scoring
-$\sim$35\%,'' not a continuous in-context-learning gradient). We
+runs, n-shot explains $R^2 = \prtwonshotall{}$---near the
+bound---but this reflects an extraction-compatibility threshold,
+not a continuous in-context-learning gradient: all four models
+score exactly~0 on 0-shot GSM8K because
+lm-evaluation-harness's default answer-extraction regex
+(\texttt{\#\#\#\# <number>}) fails
+to parse their free-form outputs (all 72 zero-shot cells carry
+\texttt{reason = "extraction failed"}). A cross-extractor study
+(Fig.~\ref{fig:cross_extractor}) confirms that the models
+\emph{do} solve the problems: applying five extraction strategies
+to saved sample outputs from 12~cells (4~models $\times$
+3~formats), the flexible fallback chain (strict $\to$
+\texttt{\textbackslash boxed\{\}} $\to$ ``the answer is'' $\to$
+last-number) recovers 39.5--77.5\% accuracy (mean 59~pp), while the
+strict \texttt{\#\#\#\#} regex recovers 0\% in every cell.
+The gap is entirely an extraction artefact: no model emits
+\texttt{\#\#\#\#} without few-shot exemplars demonstrating the
+format. Prompt format also interacts with extraction---Llama-3.1-8B
+scores 77.5\% under the \texttt{instruct} format but 62.5\% under
+\texttt{cot}, reflecting output-structure differences rather than
+reasoning quality. The apparent n-shot effect is therefore
+``no extractable output'' vs.\ ``output scoring
+39.5--77.5\%.'' We
 therefore restrict the primary analysis to the 5-shot subset.
 \textit{(Loglikelihood temperature invariance.)} On MMLU,
 temperature has no effect on score by construction. Documenting
@@ -719,9 +777,21 @@ $\overturnbound{}$ (dashed contour).}
 \caption{Controlled configuration effects (mean $|\max - \min|$,
 5-shot GSM8K) vs.\ cross-source divergences on the 8 independent
 collision pairs. Largest controlled effect ($\fmteffectfive{}$~pp,
-prompt format) is an order of magnitude smaller than the GPQA
+prompt format) remains well below the GPQA
 cross-source gap (\gpqagap{}~pp).}
 \label{fig:config_vs_crosssource}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_cross_extractor.png}
+\caption{Cross-extractor study on 0-shot GSM8K (4~models
+$\times$ 3~formats). The strict \texttt{\#\#\#\#} regex
+(lm-eval default) scores 0\% in all 12~cells; a flexible
+fallback chain recovers 39.5--77.5\% accuracy from the same
+outputs. The 59~pp mean gap is entirely an extraction artefact,
+not a capability difference.}
+\label{fig:cross_extractor}
 \end{figure}
 
 % ===================================================================
@@ -730,10 +800,12 @@ cross-source gap (\gpqagap{}~pp).}
 
 \subsection{Why Documentation Is the Only Identification Strategy}
 
-The H1 finding (0\% valid coverage for prompt template and
-temperature) shows that the two highest-impact evaluation
-confounders \citep{alzahrani-2024-benchmarks,
-biderman-2024-lessons} are universally unobserved. Under the DAG
+The H1 finding (0\% valid coverage for prompt template,
+temperature, and harness identity) shows that the three
+highest-impact evaluation confounders
+\citep{alzahrani-2024-benchmarks,
+biderman-2024-lessons} are universally or near-universally
+unobserved. Under the DAG
 in \S\ref{sec:causal}, these unobserved variables constitute
 open backdoor paths from configuration $C$ to observed score
 $S$: cross-source comparisons where they are absent conflate
@@ -758,7 +830,7 @@ walk-through illustrates (Table~\ref{tab:backdoor}): had both
 sources recorded \texttt{scoring\_mode}, the 32.3-point gap would
 have been immediately attributable to evaluation paradigm rather
 than capability. The Tulu-3-8B pairs demonstrate the other end:
-with harness and n-shot documented (2 of 5 paths blocked),
+with n-shot documented (1 of 5 paths blocked),
 cross-source scores converge to $|\Delta| = 0.14$---more than two orders
 of magnitude below the Qwen2.5-72B gap. The controlled experiment
 (\S\ref{sec:experiment}) quantifies the residual risk: partial
@@ -789,18 +861,21 @@ Harness + n-shot         & 2/5 & Partially \\
 \paragraph{Recommendations.}
 \textbf{(R1)} Leaderboard maintainers should record Required-tier
 EvalSpec fields at evaluation runtime. Temperature is one float
-per run; \texttt{prompt\_template} is one SHA-256 hash. Both are
-already present in the runtime environment and require only
-logging. \textbf{(R2)} Model developers should ship EvalSpec-R
+per run; \texttt{prompt\_template} is one SHA-256 hash;
+\texttt{eval\_library.name} and \texttt{eval\_library.version}
+are strings already present in the runtime environment. All
+require only logging, yet none are currently exposed by any
+leaderboard API. \textbf{(R2)} Model developers should ship EvalSpec-R
 compliant evaluation files alongside model releases. The
-Tulu-3-8B pairs show that recording harness and n-shot alone
-drives mean $|\Delta|$ to 0.12. \textbf{(R3)} Schema and platform
+Tulu-3-8B pairs show that recording even n-shot alone
+drives mean $|\Delta|$ to 0.14. \textbf{(R3)} Schema and platform
 designers should adopt \texttt{scoring\_mode} as a schema
 primitive: no combination of other fields distinguishes
 log-likelihood from generation-based evaluation, and the GPQA gap
-is unresolvable without it. Because platforms already record
-harness and n-shot, the structural barrier to recording
-temperature and prompt template is incentives, not schema
+is unresolvable without it. Because platforms already know
+their harness and n-shot internally, the structural barrier to
+recording and exposing harness identity,
+temperature, and prompt template is incentives, not schema
 availability; we therefore recommend leaderboard submission
 systems \emph{require} EvalSpec-R compliance as a condition of
 listing.
@@ -810,7 +885,7 @@ OLv2 contributes 91\% of records; excluding it changes headline
 coverage figures but not qualitative conclusions. The GPQA
 collision depends on PWC (verified against arXiv:2412.15115); the
 32-point gap reflects scoring-mode divergence. The
-reliability-signal result ($\rho = -0.871$, $n = 8$, effective
+reliability-signal result ($\rho = -0.850$, $n = 8$, effective
 $n \approx 3$) is confounded and illustrative rather than
 definitive. Full threats analysis in Appendix~\ref{app:threats}.
 
@@ -819,10 +894,10 @@ definitive. Full threats analysis in Appendix~\ref{app:threats}.
 % ===================================================================
 
 The LLM evaluation ecosystem has an unmeasured confounder
-problem. \textbf{H1~confirmed}: prompt template and temperature
-have 0\% valid coverage across \totalrecords{}~records, making
-observed scores causally uninterpretable as comparisons of
-capability. \textbf{H2~conditionally confirmed} (OLv2-driven,
+problem. \textbf{H1~confirmed}: harness identity, prompt template, and
+temperature have 0\% valid coverage across
+\totalrecords{}~records, making observed scores causally
+uninterpretable as comparisons of capability. \textbf{H2~conditionally confirmed} (OLv2-driven,
 $z = 1.4$ n.s.\ without it): structural fragmentation
 (16~vs.\ 69~expected collisions) makes independent verification
 impossible at scale. \textbf{H3~preliminary evidence} ($n = 8$,
@@ -840,10 +915,31 @@ impossible. \textbf{EvalSpec v0.1} (\S\ref{sec:evalspec},
 Appendix~\ref{app:evalspec}) converts the five evaluation
 confounders into required recorded fields grounded in causal
 necessity. Without \texttt{scoring\_mode}, 32-point gaps remain
-unexplained; without \texttt{prompt\_template} and
+unexplained; without \texttt{eval\_library.name},
+\texttt{prompt\_template}, and
 \texttt{temperature}, attribution is permanently incomplete. We
 release dataset, pipeline, schema, and analysis code under
 CC-BY-4.0.
+
+\paragraph{Future work.}
+Three Recommended-tier EvalSpec fields---\texttt{quantization},
+\texttt{hardware}, and \texttt{software\_environment}---are
+candidate promotions to Required. We propose a concrete threshold:
+any Recommended-tier axis whose partial~$R^2$ exceeds the overturn
+bound ($\overturnbound{}$) in a controlled factorial experiment
+should be reclassified as Required. Testing quantization
+(bfloat16 vs.\ int8 vs.\ int4) requires a $3\times$ multiplier on
+the current experiment grid ($\approx$100 A100-hours); a
+negative-control experiment comparing lm-eval versions under
+identical configurations would isolate harness-version variance.
+Tokenisation is not independently controllable (it is
+model-specific), but its downstream effect surfaces through the
+answer-extraction pipeline; our cross-extractor study
+(\S\ref{sec:experiment}) quantifies this pathway.
+Finally, incorporating \texttt{scoring\_mode} as a sixth
+completeness field (currently 0--5, becoming 0--6) and
+re-estimating $\rho$ would test the robustness of the
+metadata--divergence association.
 
 % ===================================================================
 \section*{Limitations}
@@ -851,7 +947,7 @@ CC-BY-4.0.
 
 The EEE schema does not enforce normalisation mode, pass@$k$, or
 LLM-as-judge configuration; our dataset is a temporal snapshot.
-The reliability-signal finding ($\rho = -0.871$, $n = 8$) is
+The reliability-signal finding ($\rho = -0.850$, $n = 8$) is
 confounded by model identity (the low-delta group is a single
 model family) and source quality; effective DoF is approximately
 2--3, and the result should be treated as a hypothesis to be
@@ -861,14 +957,27 @@ The controlled experiment (\S\ref{sec:experiment}) covers
 \expruns{}~runs on \expmodels{}~models.
 70B-class models would require multi-GPU
 infrastructure beyond our single-A100 Colab budget. The 0-shot
-GSM8K subset is uninformative for Mistral-7B-Instruct
-(extraction-incompatible outputs yield 0), so we report 5-shot as
-the primary specification. The overturn bound $\overturnbound{}$
+GSM8K subset is uninformative for all four models
+(extraction-incompatible outputs yield 0 across all 72 cells), so we report 5-shot as
+the primary specification; a cross-extractor study
+(Fig.~\ref{fig:cross_extractor}) confirms that models do solve
+the problems (flexible extraction recovers 39.5--77.5\% accuracy,
+mean 59~pp), and the 0-shot zero scores are entirely an
+extraction artefact of the strict \texttt{\#\#\#\#} regex. The overturn bound $\overturnbound{}$
 derives from the observational $\rho^2$ and inherits its
 confounds; the experiment establishes that measured configuration
 axes fall below the bound but does not rule out unmeasured axes
-(scoring mode, tokeniser differences) that larger studies could
-quantify.
+(scoring mode, tokeniser differences, harness version) that
+larger studies could quantify. We attempted a negative-control
+experiment comparing lm-eval versions 0.4.3 and 0.4.11 under a
+factorial design (4~models $\times$ 2~n-shots $\times$
+2~formats); all 32 cells failed due to cross-version API
+incompatibilities between lm-eval 0.4.3 and current vllm
+(the VLLM wrapper changed its import structure between
+versions). Resolving this requires pinned virtual environments
+per harness version---feasible but beyond our current Colab
+setup. We release the failed run logs for transparency and
+flag harness-version variance as a priority for future work.
 
 % ===================================================================
 \section*{Ethics Statement}
@@ -1013,8 +1122,8 @@ but not sufficient condition for semantic validity.
 \paragraph{Source composition.}
 OLv2 contributes 91\% of records. Removing it changes n-shot
 coverage from 96.7\% to 62.2\% and CoT from 76.3\% to 1.1\%.
-Temperature and prompt template remain absent across all
-ablations.
+Harness identity, temperature, and prompt template remain absent
+across all ablations.
 
 \paragraph{PWC quality.}
 We removed 774~PWC records as artefacts. The GPQA collision
@@ -1025,7 +1134,7 @@ generation-based) rather than metadata failure alone.
 \paragraph{Reliability signal confounds.}
 % PRIORITY 2: confound disclosure precedes statistic.
 The association between completeness and $|\Delta|$
-($\rho = -0.871$, $n = 8$, effective $n \approx 3$) is
+($\rho = -0.850$, $n = 8$, effective $n \approx 3$) is
 confounded in two ways. First, the low-delta group
 is entirely one model family (Tulu-3-8B), so the association may
 reflect model-family consistency rather than a documentation
@@ -1084,8 +1193,8 @@ C = chain-of-thought, T = temperature, P = prompt template
 fields (0--5). Eff.\ DoF approximates independent observations
 accounting for model-family clustering. Across this
 near-exhaustive set of available collision pairs, confounded by
-model identity and source quality, Spearman $\rho = -0.871$
-($n = 8$, $p = 0.005$) between Compl.\ and $|\Delta|$; effective
+model identity and source quality, Spearman $\rho = -0.850$
+($n = 8$, $p = 0.007$) between Compl.\ and $|\Delta|$; effective
 $n \approx 3$.}
 \label{tab:attribution_extended}
 \small
@@ -1095,13 +1204,13 @@ $n \approx 3$.}
 Model & Bench & $s_1$ & $s_2$ & H & S & C & T & P
   & Compl. & $|\Delta|$ & Eff.\ DoF & $|\Delta|$ interp. \\
 \midrule
-Tulu-3-8B & GPQA     &  6.26 &  6.49 & 1 & 1 & 0 & 0 & 0 & 2 &  0.23 & $\sim$1 & Negligible \\
-Tulu-3-8B & BBH      & 16.86 & 16.67 & 1 & 1 & 0 & 0 & 0 & 2 &  0.19 & $\sim$1 & Negligible \\
-Tulu-3-8B & IFEval   & 82.55 & 82.67 & 1 & 1 & 0 & 0 & 0 & 2 &  0.12 & $\sim$1 & Negligible \\
-Tulu-3-8B & MMLU-Pro & 20.23 & 20.30 & 1 & 1 & 0 & 0 & 0 & 2 &  0.07 & $\sim$1 & Negligible \\
-Tulu-3-8B & MuSR     & 10.52 & 10.45 & 1 & 1 & 0 & 0 & 0 & 2 &  0.07 & $\sim$1 & Negligible \\
-SC2-15B   & MBPP+    & 65.10 & 61.20 & 1 & 0 & 0 & 0 & 0 & 1 &  3.90 & 1 & Moderate \\
-SC2-15B   & HumanE+  & 60.40 & 63.40 & 1 & 0 & 0 & 0 & 0 & 1 &  3.00 & 1 & Moderate \\
+Tulu-3-8B & GPQA     &  6.26 &  6.49 & 0 & 1 & 0 & 0 & 0 & 1 &  0.23 & $\sim$1 & Negligible \\
+Tulu-3-8B & BBH      & 16.86 & 16.67 & 0 & 1 & 0 & 0 & 0 & 1 &  0.19 & $\sim$1 & Negligible \\
+Tulu-3-8B & IFEval   & 82.55 & 82.67 & 0 & 1 & 0 & 0 & 0 & 1 &  0.12 & $\sim$1 & Negligible \\
+Tulu-3-8B & MMLU-Pro & 20.23 & 20.30 & 0 & 1 & 0 & 0 & 0 & 1 &  0.07 & $\sim$1 & Negligible \\
+Tulu-3-8B & MuSR     & 10.52 & 10.45 & 0 & 1 & 0 & 0 & 0 & 1 &  0.07 & $\sim$1 & Negligible \\
+SC2-15B   & MBPP+    & 65.10 & 61.20 & 0 & 0 & 0 & 0 & 0 & 0 &  3.90 & 1 & Moderate \\
+SC2-15B   & HumanE+  & 60.40 & 63.40 & 0 & 0 & 0 & 0 & 0 & 0 &  3.00 & 1 & Moderate \\
 \textbf{Qwen2.5-72B}$^\dagger$ & \textbf{GPQA}
   & \textbf{16.67} & \textbf{49.00}
   & \textbf{0} & \textbf{0} & \textbf{0} & \textbf{0} & \textbf{0}
@@ -1109,7 +1218,7 @@ SC2-15B   & HumanE+  & 60.40 & 63.40 & 1 & 0 & 0 & 0 & 0 & 1 &  3.00 & 1 & Moder
 \bottomrule
 \multicolumn{13}{p{0.97\columnwidth}}{\footnotesize Eff.\ DoF
   approximates independent observations accounting for model-family
-  clustering. The Spearman correlation ($\rho = -0.871$, $p = 0.005$)
+  clustering. The Spearman correlation ($\rho = -0.850$, $p = 0.007$)
   is computed over all 8 rows but should be interpreted with effective
   $n \approx 3$. $^\dagger$Gap verified against arXiv:2412.15115;
   reflects scoring-mode divergence (log-likelihood vs.\
@@ -1227,7 +1336,7 @@ log-likelihood and generation-based evaluation paradigms, so its
 absence makes the highest-impact attribution problem permanently
 unresolvable regardless of compliance with other tiers.
 The validator maps completeness scores to predicted
-divergence risk using the $\rho = -0.871$ observational
+divergence risk using the $\rho = -0.850$ observational
 association from \S\ref{sec:collisions}: completeness 0 corresponds to
 high risk ($|\Delta|$ up to 32~pp), completeness 1--2 to
 medium risk, and completeness 3--5 to low risk
