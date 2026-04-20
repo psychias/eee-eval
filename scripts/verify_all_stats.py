@@ -257,16 +257,21 @@ check("orders of magnitude (>2)", True, log_ratio > 2.0)
 print(f"  [INFO] Ratio: {ratio:.1f}x, log10 = {log_ratio:.3f}")
 
 # Spearman correlation on 8 independent pairs
-completeness = [1, 1, 1, 1, 1, 0, 0, 0]  # per paper Table 6 (extended)
-abs_delta_all = [0.23, 0.19, 0.12, 0.07, 0.07, 3.90, 3.00, 32.33]  # per paper table
+# Completeness = count of config dimensions where BOTH sides have known values
+# 3 dimensions: harness, n_shot, cot → max score = 3
+# GPQA: 0 (harness=lm_eval/unknown, n_shot=0/NaN, cot=True/NaN)
+# SC2-15B pairs: 1 each (harness known both sides, n_shot/cot missing)
+# Tulu-3-8B pairs: 2 each (harness known, n_shot match, cot partial)
+completeness = [0, 1, 1, 2, 2, 2, 2, 2]
+abs_delta_all = [32.33, 3.90, 3.00, 0.23, 0.19, 0.12, 0.07, 0.07]
 rho, p_val = stats.spearmanr(completeness, abs_delta_all)
-check("Spearman rho", -0.850, round(rho, 3))
-check("Spearman p", 0.007, round(p_val, 3))
+check("Spearman rho", -0.871, round(rho, 3))
+check("Spearman p", 0.005, round(p_val, 3))
 print(f"  [INFO] Exact rho={rho:.6f}, p={p_val:.6f}")
 
 # Overturn bound = rho^2
 overturn = rho ** 2
-check("overturn bound", 0.723, round(overturn, 3))
+check("overturn bound", 0.759, round(overturn, 3))
 
 # ======================================================================
 print("\n" + "=" * 70)
@@ -290,12 +295,12 @@ if results_path.exists():
     ok_edf = edf[edf["status"] == "ok"] if "status" in edf.columns else edf
     print(f"  OK experiment records: {len(ok_edf)}")
 
-    check("expruns (OK)", 233, len(ok_edf), tolerance=0)
+    check("expruns (OK)", 306, len(ok_edf), tolerance=0)
 
     # Count models
     model_col = "model_id" if "model_id" in ok_edf.columns else ("model" if "model" in ok_edf.columns else None)
     if model_col:
-        check("expmodels", 3, ok_edf[model_col].nunique(), tolerance=0)
+        check("expmodels", 4, ok_edf[model_col].nunique(), tolerance=0)
         print(f"  Models: {sorted(ok_edf[model_col].unique())}")
 
     # Count benchmarks
@@ -307,9 +312,13 @@ if results_path.exists():
     # Count generative vs loglikelihood
     if bench_col:
         gsm_ok = ok_edf[ok_edf[bench_col] == "gsm8k"]
+        bbh_ok = ok_edf[ok_edf[bench_col] == "bbh"]
         mmlu_ok = ok_edf[ok_edf[bench_col] == "mmlu"]
-        check("expgenruns (GSM8K OK)", 108, len(gsm_ok), tolerance=0)
-        check("expllruns (MMLU OK)", 17, len(mmlu_ok), tolerance=0)
+        check("GSM8K OK runs", 144, len(gsm_ok), tolerance=0)
+        check("BBH OK runs", 144, len(bbh_ok), tolerance=0)
+        check("MMLU OK runs", 18, len(mmlu_ok), tolerance=0)
+        check("expgenruns", 288, len(gsm_ok) + len(bbh_ok), tolerance=0)
+        check("expllruns", 18, len(mmlu_ok), tolerance=0)
 
     print(f"\n  First record keys: {list(exp_records[0].keys())}")
 
@@ -318,30 +327,97 @@ else:
 
 # ======================================================================
 print("\n" + "=" * 70)
-print("6b. CROSS-EXTRACTOR STUDY")
+print("6b. CROSS-EXTRACTOR STUDY (5-shot)")
 print("=" * 70)
 
-cross_ext_csv = ROOT / "experiments" / "cross_extractor_results.csv"
-if cross_ext_csv.exists():
-    cedf = pd.read_csv(cross_ext_csv)
-    print(f"  Cross-extractor results: {len(cedf)} rows")
+import re as re_mod
 
-    # Paper claims: strict=0% in all 9 cells
-    strict = cedf[cedf["extractor"] == "strict (####)"]
-    check("cross-ext strict all zero", True, (strict["accuracy"] == 0).all())
-    check("cross-ext cells", 9, len(strict), tolerance=0)
+def _extract_strict(text):
+    m = re_mod.search(r'####\s*([+-]?\d[\d,]*\.?\d*)', text)
+    return float(m.group(1).replace(',', '')) if m else None
 
-    # Paper claims: flexible 40-78% (mean 60 pp)
-    flex = cedf[cedf["extractor"] == "flexible chain"]
-    check("cross-ext flexible min >= 40", True, flex["accuracy"].min() >= 39.0)
-    check("cross-ext flexible max <= 78", True, flex["accuracy"].max() <= 79.0)
-    check("cross-ext flexible mean ~60", 60, round(flex["accuracy"].mean()), tolerance=0.05)
+def _extract_boxed(text):
+    m = re_mod.search(r'\\boxed\{([+-]?\d[\d,]*\.?\d*)\}', text)
+    return float(m.group(1).replace(',', '')) if m else None
 
-    # Paper claims: gap > 0 in all 9 cells
-    check("cross-ext gap>0 all cells", 9,
-          sum(1 for _, g in flex.iterrows() if g["accuracy"] > 0), tolerance=0)
+def _extract_answer_is(text):
+    m = re_mod.search(r'[Tt]he (?:final )?answer is[:\s]*\$?([+-]?\d[\d,]*\.?\d*)', text)
+    return float(m.group(1).replace(',', '')) if m else None
+
+def _extract_last_num(text):
+    nums = re_mod.findall(r'[+-]?\d[\d,]*\.?\d*', text)
+    return float(nums[-1].replace(',', '')) if nums else None
+
+def _extract_flex(text):
+    for fn in [_extract_strict, _extract_boxed, _extract_answer_is, _extract_last_num]:
+        v = fn(text)
+        if v is not None:
+            return v
+    return None
+
+def _parse_gold(t):
+    m = re_mod.search(r'####\s*([+-]?\d[\d,]*\.?\d*)', t)
+    return float(m.group(1).replace(',', '')) if m else None
+
+cross_ext_5shot_dir = ROOT / "experiments" / "controlled_eval" / "5-shot-GSM8K"
+if cross_ext_5shot_dir.exists():
+    ce_macro_checks = {
+        # (dirname, extractor) -> expected value
+        ("Llama-3.1-8B-Instruct_gsm8k_5shot_plain", "strict"): 21.5,
+        ("Llama-3.1-8B-Instruct_gsm8k_5shot_plain", "flex"): 83.0,
+        ("Llama-3.1-8B-Instruct_gsm8k_5shot_cot", "strict"): 11.5,
+        ("Llama-3.1-8B-Instruct_gsm8k_5shot_cot", "flex"): 83.0,
+        ("Qwen2.5-7B-Instruct_gsm8k_5shot_plain", "strict"): 40.0,
+        ("Qwen2.5-7B-Instruct_gsm8k_5shot_plain", "flex"): 82.0,
+        ("Qwen2.5-7B-Instruct_gsm8k_5shot_cot", "strict"): 26.5,
+        ("Qwen2.5-7B-Instruct_gsm8k_5shot_cot", "flex"): 82.5,
+        ("Mistral-7B-Instruct-v0.3_gsm8k_5shot_plain", "strict"): 37.5,
+        ("Mistral-7B-Instruct-v0.3_gsm8k_5shot_plain", "flex"): 54.5,
+        ("Mistral-7B-Instruct-v0.3_gsm8k_5shot_cot", "strict"): 40.0,
+        ("Mistral-7B-Instruct-v0.3_gsm8k_5shot_cot", "flex"): 53.5,
+        ("Qwen2.5-14B-Instruct_gsm8k_5shot_plain", "strict"): 59.0,
+        ("Qwen2.5-14B-Instruct_gsm8k_5shot_plain", "flex"): 84.5,
+        ("Qwen2.5-14B-Instruct_gsm8k_5shot_cot", "strict"): 2.0,
+        ("Qwen2.5-14B-Instruct_gsm8k_5shot_cot", "flex"): 60.5,
+    }
+
+    for (dirname, ext_type), expected_val in ce_macro_checks.items():
+        # Try both naming conventions
+        sf = cross_ext_5shot_dir / dirname / "samples_gsm8k.jsonl"
+        if not sf.exists():
+            sf = cross_ext_5shot_dir / dirname / "samples_gsm8k_5shot.jsonl"
+        if not sf.exists():
+            print(f"  [WARN] Missing: {sf}")
+            continue
+        samples = []
+        raw = sf.read_text(encoding='utf-8')
+        decoder = json.JSONDecoder()
+        idx = 0
+        while idx < len(raw):
+            try:
+                obj, end = decoder.raw_decode(raw, idx)
+                samples.append(obj)
+                idx = end
+            except json.JSONDecodeError:
+                idx += 1
+        n = len(samples)
+        ext_fn = _extract_strict if ext_type == "strict" else _extract_flex
+        correct = 0
+        for s in samples:
+            resp = ''
+            if 'resps' in s and s['resps']:
+                resp = s['resps'][0][0] if isinstance(s['resps'][0], list) else s['resps'][0]
+            gold = _parse_gold(s.get('target', s.get('doc', {}).get('answer', '')))
+            if gold is None:
+                continue
+            pred = ext_fn(str(resp))
+            if pred is not None and abs(pred - gold) < 0.01:
+                correct += 1
+        acc = round(correct / n * 100, 1)
+        macro_name = f"{dirname.split('_gsm8k_5shot_')[0]}_{dirname.split('_')[-1]}_{ext_type}"
+        check(f"cross-ext {macro_name}", expected_val, acc)
 else:
-    print("  [WARN] cross_extractor_results.csv not found")
+    print("  [WARN] 5-shot-GSM8K directory not found")
 
 # ======================================================================
 print("\n" + "=" * 70)

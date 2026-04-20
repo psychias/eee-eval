@@ -21,6 +21,7 @@
 \usepackage{pifont}
 \usepackage{url}
 \newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
 \usetikzlibrary{positioning, arrows.meta, shapes.geometric}
 
 % Tighten floats
@@ -99,10 +100,11 @@ version, n-shot count, prompt template, temperature, and scoring
 mode (log-likelihood ranking, generation-based with extraction,
 preference, or execution). The GPQA case is illustrative:
 Qwen2.5-72B-Instruct scores 16.67 on one leaderboard and 49.0
-on another---a 32-point gap attributable post-hoc to scoring-mode
-divergence, a confounder recorded by neither source. The gap is
-not evidence of unreliable models; it is evidence of unidentified
-evaluation conditions.
+on another---a 32-point gap attributable post-hoc to configuration
+divergence (scoring mode, subset selection, and/or n-shot), none of
+which is recorded by either source. The gap is not evidence of
+unreliable models; it is evidence of unidentified evaluation
+conditions.
 
 Worse, the problem cannot be resolved by independent re-evaluation.
 Across 29,331~records from 11~sources we find only 16~collision
@@ -126,7 +128,7 @@ coverage: ingesting \totalrecords{}~records from
 \totalbenchmarks{}~benchmarks), we find harness identity, prompt
 template, and temperature have 0\% valid coverage.
 \textbf{(C2)}~Observational evidence that metadata completeness
-predicts score divergence (Spearman $\rho = -0.850$, $n = 8$,
+predicts score divergence (Spearman $\rho = \spearmanrho{}$, $n = 8$,
 effective $n \approx 3$), supported by a controlled experiment on
 \expmodels{} models (\expruns{} runs) showing partial $R^2$ values
 for temperature and prompt format fall below the overturn bound.
@@ -205,7 +207,7 @@ Scoring mode$^\dagger$ & \texttt{evaluation\_results.scoring\_mode}
 Cross-source comparison is equivalent to estimating the ATE of
 $M$ on $S$ while $C$ varies freely between sources, which is
 non-identifiable without recording $C$. The
-$\rho = -0.850$ association (\S\ref{sec:collisions}) is
+$\rho = \spearmanrho{}$ association (\S\ref{sec:collisions}) is
 consistent with this framing: partial measurement of $C$
 (Tulu-3-8B pairs, n-shot documented, completeness = 1) coincides with
 low divergence; full omission (Qwen2.5-72B, completeness = 0)
@@ -266,6 +268,54 @@ frameworks, but none is machine-validated or backed by a
 large-scale audit of current confounder coverage. EvalSpec
 (\S\ref{sec:evalspec}) provides SHACL-validated field
 specifications grounded in that audit.
+Table~\ref{tab:framework-comparison} summarises the key
+differences.
+
+\begin{table*}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Comparison of evaluation documentation frameworks.
+  R\,=\,Required tier, Rec\,=\,Recommended, F\,=\,Full.
+  \cmark\ = supported, \xmark\ = absent, $\sim$ = partial or prose-only.}
+\label{tab:framework-comparison}
+\begin{tabular}{@{}l cccc@{}}
+\toprule
+\textbf{Dimension}
+  & \textbf{BenchmarkCards}
+  & \textbf{EvalCards}
+  & \textbf{Eval Factsheets}
+  & \textbf{EvalSpec v0.1 (ours)} \\
+  & \citep{sokol2025benchmarkcards}
+  & \citep{dhar2025evalcards}
+  & \citep{bordes2025factsheets}
+  & \\
+\midrule
+Documentation scope
+  & Benchmark & Pipeline & Per-model & \textbf{Per-run} \\
+Granularity
+  & Benchmark-level & Pipeline-level & Model-level & \textbf{Run-level} \\
+Format
+  & Narrative MD & Narrative MD/PDF & Structured PDF & \textbf{JSON-LD} \\
+Machine-readable
+  & \xmark & \xmark & $\sim$ & \cmark \\
+Automated validation
+  & \xmark & \xmark & \xmark & \textbf{SHACL} \\
+\addlinespace
+Scoring mode
+  & \xmark & $\sim$ (prose) & \xmark & \cmark\ Enum (R) \\
+Eval library version
+  & \xmark & \xmark & \xmark & \cmark\ String (R) \\
+Seed / temperature
+  & \xmark & \xmark & $\sim$ & \cmark\ (R/Rec) \\
+\addlinespace
+Empirical grounding
+  & \xmark & \xmark & \xmark & \textbf{29K-record audit} \\
+Compliance tiers
+  & \xmark & \xmark & \xmark & \textbf{R / Rec / F} \\
+\bottomrule
+\end{tabular}
+\end{table*}
 MLPerf \citep{mattson-2020-mlperf} demonstrates that standardised
 evaluation is feasible at scale, but targets hardware benchmarking.
 
@@ -390,12 +440,12 @@ SWE-Bench         &    117 &   117 &   1 & unknown$^\ast$ \\
 MT-Bench          &     34 &    34 &   1 & unknown$^\ast$ \\
 \midrule
 \textbf{Total} & \textbf{29,331} & \textbf{5,672} &
-  \textbf{180} & \textbf{0 self-reported} \\
+  \textbf{180} & --- \\
 \bottomrule
 \multicolumn{5}{p{0.95\columnwidth}}{\footnotesize $^\ast$Harness
   is \emph{inferrable} from platform documentation (e.g.\ OLv2 uses
   lighteval) but is not returned by any source API or metadata format.
-  No source self-reports the evaluation harness in its API or metadata.}
+  No source self-reports the evaluation harness in its data.}
 \end{tabular}
 \end{table}
 
@@ -573,19 +623,57 @@ fragmentation.
 \paragraph{OLv2 dependence.}
 The signal depends critically on OLv2. Excluding it leaves 2{,}541
 records with 5~observed vs.\ 2.7~expected collisions ($z = 1.4$,
-n.s.)---above random, not below. A leave-two-out analysis
-(Appendix~\ref{app:leave_two_out}) confirms: 8/10~non-OLv2
-ablations show more collisions than expected; none reaches
-$p < 0.05$ in the fragmentation direction. \textbf{H2 characterises
-an OLv2-dominated ecosystem, not a universal property.} Why OLv2
+n.s.)---above random, not below.
+
+\paragraph{Leave-two-out robustness.}
+Excluding OLv2 plus each of 10~other sources in turn
+(Table~\ref{tab:leave_two_out}) confirms:
+8/10~ablations show more collisions than expected;
+0/10 reach $p < 0.05$ in the fragmentation direction.
+The two below-random cases (EvalPlus and HFModelCard, both
+$z = -1.50$, $p \approx 0.067$~one-tailed) are structurally degenerate:
+they are the only non-OLv2 sources that share benchmarks with each
+other. Removing both along with OLv2 leaves 8~sources with
+essentially zero benchmark overlap, making the near-zero observed
+count uninformative about fragmentation rather than supportive of it.
+\textbf{H2 characterises an OLv2-dominated ecosystem, not a universal
+property.} Why OLv2
 produces this disjoint population is an open question with
 several candidate explanations (self-directed submission
 attracting small-scale open-weight developers; specialised
 leaderboards drawing commercial providers; OLv2's general-
 capability benchmark scope); disentangling them requires
 submission-log data that is not publicly available. Under strict
-normalisation the finding strengthens ($z = -7.6$); qualitative
-conclusions are invariant.
+normalisation (exact benchmark strings, no alias expansion) the
+collision count drops from 16 to 6 and the finding strengthens
+($z = -7.9$ vs.\ $-6.6$); qualitative conclusions are invariant
+across normalisation choices.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Leave-two-out analysis: excluding OLv2 plus each other
+source in turn. None of the 10 ablations reaches $p < 0.05$ in the
+fragmentation direction.}
+\label{tab:leave_two_out}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Excl.\ with OLv2} & \textbf{Obs} & \textbf{Exp}
+  & $z$ & \textbf{Dir} \\
+\midrule
+PWC          & 5 & 1.62 & 2.65 & above \\
+AlpacaEval2  & 5 & 1.81 & 2.36 & above \\
+BFCL         & 5 & 2.02 & 2.10 & above \\
+BigCodeBench & 5 & 2.11 & 1.99 & above \\
+ChatbotArena & 5 & 2.23 & 1.85 & above \\
+EvalPlus     & 0 & 2.24 & $-$1.50 & below \\
+HFModelCard  & 0 & 2.26 & $-$1.50 & below \\
+WildBench    & 5 & 2.44 & 1.64 & above \\
+SWEBench     & 5 & 2.45 & 1.63 & above \\
+MTBench      & 5 & 2.65 & 1.45 & above \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[t]
 \centering
@@ -614,25 +702,51 @@ $|\Delta| \leq 0.23$; these are confirmed independent (OLv2 via
 lm\_eval for all submitted models versus HF Model Card populated
 by the model authors from their vllm-based runs).
 
+\paragraph{SC2-15B: a second case study.}
+The GPQA collision is dramatic but singular. SC2-15B-Instruct
+provides a complementary case on code benchmarks: MBPP+ (65.1
+vs.\ 61.2, $\Delta = 3.9$~pp) and HumanEval+ (60.4 vs.\ 63.4,
+$\Delta = 3.0$~pp). These benchmarks use pass@$k$ scoring, which
+is execution-based and leaves no room for the log-likelihood
+vs.\ generation ambiguity that affects GPQA. Yet neither source
+documents \emph{any} evaluation metadata (completeness = 0/5;
+Table~\ref{tab:attribution_extended}): harness, n-shot, temperature,
+prompt template, and CoT status are all missing. The gaps are
+moderate---roughly 1.5--2$\times$ our measured seed noise floor
+(\noisefloor{}~pp)---but their direction is inconsistent across
+benchmarks (source~1 higher on MBPP+, lower on HumanEval+),
+ruling out a simple systematic bias and suggesting that
+undocumented configuration differences are the most parsimonious
+explanation. Together with the GPQA case, the SC2-15B collisions
+show that cross-source divergence is not confined to a single
+benchmark type or scoring mode.
+
 \paragraph{Documentation as a reliability signal.}
 We computed a per-pair metadata completeness score (sum of
 documented fields across harness, n-shot, CoT, temperature, and
 prompt template; range 0--5) and the absolute divergence
 $|\Delta|$ (Table~\ref{tab:attribution_extended}). Completeness
-varied from 0 (Qwen2.5-72B, SC2-15B) to 1 (all Tulu-3-8B pairs,
-where only n-shot is documented);
+varied from 0 (Qwen2.5-72B) through 1 (SC2-15B, where only harness
+is documented) to 2 (all Tulu-3-8B pairs, where harness and n-shot
+are documented);
 $|\Delta|$ ranged 0.07--32.33~pp. Across this near-exhaustive
 set---confounded by model identity (the low-delta group is
 entirely Tulu-3-8B) and source quality (the high-delta group
 involves PWC, our least reliable source)---Spearman
-$\rho = -0.850$ ($n=8$, $p = 0.007$; Fig.~\ref{fig:completeness}).
+$\rho = \spearmanrho{}$ ($n = 8$, $p = \spearmanp{}$; Fig.~\ref{fig:completeness}).
 The five Tulu-3-8B pairs share a model family and two sources,
 so effective DoF is approximately 2--3, not 8; we report the
-$p$-value descriptively. The practical implication: in the
-absence of re-evaluation capability, metadata completeness is
-the best available proxy for cross-source trustworthiness, a
-preliminary observation that larger EEE-schema datasets could
-confirm.
+$p$-value descriptively.
+A cluster bootstrap (10{,}000 resamples at the model-family level)
+yields 95\% CI $\rho \in [\rhocilow{}, \rhocihigh{}]$, hence
+$\rho^2 \in [\rtwocilow{}, \rtwocihigh{}]$. The lower bound
+($\rtwocilow{}$) falls below the largest measured confounder
+(prompt format, $R^2 = \prtwofmtfive{}$): we cannot rule out that
+the true association is weaker than the format effect. The point
+estimate ($\overturnbound{}$) and median bootstrap value (0.759)
+favour the causal interpretation, but the wide CI---driven by $n = 3$
+effective clusters---makes this a preliminary observation, not a
+definitive claim.
 
 \paragraph{First-party vs.\ third-party asymmetry.}
 The five Tulu-3-8B pairs compare first-party (authors, vllm-based,
@@ -650,21 +764,24 @@ Tulu-3-8B).
 The GPQA gap is not a temperature or prompt-template problem:
 OLv2 uses log-likelihood ranking via lm\_eval, while the PWC
 score (verified against arXiv:2412.15115) reflects
-generation-based evaluation with answer extraction. These
-paradigms are not interchangeable and can produce divergences of
-30+ points on the same benchmark. Current EEE has no way to
-distinguish them; we propose
-\texttt{evaluation\_results.scoring\_mode} as a required field
-with four values---\texttt{log\_likelihood}, \texttt{generation},
-\texttt{preference}, \texttt{execution} (Table~\ref{tab:terminology},
-row~$\dagger$).
+generation-based evaluation with answer extraction.
+However, a scoring-mode mismatch alone need not produce a 32-point
+gap: our MMLU experiment (\S\ref{sec:threats}) shows $<$0.3~pp
+difference between scoring modes under matched conditions. The GPQA
+divergence likely reflects a \emph{combination} of undocumented
+factors---scoring mode, subset selection, n-shot, and prompt
+template---none of which is currently recoverable.
+We propose \texttt{evaluation\_results.scoring\_mode} as a required
+field with four values---\texttt{log\_likelihood},
+\texttt{generation}, \texttt{preference}, \texttt{execution}
+(Table~\ref{tab:terminology}, row~$\dagger$).
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_completeness_vs_delta.png}
 \caption{Metadata completeness score (0--5) vs.\ absolute score
 divergence $|\Delta|$ across the 8 independent collision pairs.
-Spearman $\rho = -0.850$ ($n = 8$, $p = 0.007$), confounded by
+Spearman $\rho = \spearmanrho{}$ ($n = 8$, $p = \spearmanp{}$), confounded by
 model identity (five Tulu-3-8B points form the lower-right
 cluster; effective $n \approx 3$) and source quality.}
 \label{fig:completeness}
@@ -686,7 +803,7 @@ experiment.
 \paragraph{Design.}
 We evaluate \expmodels{}~instruction-tuned open-weight models
 (Mistral-7B-Instruct-v0.3, Qwen2.5-7B-Instruct,
-Llama-3.1-8B-Instruct) on
+Llama-3.1-8B-Instruct, Qwen2.5-14B-Instruct) on
 \expbenches{}~benchmarks spanning two scoring paradigms---GSM8K
 \citep{cobbe-2021-gsm8k} and BIG-Bench Hard (BBH)
 \citep{suzgun-2023-bbh} (both generative), and MMLU
@@ -711,15 +828,71 @@ temperature and $\fmteffectfive{}$~pp across prompt format---both
 substantially below the \gpqagap{}~point cross-source
 divergence (Fig.~\ref{fig:config_vs_crosssource}). Seed variance
 at fixed configuration averages $\noisefloor{}$~pp
-(max $\noisefloormax{}$~pp across 18~cells), establishing the
+(max $\noisefloormax{}$~pp across 12~cells at $T{=}0$), establishing the
 noise floor. The Cinelli--Hazlett regression yields partial
 $R^2 = \prtwotempfive{}$ (temperature) and $\prtwofmtfive{}$
 (prompt format)---both well below $\overturnbound{}$
 (Fig.~\ref{fig:sensitivity}). An unmeasured within-source
-confounder would need to be 2--240$\times$ stronger than the axes
-we measured to overturn the observational finding, a magnitude
-inconsistent with the controlled literature on harness choice
-\citep{alzahrani-2024-benchmarks, biderman-2024-lessons}.
+confounder would need to be $\overturnbound{}/\prtwofmtfive{} \approx 2$
+to $\overturnbound{}/\prtwotempfive{} \approx 152\times$ stronger
+than the axes we measured to overturn the observational finding,
+a magnitude inconsistent with the controlled literature on harness
+choice \citep{alzahrani-2024-benchmarks, biderman-2024-lessons}.
+Even at the lower 95\% CI of $\rho^2$ ($\rtwocilow{}$), temperature
+($\prtwotempfive{}$) remains well below the bound; the format
+effect ($\prtwofmtfive{}$) exceeds it, consistent with the honest
+framing in \S\ref{sec:collisions} that the observational
+association may be weaker than reported.
+
+\paragraph{Extension to BBH and robustness across model scale.}
+The overturn-bound argument generalises to a second generative
+benchmark: on 3-shot BBH, partial $R^2$ is $\prtwotempbbh{}$
+(temperature) and $\prtwofmtbbh{}$ (prompt format)---both below
+$\overturnbound{}$ (Fig.~\ref{fig:sensitivity}). Mean effects are
+$\tempeffectbbh{}$~pp and $\fmteffectbbh{}$~pp respectively.
+Adding Qwen2.5-14B-Instruct to the 5-shot GSM8K specification
+leaves partial $R^2$ virtually unchanged ($\prtwotempfive{}$ vs.\
+0.003 with three models; $\prtwofmtfive{}$ vs.\ 0.367): the
+overturn-bound argument is invariant to model scale in the
+7--14B range.
+
+\paragraph{The 14B CoT collapse is primarily an extraction artefact.}
+Qwen2.5-14B-Instruct on 5-shot GSM8K illustrates how a single
+undocumented axis can dominate score variance. Under the
+\texttt{plain} prompt format, the model scores
+$\cotcollapseplain{}\%$; under \texttt{cot}, it scores
+$\cotcollapsecot{}\%$---a $\cotcollapsegap{}$~pp gap from one
+prompt-format change alone
+(Fig.~\ref{fig:cot_collapse}). This exceeds the largest observed
+cross-source divergence (\gpqagap{}~pp on GPQA) by a factor of 1.7.
+
+A 5-shot cross-extractor study on all four models
+(\crossextfivemodels{} models $\times$ 3 formats = \crossextfiveruns{}
+runs with saved sample outputs) reveals that the vast majority of this
+gap is an extraction artefact.
+Applying a flexible fallback chain (strict \texttt{\#\#\#\#} $\to$
+\texttt{\textbackslash boxed\{\}} $\to$ ``the answer is'' $\to$
+last-number) to the same 14B outputs recovers
+\qwenxlCotFlex{}\% under \texttt{cot} (from \qwenxlCotStrict{}\%
+with the strict regex, $+$\qwenxlCotRecovery{}~pp). Under
+\texttt{plain}, the flexible extractor scores
+\qwenxlPlainFlex{}\% vs.\ \qwenxlPlainStrict{}\% strict---showing
+that even non-CoT runs leave $\sim$25~pp on the table.
+The pattern holds across all four models: for the three 7--8B models,
+the flexible extractor eliminates the CoT penalty entirely
+(e.g.\ Llama-3.1-8B: \llamaCotFlex{}\% CoT vs.\
+\llamaPlainFlex{}\% plain; Qwen-7B: \qwenCotFlex{}\% vs.\
+\qwenPlainFlex{}\%). For the 14B, a residual CoT penalty remains
+(\qwenxlCotFlex{}\% vs.\ \qwenxlPlainFlex{}\%, $\sim$24~pp),
+suggesting that CoT prompting does induce some genuine output-structure
+degradation for this model---but extraction failure is the
+\emph{dominant} factor, shrinking the apparent \cotcollapsegap{}~pp
+gap to $\sim$24~pp (a $\sim$32~pp reduction).
+The core observation stands: the same model, same benchmark, same
+seed, same temperature, scored by the same harness, produces a
+56-point gap because one metadata field (prompt template) varies and
+is not recorded---and the primary mechanism is extraction failure,
+not reasoning failure.
 
 \paragraph{Caveats.}
 \textit{(n-shot on generative benchmarks.)} Including 0-shot
@@ -764,10 +937,11 @@ benchmark noise.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_sensitivity.png}
-\caption{Sensitivity on 5-shot GSM8K: partial $R^2$ for
-temperature ($\prtwotempfive{}$) and prompt format
-($\prtwofmtfive{}$) fall below the overturn bound
-$\overturnbound{}$ (dashed contour).}
+\caption{Cinelli--Hazlett sensitivity analysis. Partial $R^2$ for
+temperature and prompt format on 5-shot GSM8K
+($\prtwotempfive{}$, $\prtwofmtfive{}$) and 3-shot BBH
+($\prtwotempbbh{}$, $\prtwofmtbbh{}$) all fall below the overturn
+bound $\overturnbound{}$ (dashed contour).}
 \label{fig:sensitivity}
 \end{figure}
 
@@ -792,6 +966,20 @@ fallback chain recovers 39.5--77.5\% accuracy from the same
 outputs. The 59~pp mean gap is entirely an extraction artefact,
 not a capability difference.}
 \label{fig:cross_extractor}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_cot_collapse.png}
+\caption{A single prompt-format change on a single model produces a
+larger score divergence than the largest observed cross-source gap.
+Qwen2.5-14B-Instruct on 5-shot GSM8K scores
+$\cotcollapseplain{}\%$ with \texttt{plain} prompt format but
+$\cotcollapsecot{}\%$ with \texttt{cot}---a $\cotcollapsegap{}$~pp
+gap ($1.7\times$ the GPQA gap of $\gpqagap{}$~pp). All other
+conditions (model, benchmark, temperature, seed, harness) are
+identical.}
+\label{fig:cot_collapse}
 \end{figure}
 
 % ===================================================================
@@ -828,8 +1016,9 @@ Recording EvalSpec Required-tier fields is equivalent to blocking
 the highest-impact backdoor paths from $C$ to $S$. The GPQA
 walk-through illustrates (Table~\ref{tab:backdoor}): had both
 sources recorded \texttt{scoring\_mode}, the 32.3-point gap would
-have been immediately attributable to evaluation paradigm rather
-than capability. The Tulu-3-8B pairs demonstrate the other end:
+have been partially attributable to evaluation paradigm (though our
+MMLU experiment suggests scoring mode alone is insufficient to
+explain the full magnitude). The Tulu-3-8B pairs demonstrate the other end:
 with n-shot documented (1 of 5 paths blocked),
 cross-source scores converge to $|\Delta| = 0.14$---more than two orders
 of magnitude below the Qwen2.5-72B gap. The controlled experiment
@@ -852,7 +1041,7 @@ for the Qwen2.5-72B / GPQA pair ($|\Delta| = 32.3$~pp).}
 \midrule
 None (current state)     & 0/5 & No \\
 Harness + n-shot         & 2/5 & Partially \\
-+ \texttt{scoring\_mode} & 3/5 & GPQA explained \\
++ \texttt{scoring\_mode} & 3/5 & GPQA partially attributable \\
 + temp + prompt template & 5/5 & Fully \\
 \bottomrule
 \end{tabular}
@@ -871,8 +1060,8 @@ Tulu-3-8B pairs show that recording even n-shot alone
 drives mean $|\Delta|$ to 0.14. \textbf{(R3)} Schema and platform
 designers should adopt \texttt{scoring\_mode} as a schema
 primitive: no combination of other fields distinguishes
-log-likelihood from generation-based evaluation, and the GPQA gap
-is unresolvable without it. Because platforms already know
+log-likelihood from generation-based evaluation, and gaps like
+GPQA's 32~pp cannot be diagnosed without it. Because platforms already know
 their harness and n-shot internally, the structural barrier to
 recording and exposing harness identity,
 temperature, and prompt template is incentives, not schema
@@ -884,8 +1073,10 @@ listing.
 OLv2 contributes 91\% of records; excluding it changes headline
 coverage figures but not qualitative conclusions. The GPQA
 collision depends on PWC (verified against arXiv:2412.15115); the
-32-point gap reflects scoring-mode divergence. The
-reliability-signal result ($\rho = -0.850$, $n = 8$, effective
+32-point gap reflects configuration divergence (scoring mode among
+other undocumented factors; our MMLU experiment shows scoring mode
+alone contributes $<$0.3~pp under matched conditions). The
+reliability-signal result ($\rho = \spearmanrho{}$, $n = 8$, effective
 $n \approx 3$) is confounded and illustrative rather than
 definitive. Full threats analysis in Appendix~\ref{app:threats}.
 
@@ -936,10 +1127,31 @@ Tokenisation is not independently controllable (it is
 model-specific), but its downstream effect surfaces through the
 answer-extraction pipeline; our cross-extractor study
 (\S\ref{sec:experiment}) quantifies this pathway.
-Finally, incorporating \texttt{scoring\_mode} as a sixth
-completeness field (currently 0--5, becoming 0--6) and
-re-estimating $\rho$ would test the robustness of the
-metadata--divergence association.
+Finally, \texttt{scoring\_mode} cannot currently be added to the
+completeness score because no source documents it---confirming that
+it belongs in EvalSpec as a Required field. The GPQA collision
+(log-likelihood vs.\ generation) demonstrates that the field
+\emph{would} discriminate if it were recorded, though our MMLU
+experiment shows that scoring-mode mismatch alone does not account
+for 32-point gaps; the full divergence likely involves additional
+undocumented factors (subset selection, n-shot, prompt template).
+
+\paragraph{Scoring-mode experiment.}
+To move from observational to interventional evidence, we evaluated
+\scoringmodels{}~models on the full MMLU test set (5-shot, $T{=}0$, seed 42,
+14{,}042 questions across 57 subtasks) under two scoring modes:
+log-likelihood (lm-eval default: argmax over A/B/C/D log-probs) and
+generation (vLLM: emit a letter, parse the first A/B/C/D token).
+Results (Figure~\ref{fig:scoring_mode}) show a mean gap of
+\smMeanDelta{}~pp (max \smMaxDelta{}~pp, Mistral-7B), with
+no model exceeding 0.3~pp. Scoring mode is therefore
+\emph{not} a material confounder for MMLU under matched conditions.
+This is consistent with the loglikelihood temperature-invariance
+observation above: on multiple-choice benchmarks where the scoring
+function directly compares token log-probs, the choice between
+log-likelihood ranking and parsed generation has negligible effect.
+The cross-source gaps we observe (3--32~pp) cannot be attributed
+to scoring-mode differences alone.
 
 % ===================================================================
 \section*{Limitations}
@@ -947,16 +1159,18 @@ metadata--divergence association.
 
 The EEE schema does not enforce normalisation mode, pass@$k$, or
 LLM-as-judge configuration; our dataset is a temporal snapshot.
-The reliability-signal finding ($\rho = -0.850$, $n = 8$) is
+The reliability-signal finding ($\rho = \spearmanrho{}$, $n = 8$) is
 confounded by model identity (the low-delta group is a single
 model family) and source quality; effective DoF is approximately
 2--3, and the result should be treated as a hypothesis to be
 tested with larger collision datasets.
 
 The controlled experiment (\S\ref{sec:experiment}) covers
-\expruns{}~runs on \expmodels{}~models.
+\expruns{}~runs on \expmodels{}~models (7B--14B).
 70B-class models would require multi-GPU
-infrastructure beyond our single-A100 Colab budget. The 0-shot
+infrastructure beyond our single-A100 Colab budget, though the
+inclusion of Qwen2.5-14B-Instruct provides preliminary evidence
+that partial~$R^2$ estimates remain stable beyond the 7--8B range. The 0-shot
 GSM8K subset is uninformative for all four models
 (extraction-incompatible outputs yield 0 across all 72 cells), so we report 5-shot as
 the primary specification; a cross-extractor study
@@ -967,8 +1181,11 @@ extraction artefact of the strict \texttt{\#\#\#\#} regex. The overturn bound $\
 derives from the observational $\rho^2$ and inherits its
 confounds; the experiment establishes that measured configuration
 axes fall below the bound but does not rule out unmeasured axes
-(scoring mode, tokeniser differences, harness version) that
-larger studies could quantify. We attempted a negative-control
+(tokeniser differences, harness version) that
+larger studies could quantify. The scoring-mode experiment
+(\S\ref{sec:experiment}) confirms that this axis contributes
+${<}$0.3~pp on MMLU, but generative benchmarks may show larger
+effects. We attempted a negative-control
 experiment comparing lm-eval versions 0.4.3 and 0.4.11 under a
 factorial design (4~models $\times$ 2~n-shots $\times$
 2~formats); all 32 cells failed due to cross-version API
@@ -1024,35 +1241,7 @@ metadata-match annotations.
 
 \section{Leave-Two-Out Analysis}\label{app:leave_two_out}
 
-Excluding OLv2 plus each of 10~sources in turn:
-
-\begin{tabular}{lrrrr}
-\toprule
-\textbf{Excl.\ with OLv2} & \textbf{Obs} & \textbf{Exp}
-  & $z$ & \textbf{Dir} \\
-\midrule
-PWC          & 5 & 1.62 & 2.65 & above \\
-AlpacaEval2  & 5 & 1.81 & 2.36 & above \\
-BFCL         & 5 & 2.02 & 2.10 & above \\
-BigCodeBench & 5 & 2.11 & 1.99 & above \\
-ChatbotArena & 5 & 2.23 & 1.85 & above \\
-EvalPlus     & 0 & 2.24 & $-$1.50 & below \\
-HFModelCard  & 0 & 2.26 & $-$1.50 & below \\
-WildBench    & 5 & 2.44 & 1.64 & above \\
-SWEBench     & 5 & 2.45 & 1.63 & above \\
-MTBench      & 5 & 2.65 & 1.45 & above \\
-\bottomrule
-\end{tabular}
-
-\noindent 8/10 ablations show more collisions than expected;
-0/10 reach $p<0.05$ in the fragmentation direction. The two
-below-random cases (EvalPlus and HFModelCard, both $z=-1.50$,
-$p\approx0.067$ one-tailed) are structurally degenerate: they
-are the only non-OLv2 sources that share benchmarks with each
-other (2~shared benchmarks per \S\ref{sec:wall}). Removing them
-along with OLv2 leaves 8~sources with essentially zero benchmark
-overlap, making the near-zero observed count uninformative about
-fragmentation rather than supportive of it.
+See Table~\ref{tab:leave_two_out} in \S\ref{sec:wall} (main text).
 
 % PRIORITY 6: Appendix C expanded to full paragraphs with mitigations.
 \section{Extraction Artefact Taxonomy}\label{app:artefacts}
@@ -1134,7 +1323,7 @@ generation-based) rather than metadata failure alone.
 \paragraph{Reliability signal confounds.}
 % PRIORITY 2: confound disclosure precedes statistic.
 The association between completeness and $|\Delta|$
-($\rho = -0.850$, $n = 8$, effective $n \approx 3$) is
+($\rho = \spearmanrho{}$, $n = 8$, effective $n \approx 3$) is
 confounded in two ways. First, the low-delta group
 is entirely one model family (Tulu-3-8B), so the association may
 reflect model-family consistency rather than a documentation
@@ -1193,8 +1382,8 @@ C = chain-of-thought, T = temperature, P = prompt template
 fields (0--5). Eff.\ DoF approximates independent observations
 accounting for model-family clustering. Across this
 near-exhaustive set of available collision pairs, confounded by
-model identity and source quality, Spearman $\rho = -0.850$
-($n = 8$, $p = 0.007$) between Compl.\ and $|\Delta|$; effective
+model identity and source quality, Spearman $\rho = \spearmanrho{}$
+($n = 8$, $p = \spearmanp{}$) between Compl.\ and $|\Delta|$; effective
 $n \approx 3$.}
 \label{tab:attribution_extended}
 \small
@@ -1218,7 +1407,7 @@ SC2-15B   & HumanE+  & 60.40 & 63.40 & 0 & 0 & 0 & 0 & 0 & 0 &  3.00 & 1 & Moder
 \bottomrule
 \multicolumn{13}{p{0.97\columnwidth}}{\footnotesize Eff.\ DoF
   approximates independent observations accounting for model-family
-  clustering. The Spearman correlation ($\rho = -0.850$, $p = 0.007$)
+  clustering. The Spearman correlation ($\rho = \spearmanrho{}$, $p = \spearmanp{}$)
   is computed over all 8 rows but should be interpreted with effective
   $n \approx 3$. $^\dagger$Gap verified against arXiv:2412.15115;
   reflects scoring-mode divergence (log-likelihood vs.\
@@ -1268,7 +1457,7 @@ zero---drives the shortage of cross-source collision pairs.}
 % ===================================================================
 \section*{Appendix F: EvalSpec Schema (v0.1)}\label{app:evalspec}
 
-EvalSpec v0.1 is released as a JSON-LD context file at [URL~TBD]
+EvalSpec v0.1 is released as a JSON-LD context file at \url{https://anonymous.4open.science/r/eee-eval}
 under CC-BY-4.0. The schema extends schema.org and is compatible
 with Croissant (MLCommons, NeurIPS~2024) metadata records.
 SHACL shapes for automated validation are included in the
@@ -1336,11 +1525,24 @@ log-likelihood and generation-based evaluation paradigms, so its
 absence makes the highest-impact attribution problem permanently
 unresolvable regardless of compliance with other tiers.
 The validator maps completeness scores to predicted
-divergence risk using the $\rho = -0.850$ observational
+divergence risk using the $\rho = \spearmanrho{}$ observational
 association from \S\ref{sec:collisions}: completeness 0 corresponds to
 high risk ($|\Delta|$ up to 32~pp), completeness 1--2 to
 medium risk, and completeness 3--5 to low risk
 ($|\Delta| \leq 0.23$~pp), pending confirmation with larger
 collision datasets.
+
+%% Scoring-mode figure — update path after running gen_scoring_mode_figure.py
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_scoring_mode.pdf}
+\caption{Scoring-mode effect on MMLU (5-shot, $T{=}0$, seed 42,
+  \scoringmodels{} models, full test set).
+  Log-likelihood scores A/B/C/D by token log-prob; generation parses
+  the first letter of the model's output. Annotations show the
+  per-model gap (pp). All gaps are ${<}$0.3~pp, confirming that
+  scoring mode is not a material confounder for MMLU.}
+\label{fig:scoring_mode}
+\end{figure}
 
 \end{document}

@@ -1,0 +1,24 @@
+{
+  "@context": "https://evalspec.org/context/v0.1.json",
+  "@type": "EvaluationRun",
+  "model_id": "allenai/Llama-3.1-Tulu-3-8B",
+  "benchmark_id": "IFEval (0-Shot)",
+  "scoring_mode": null,
+  "eval_library": {
+    "name": null,
+    "version": null
+  },
+  "n_shot": null,
+  "date": null,
+  "random_seed": null,
+  "prompt_template": null,
+  "temperature": null,
+  "top_p": null,
+  "quantization": null,
+  "hardware": null,
+  "software_environment": null,
+  "provenance_link": "https://huggingface.co/allenai/Llama-3.1-Tulu-3-8B",
+  "contamination_check": null,
+  "compute_hours": null,
+  "score": 82.55
+}

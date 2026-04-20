@@ -17,8 +17,8 @@
 \newcommand{\collisionn}{8}
 
 % Primary correlation statistic (always qualified in text)
-\newcommand{\spearmanrho}{-0.850}
-\newcommand{\spearmanp}{0.007}
+\newcommand{\spearmanrho}{-0.871}
+\newcommand{\spearmanp}{0.005}
 \newcommand{\effectiven}{3}  % effective DoF ≈ 2-3
 
 % Fragmentation test
@@ -45,27 +45,85 @@
 \newcommand{\expgenruns}{288}
 \newcommand{\expllruns}{18}
 
-% Partial R² on 5-shot GSM8K (the primary specification)
-\newcommand{\prtwotempfive}{0.003}
-\newcommand{\prtwofmtfive}{0.367}
+% Partial R² on 5-shot GSM8K (4 models, N=72)
+\newcommand{\prtwotempfive}{0.005}
+\newcommand{\prtwofmtfive}{0.368}
 
-% Partial R² on all generative data (for appendix / robustness)
-\newcommand{\prtwotempall}{0.001}
-\newcommand{\prtwofmtall}{0.037}
-\newcommand{\prtwonshotall}{0.706}
+% Partial R² on 3-shot BBH (4 models, N=72)
+\newcommand{\prtwotempbbh}{0.153}
+\newcommand{\prtwofmtbbh}{0.512}
+
+% Partial R² on all generative data (GSM8K+BBH, 4 models, N=288)
+\newcommand{\prtwotempall}{0.005}
+\newcommand{\prtwofmtall}{0.126}
+\newcommand{\prtwonshotall}{0.734}
 
 % Overturn bound from Cinelli & Hazlett
-\newcommand{\overturnbound}{0.722}  % = rho² = 0.850²
+\newcommand{\overturnbound}{0.759}  % = rho² = 0.871²
 
-% Mean |max-min| effect per axis (5-shot GSM8K)
-\newcommand{\tempeffectfive}{3.01}
-\newcommand{\fmteffectfive}{22.33}
+% Mean |max-min| effect per axis (5-shot GSM8K, 4 models)
+\newcommand{\tempeffectfive}{2.62}
+\newcommand{\fmteffectfive}{21.92}
 
-% Mean |max-min| effect per axis (all GSM8K)
+% Mean |max-min| effect per axis (3-shot BBH, 4 models)
+\newcommand{\tempeffectbbh}{3.07}
+\newcommand{\fmteffectbbh}{8.13}
+
+% Mean |max-min| effect per axis (all generative)
 \newcommand{\tempeffectall}{1.51}
 \newcommand{\fmteffectall}{11.17}
 \newcommand{\nshoteffectall}{30.73}
 
-% Seed-only noise floor (GSM8K, 3 seeds per cell, within-cell range)
-\newcommand{\noisefloor}{3.10}
-\newcommand{\noisefloormax}{13.50}
+% Seed-only noise floor (GSM8K 5-shot T=0, 4 models)
+\newcommand{\noisefloor}{1.17}
+\newcommand{\noisefloormax}{4.00}
+
+% ─── Bootstrap CI on overturn bound (10k cluster bootstrap, family-level) ─────
+\newcommand{\rhocilow}{-0.943}
+\newcommand{\rhocihigh}{-0.515}
+\newcommand{\rtwocilow}{0.266}
+\newcommand{\rtwocihigh}{0.889}
+\newcommand{\cotcollapseplain}{58.6}    % mean across all seeds/temps
+\newcommand{\cotcollapsecot}{2.7}       % mean across all seeds/temps
+\newcommand{\cotcollapsegap}{55.9}      % plain − cot
+
+% ─── Scoring-mode experiment (MMLU, 5-shot, T=0, seed 42, H100) ─────
+% 3 models × 2 modes; LL via lm-eval (full MMLU), Gen via vLLM (14042 samples)
+\newcommand{\scoringmodels}{3}
+\newcommand{\smMistralLL}{61.92}
+\newcommand{\smMistralGen}{61.64}
+\newcommand{\smMistralDelta}{0.28}
+\newcommand{\smQwenLL}{74.26}
+\newcommand{\smQwenGen}{74.43}
+\newcommand{\smQwenDelta}{0.17}
+\newcommand{\smLlamaLL}{68.30}
+\newcommand{\smLlamaGen}{68.16}
+\newcommand{\smLlamaDelta}{0.14}
+\newcommand{\smMeanDelta}{0.20}
+\newcommand{\smMaxDelta}{0.28}
+
+% ─── 5-shot cross-extractor study (GSM8K, T=0, seed 42, A100) ─────
+% 4 models × 3 formats = 12 runs with log_samples
+\newcommand{\crossextfivemodels}{4}
+\newcommand{\crossextfiveruns}{12}
+% Strict #### vs flexible chain recovery (model, format → strict / flex)
+\newcommand{\llamaPlainStrict}{21.5}
+\newcommand{\llamaPlainFlex}{83.0}
+\newcommand{\llamaCotStrict}{11.5}
+\newcommand{\llamaCotFlex}{83.0}
+\newcommand{\qwenPlainStrict}{40.0}
+\newcommand{\qwenPlainFlex}{82.0}
+\newcommand{\qwenCotStrict}{26.5}
+\newcommand{\qwenCotFlex}{82.5}
+\newcommand{\mistralPlainStrict}{37.5}
+\newcommand{\mistralPlainFlex}{54.5}
+\newcommand{\mistralCotStrict}{40.0}
+\newcommand{\mistralCotFlex}{53.5}
+\newcommand{\qwenxlPlainStrict}{59.0}
+\newcommand{\qwenxlPlainFlex}{84.5}
+\newcommand{\qwenxlCotStrict}{2.0}
+\newcommand{\qwenxlCotFlex}{60.5}
+% Summary stats
+\newcommand{\crossextMeanRecovery}{36.5}  % mean(flex - strict) across 12 cells
+\newcommand{\crossextMaxRecovery}{71.5}   % Llama cot: 83.0 - 11.5
+\newcommand{\qwenxlCotRecovery}{58.5}    % 14B cot: 60.5 - 2.0

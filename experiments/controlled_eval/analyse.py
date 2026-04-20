@@ -123,12 +123,12 @@ def compute_sensitivity(records: list[dict]) -> dict:
             pr2 = float("nan")
         partial_r2[var] = max(0.0, pr2)
 
-    # Overturn threshold: rho = -0.850 was computed over n=8 collision pairs.
+    # Overturn threshold: rho = -0.871 was computed over n=8 collision pairs.
     # Using Cinelli & Hazlett (2020): the partial R^2 of unmeasured confounders
-    # needed to reduce |rho| to 0 is approximately |rho|^2 = 0.723.
+    # needed to reduce |rho| to 0 is approximately |rho|^2 = 0.759.
     # With effective n ~ 3, significance threshold is very low.
-    rho_observed = -0.850
-    overturn_threshold = rho_observed ** 2  # = 0.723
+    rho_observed = -0.871
+    overturn_threshold = rho_observed ** 2  # = 0.759
 
     return {
         "r2_base_model": round(r2_base, 4),
@@ -179,7 +179,7 @@ def _compute_sensitivity_numpy(records: list[dict]) -> dict:
     except Exception:  # pylint: disable=broad-except
         return {"error": "numerical failure in OLS"}
 
-    rho_observed = -0.850
+    rho_observed = -0.871
     return {
         "r2_base_model": round(r2_base, 4),
         "partial_r2_temperature": round(partial_r2.get("temperature", float("nan")), 4),
@@ -291,7 +291,8 @@ def make_figures(records: list[dict], effects: dict,
 
     _fig_config_variance(records, plt)
     _fig_config_vs_crosssource(records, effects, plt)
-    _fig_sensitivity(sensitivity, plt)
+    _fig_sensitivity(records, sensitivity, plt)
+    _fig_cot_collapse(records, plt)
 
 
 def _fig_config_variance(records: list[dict], plt) -> None:
@@ -371,64 +372,141 @@ def _fig_config_vs_crosssource(records: list[dict], effects: dict,
     print(f"Saved: {out}")
 
 
-def _fig_sensitivity(sensitivity: dict, plt) -> None:
-    """Cinelli-Hazlett style sensitivity contour plot."""
+def _fig_sensitivity(records: list[dict], sensitivity: dict, plt) -> None:
+    """Cinelli-Hazlett style sensitivity contour plot with GSM8K + BBH."""
     if not sensitivity or "partial_r2_temperature" not in sensitivity:
         return
 
+    import pandas as pd
+    import statsmodels.api as sm
+
     fig, ax = plt.subplots(figsize=(6, 5))
 
-    # Contour: R²_Y~Z|X and R²_D~Z|X axes
-    # Observed confounders: temperature, prompt_format, n_shot
-    measured_vars = {
-        "temperature": sensitivity.get("partial_r2_temperature", 0.0),
-        "prompt_format": sensitivity.get("partial_r2_prompt_format", 0.0),
-        "n_shot": sensitivity.get("partial_r2_n_shot", 0.0),
-    }
     overturn = sensitivity.get("overturn_threshold_r2", 0.759)
 
+    # Contour
     rx = np.linspace(0, 1.0, 200)
     ry = np.linspace(0, 1.0, 200)
     RX, RY = np.meshgrid(rx, ry)
-    # Robustness value: approximate as min(R²) needed to overturn
-    # For simplicity, contour at combined R² = overturn threshold
     Z = np.sqrt(RX * RY)
     overturn_level = math.sqrt(overturn)
 
     cs = ax.contour(RX, RY, Z, levels=[overturn_level], colors=["#CC3311"],
                     linestyles=["--"])
-    ax.clabel(cs, fmt={overturn_level: f"Overturn bound (R²={overturn:.2f})"}, fontsize=7)
+    ax.clabel(cs, fmt={overturn_level: f"Overturn bound (R\u00b2={overturn:.2f})"}, fontsize=7)
 
-    # Plot measured confounders
-    colors = {"temperature": "#0173B2", "prompt_format": "#DE8F05", "n_shot": "#029E73"}
-    for var, pr2 in measured_vars.items():
-        ax.scatter([pr2], [pr2], color=colors[var], s=80, zorder=5, label=f"{var} (R²={pr2:.3f})")
+    # Compute partial R² for each (benchmark, n_shot) specification
+    specs = [
+        ("5-shot GSM8K", "gsm8k", 5),
+        ("3-shot BBH", "bbh", 3),
+    ]
+    markers = {"5-shot GSM8K": "o", "3-shot BBH": "s"}
+    colors_spec = {"5-shot GSM8K": ("#0173B2", "#DE8F05"),
+                   "3-shot BBH": ("#56B4E9", "#E69F00")}
+
+    df_all = pd.DataFrame(records)
+    for spec_name, bench, nshot in specs:
+        sub = df_all[(df_all["benchmark"] == bench) & (df_all["n_shot"] == nshot)].copy()
+        if len(sub) < 5:
+            continue
+        model_dummies = pd.get_dummies(sub["model_id"], drop_first=True)
+        X_base = sm.add_constant(model_dummies.astype(float))
+        y = sub["score"]
+        base_fit = sm.OLS(y, X_base).fit()
+        ss_base = float(np.sum(base_fit.resid ** 2))
+
+        for var, col, cidx in [
+            ("temperature", sub["temperature"], 0),
+            ("prompt_format", pd.Series(pd.Categorical(sub["prompt_format"]).codes,
+                                        index=sub.index, name="prompt_format"), 1),
+        ]:
+            X_full = pd.concat([X_base, col.rename(var)], axis=1).astype(float)
+            full_fit = sm.OLS(y, X_full).fit()
+            ss_full = float(np.sum(full_fit.resid ** 2))
+            pr2 = max(0.0, (ss_base - ss_full) / ss_base) if ss_base > 0 else 0.0
+            c = colors_spec[spec_name][cidx]
+            m = markers[spec_name]
+            ax.scatter([pr2], [pr2], color=c, s=80, zorder=5, marker=m,
+                       label=f"{spec_name}: {var} ({pr2:.3f})")
 
     ax.set_xlabel(r"Partial $R^2$ of confounder with score ($R^2_{Y \sim Z|X}$)", fontsize=9)
     ax.set_ylabel(r"Partial $R^2$ of confounder with metadata ($R^2_{D \sim Z|X}$)", fontsize=9)
-    ax.set_title("Sensitivity analysis: robustness of \u03c1 = \u22120.850\n"
+    ax.set_title("Sensitivity analysis: robustness of \u03c1 = \u22120.871\n"
                  "(Cinelli & Hazlett 2020)", fontsize=10)
-    ax.legend(fontsize=8, loc="upper left")
+    ax.legend(fontsize=7, loc="upper left")
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
 
-    # Annotation: are measured confounders above or below the overturn bound?
-    max_measured = max(measured_vars.values()) if measured_vars else 0
+    max_measured = max(sensitivity.get("partial_r2_temperature", 0),
+                       sensitivity.get("partial_r2_prompt_format", 0))
     if max_measured < overturn:
-        ax.text(0.65, 0.05,
-                f"Measured confounders\n(max R²={max_measured:.3f}) are BELOW\noverturn bound ({overturn:.3f})",
+        ax.text(0.55, 0.05,
+                f"All measured confounders\nBELOW overturn bound ({overturn:.3f})",
                 fontsize=7, color="#0173B2", transform=ax.transAxes,
-                bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
-                          edgecolor="gray", alpha=0.8))
-    else:
-        ax.text(0.50, 0.05,
-                f"Measured confounders\n(max R²={max_measured:.3f}) EXCEED\noverturn bound ({overturn:.3f})",
-                fontsize=7, color="#CC3311", transform=ax.transAxes,
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
                           edgecolor="gray", alpha=0.8))
 
     plt.tight_layout()
     out = FIGURES_DIR / "fig_sensitivity.pdf"
+    plt.savefig(out, bbox_inches="tight")
+    plt.savefig(out.with_suffix(".png"), dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {out}")
+
+
+def _fig_cot_collapse(records: list[dict], plt) -> None:
+    """Bar chart showing 14B CoT collapse on GSM8K 5-shot."""
+    if not records:
+        return
+
+    # Filter to Qwen2.5-14B, GSM8K, 5-shot
+    data = [r for r in records
+            if "14B" in r["model_id"] and r["benchmark"] == "gsm8k" and r["n_shot"] == 5]
+    if not data:
+        return
+
+    from collections import defaultdict
+    by_fmt = defaultdict(list)
+    for r in data:
+        by_fmt[r["prompt_format"]].append(r["score"])
+
+    formats = ["plain", "instruct", "cot"]
+    means = [np.mean(by_fmt[f]) for f in formats]
+    stds = [np.std(by_fmt[f]) for f in formats]
+
+    fig, ax = plt.subplots(figsize=(5, 4))
+    colors = ["#0173B2", "#DE8F05", "#CC3311"]
+    bars = ax.bar(formats, means, yerr=stds, capsize=4, color=colors,
+                  edgecolor="white", linewidth=0.5)
+
+    # Annotate the gap
+    ax.annotate("", xy=(0, means[0]), xytext=(2, means[2]),
+                arrowprops=dict(arrowstyle="<->", color="#333333", lw=1.5))
+    gap = means[0] - means[2]
+    ax.text(1.0, (means[0] + means[2]) / 2, f"{gap:.1f} pp",
+            ha="center", va="center", fontsize=11, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                      edgecolor="#333333", alpha=0.9))
+
+    # Reference line for GPQA gap
+    ax.axhline(y=32.3, linestyle=":", color="#999999", alpha=0.7)
+    ax.text(2.4, 33.5, "GPQA gap\n(32.3 pp)", fontsize=7, color="#999999",
+            ha="center")
+
+    for i, (m, s) in enumerate(zip(means, stds)):
+        ax.text(i, m + s + 1.5, f"{m:.1f}%", ha="center", va="bottom", fontsize=9)
+
+    ax.set_ylabel("GSM8K Accuracy (%)", fontsize=11)
+    ax.set_xlabel("Prompt Format", fontsize=11)
+    ax.set_title("Qwen2.5-14B-Instruct on 5-shot GSM8K\n"
+                 "A single prompt change exceeds the largest cross-source gap",
+                 fontsize=10)
+    ax.set_ylim(0, 75)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    plt.tight_layout()
+    out = FIGURES_DIR / "fig_cot_collapse.pdf"
     plt.savefig(out, bbox_inches="tight")
     plt.savefig(out.with_suffix(".png"), dpi=300, bbox_inches="tight")
     plt.close()
