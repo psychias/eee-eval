@@ -18,7 +18,7 @@ import re
 import sys
 from collections import defaultdict
 
-DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
+DATA_DIR = pathlib.Path(__file__).resolve().parent.parent.parent / "data"
 
 # ──────────────────────────────────────────────────────────────────
 # 1. PARAMETER-LEAK DETECTION

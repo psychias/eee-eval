@@ -18,7 +18,7 @@ import pathlib
 import sys
 import urllib.request
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
+ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 
 # ── ANSI colours (work on all platforms with modern terminals) ────────────────
 GREEN  = "\033[92m"

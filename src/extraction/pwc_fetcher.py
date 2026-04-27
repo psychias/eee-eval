@@ -48,7 +48,7 @@ try:
 except ImportError:
     _openai = None  # type: ignore[assignment]
 
-_ROOT     = pathlib.Path(__file__).resolve().parent.parent
+_ROOT     = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
 DATA_DIR  = _ROOT / "data"

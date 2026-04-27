@@ -55,7 +55,7 @@ from typing import Any
 
 import requests
 
-_ROOT     = pathlib.Path(__file__).resolve().parent.parent
+_ROOT     = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
 DATA_DIR  = _ROOT / "data"
@@ -1540,7 +1540,7 @@ def main() -> None:
                 print(f"  +{counts.get(k, 0):4d}  {k}")
         print(f"\nTotal new records: {sum(counts.values())}")
 
-    data  = pathlib.Path(__file__).resolve().parent.parent / "data"
+    data  = pathlib.Path(__file__).resolve().parent.parent.parent / "data"
     total = sum(1 for _ in data.rglob("*.json"))
     print(f"Grand total records: {total}")
     print("\nPer-source record counts:")

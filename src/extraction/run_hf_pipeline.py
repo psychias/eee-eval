@@ -48,7 +48,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-_ROOT = pathlib.Path(__file__).resolve().parent.parent
+_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
 DATA_DIR    = _ROOT / "data"

@@ -69,7 +69,7 @@ import json
 import pathlib
 import collections
 
-ROOT    = pathlib.Path(__file__).resolve().parent.parent
+ROOT    = pathlib.Path(__file__).resolve().parent.parent.parent
 OUT_DIR = ROOT / "data" / "aggregated"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 

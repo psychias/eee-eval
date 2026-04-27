@@ -22,7 +22,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-_ROOT = Path(__file__).resolve().parent.parent
+_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
 from src.converters.common.adapter import BaseEvaluationAdapter, SupportedLibrary

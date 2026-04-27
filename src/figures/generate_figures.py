@@ -28,7 +28,7 @@ import pandas as pd
 import seaborn as sns
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-ROOT      = pathlib.Path(__file__).resolve().parent.parent
+ROOT      = pathlib.Path(__file__).resolve().parent.parent.parent
 AGG_DIR   = ROOT / "data" / "aggregated"
 FIG_DIR   = ROOT / "data" / "figures"
 CSV_PATH  = AGG_DIR / "all_results.csv"

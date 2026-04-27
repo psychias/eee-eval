@@ -42,7 +42,7 @@ def _arxiv_id_to_date(arxiv_id: str) -> str:
 
 import requests
 
-_ROOT    = pathlib.Path(__file__).resolve().parent.parent
+_ROOT    = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
 DATA_DIR   = _ROOT / "data"

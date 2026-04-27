@@ -1,7 +1,7 @@
 """validate_outputs.py — schema-check every JSON written under data/."""
 import json, sys, pathlib
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
+ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 schema_path = ROOT / "eval.schema.json"
 
 if not schema_path.exists():

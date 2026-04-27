@@ -17,8 +17,8 @@ import json, os, sys, glob, re
 from collections import defaultdict, Counter
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-SCHEMA_PATH = Path(__file__).resolve().parent.parent / "eval.schema.json"
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+SCHEMA_PATH = Path(__file__).resolve().parent.parent.parent / "eval.schema.json"
 
 # Known ground-truth shots per (source, benchmark)
 # These are the values hardcoded in add_leaderboard_records.py

@@ -37,7 +37,7 @@ if hasattr(sys, 'set_int_max_str_digits'):
     sys.set_int_max_str_digits(0)
 
 # add repo root and utils/ to sys.path
-_ROOT = Path(__file__).resolve().parent.parent
+_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 sys.path.insert(0, str(_ROOT / "utils"))
 

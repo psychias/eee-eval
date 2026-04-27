@@ -1,4 +1,23 @@
+# Core extraction
 requests>=2.31,<3
 beautifulsoup4>=4.12,<5
 tenacity>=8.2,<10
 pydantic>=2.5,<3
+
+# Analysis & figures
+numpy>=1.24
+pandas>=2.0
+scipy>=1.11
+statsmodels>=0.14
+matplotlib>=3.7
+seaborn>=0.13
+
+# Schema validation
+jsonschema>=4.17
+
+# HuggingFace integration
+huggingface_hub>=0.20
+
+# LLM extraction (optional - only for extract_paper.py)
+openai>=1.0
+dacite>=1.8
