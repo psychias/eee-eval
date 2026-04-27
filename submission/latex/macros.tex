@@ -39,11 +39,11 @@
 % Executed on Colab A100 with vLLM backend;
 % Mistral-7B + Qwen2.5-7B + Llama-3.1-8B + Qwen2.5-14B completed.
 \newcommand{\expmodels}{4}
-\newcommand{\expbenches}{3}         % GSM8K generative, BBH generative, MMLU loglikelihood
+\newcommand{\expbenches}{4}         % GSM8K generative, BBH generative, MMLU loglikelihood, GPQA loglikelihood
 \newcommand{\expconfigs}{12}        % 2 temps × 3 formats × 2 n-shots
-\newcommand{\expruns}{306}          % 144 GSM8K + 144 BBH + 18 MMLU, OK only
+\newcommand{\expruns}{354}          % 144 GSM8K + 144 BBH + 18 MMLU + 24 GPQA + 24 collision
 \newcommand{\expgenruns}{288}
-\newcommand{\expllruns}{18}
+\newcommand{\expllruns}{66}         % 18 MMLU + 24 GPQA + 24 collision (mixed)
 
 % Partial R² on 5-shot GSM8K (4 models, N=72)
 \newcommand{\prtwotempfive}{0.005}
@@ -77,6 +77,12 @@
 % Seed-only noise floor (GSM8K 5-shot T=0, 4 models)
 \newcommand{\noisefloor}{1.17}
 \newcommand{\noisefloormax}{4.00}
+
+% Sensitivity: reclassifying delta=0 pairs as independent
+\newcommand{\spearmanrhoall}{-0.290}   % all 16 pairs
+\newcommand{\spearmanpall}{0.276}
+\newcommand{\spearmanrhoreduced}{-0.196} % 12 pairs (70B-SFT reduced to 1 representative)
+\newcommand{\spearmanpreduced}{0.541}
 
 % ─── Bootstrap CI on overturn bound (10k cluster bootstrap, family-level) ─────
 \newcommand{\rhocilow}{-0.943}
@@ -127,3 +133,36 @@
 \newcommand{\crossextMeanRecovery}{36.5}  % mean(flex - strict) across 12 cells
 \newcommand{\crossextMaxRecovery}{71.5}   % Llama cot: 83.0 - 11.5
 \newcommand{\qwenxlCotRecovery}{58.5}    % 14B cot: 60.5 - 2.0
+
+% ─── GPQA controlled experiment (log-likelihood, 4 models, 24 runs) ─────
+% 4 models × 3 formats × 2 n-shots, T=0 (deterministic), seed 42
+\newcommand{\gpqaexpruns}{24}
+\newcommand{\gpqafmteffectmean}{6.31}      % mean |max-min| across formats
+\newcommand{\gpqafmteffectmax}{21.0}        % Qwen-14B 5-shot
+\newcommand{\gpqanshoteffectmean}{5.71}     % mean |5shot-0shot|
+\newcommand{\gpqanshoteffectmax}{15.0}      % Qwen-14B plain
+\newcommand{\gpqaxlmin}{19.5}               % Qwen-14B min (plain/5-shot)
+\newcommand{\gpqaxlmax}{40.5}              % Qwen-14B max (cot/5-shot)
+\newcommand{\gpqaxlrange}{21.0}            % Qwen-14B total range
+
+% ─── Collision model validation (Tulu-3-8B, 4 benchmarks, 24 runs) ─────
+% 1 model × 4 benchmarks × 3 formats × 2 n-shots, T=0, seed 42
+\newcommand{\colmodelruns}{24}
+\newcommand{\colmodelid}{Tulu-3-8B}
+% GSM8K: massive n-shot effect, 0-shot collapse
+\newcommand{\colGsmZeroshotMean}{0.2}
+\newcommand{\colGsmFiveshotMean}{83.8}
+\newcommand{\colGsmNshotEffect}{83.7}       % 5-shot - 0-shot
+\newcommand{\colGsmFmtFive}{4.5}            % format range at 5-shot
+% BBH: large n-shot + format effects
+\newcommand{\colBbhZeroshotFmtRange}{11.6}  % format range at 0-shot
+\newcommand{\colBbhNshotEffect}{31.8}       % mean 3-shot - 0-shot
+% MMLU: very stable
+\newcommand{\colMmluRange}{3.6}             % total range
+\newcommand{\colMmluFmtFive}{0.4}           % format range at 5-shot
+% GPQA: moderate effects
+\newcommand{\colGpqaFmtZero}{6.0}           % format range at 0-shot
+\newcommand{\colGpqaFmtFive}{9.5}           % format range at 5-shot
+\newcommand{\colGpqaRange}{9.5}             % total range
+% Overall
+\newcommand{\colOverallRange}{86.5}          % max - min across all 24 runs

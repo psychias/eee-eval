@@ -1,0 +1,28 @@
+================================================================================
+FOUNDATION LLM PAPERS — VERIFIED FROM ARXIV API
+================================================================================
+
+2505.00949   — Llama-Nemotron: Efficient Reasoning Models (Bercovich et al.)
+2505.06496   — xGen-small Technical Report (Nijkamp et al.)
+2505.09388   — Qwen3 Technical Report (Yang et al.)
+2505.22312   — Skywork Open Reasoner 1 Technical Report (He et al.)
+2506.13284   — AceReason-Nemotron 1.1: Advancing Math and Code Reasoning (Liu et al.)
+2507.20534   — Kimi K2: Open Agentic Intelligence (Team et al.)
+2509.17765   — Qwen3-Omni Technical Report (Xu et al.)
+2510.04944   — On Structured State-Space Duality (Hu et al.)
+2511.07025   — Llama-Embed-Nemotron-8B: Universal Text Embedding Model (Babakhin et al.)
+2511.10628   — Instella: Fully Open Language Models with Stellar Performance (Liu et al.)
+2511.21631   — Qwen3-VL Technical Report (Bai et al.)
+2511.23404   — LFM2 Technical Report (Amini et al.)
+2512.06266   — Nanbeige4-3B Technical Report: Frontier of Small Language Models (Yang et al.)
+2601.01792   — HyperCLOVA X 8B Omni (Team)
+2601.02346   — Falcon-H1R: Pushing the Reasoning Frontiers with a Hybrid Model (Team et al.)
+2601.11659   — The Llama 4 Herd: Architecture, Training, Evaluation, Deployment (Meta)
+2602.11761   — MiniCPM-SALA: Hybridizing Sparse and Linear Attention (Team et al.)
+2603.03975   — Phi-4-reasoning-vision-15B Technical Report (Microsoft, Aneja et al.)
+2603.11510   — Tiny Aya: Bridging Scale and Multilingual Depth (Cohere, Salamanca et al.)
+2603.19220   — Nemotron-Cascade 2: Post-Training LLMs with Cascade RL (NVIDIA, Yang et al.)
+2604.03444   — OLMo Hybrid (AI2, Merrill et al.)
+
+Total: 21 papers
+================================================================================

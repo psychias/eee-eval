@@ -692,6 +692,16 @@ Reliability Signal (H3)}\label{sec:collisions}
 Of 16 collision pairs, 8 show $\Delta = 0.00$ (likely copied
 scores); the remaining 8 independent pairs constitute our
 evidence base (Table~\ref{tab:collisions}, Appendix~\ref{app:tables}).
+As a sensitivity check, reclassifying all 16 pairs as independent
+yields $\rho = \spearmanrhoall{}$ ($p = \spearmanpall{}$); reducing
+the Tulu-3-70B-SFT cluster to one representative gives
+$\rho = \spearmanrhoreduced{}$ ($p = \spearmanpreduced{}$).
+In both cases the negative trend persists directionally but loses
+significance, because eight additional $\Delta = 0$ points at
+completeness 1--2 dilute the monotonic association.
+This confirms that the original 8-pair result is the more
+informative specification; however, the sensitivity analysis
+shows the finding is fragile to classification assumptions.
 
 \paragraph{Score gaps.}
 The most extreme is Qwen2.5-72B-Instruct on GPQA: 16.67 (OLv2,
@@ -767,7 +777,10 @@ score (verified against arXiv:2412.15115) reflects
 generation-based evaluation with answer extraction.
 However, a scoring-mode mismatch alone need not produce a 32-point
 gap: our MMLU experiment (\S\ref{sec:threats}) shows $<$0.3~pp
-difference between scoring modes under matched conditions. The GPQA
+difference between scoring modes under matched conditions, and our
+controlled GPQA experiment shows that prompt format and n-shot
+together produce at most $\gpqaxlrange{}$~pp variation under matched
+conditions (Qwen2.5-14B, the most sensitive model). The GPQA
 divergence likely reflects a \emph{combination} of undocumented
 factors---scoring mode, subset selection, n-shot, and prompt
 template---none of which is currently recoverable.
@@ -775,6 +788,20 @@ We propose \texttt{evaluation\_results.scoring\_mode} as a required
 field with four values---\texttt{log\_likelihood},
 \texttt{generation}, \texttt{preference}, \texttt{execution}
 (Table~\ref{tab:terminology}, row~$\dagger$).
+
+\paragraph{Provenance timestamps.}
+We attempted to attach evaluation dates to each collision pair.
+Of the four source APIs involved, only \texttt{papers\_with\_code}
+and \texttt{hf\_model\_card} expose timestamps---derived from
+arXiv IDs---while \texttt{open\_llm\_leaderboard\_v2} and
+\texttt{evalplus} provide none.
+No pair has \texttt{evaluation\_timestamp} on both sides;
+12/16 pairs have a date on one side only (Tulu-3 and GPQA pairs,
+via arXiv-derived dates), and 4 pairs (StarCoder2 base models)
+have no timestamp on either side.
+This further illustrates the metadata gap: even basic provenance
+is unrecoverable for most collision pairs, making temporal
+confounds (e.g.\ dataset version drift) impossible to diagnose.
 
 \begin{figure}[t]
 \centering
@@ -807,7 +834,8 @@ Llama-3.1-8B-Instruct, Qwen2.5-14B-Instruct) on
 \expbenches{}~benchmarks spanning two scoring paradigms---GSM8K
 \citep{cobbe-2021-gsm8k} and BIG-Bench Hard (BBH)
 \citep{suzgun-2023-bbh} (both generative), and MMLU
-\citep{hendrycks-2021-mmlu} (loglikelihood)---under a factorial
+\citep{hendrycks-2021-mmlu} and GPQA \citep{rein-2023-gpqa}
+(both loglikelihood)---under a factorial
 design: temperature $\{0.0, 0.7\}$ $\times$ prompt format
 $\{$plain, instruct, cot$\}$ $\times$ n-shot $\{0, 5\}$ (BBH:
 $\{0, 3\}$), with
@@ -855,6 +883,81 @@ leaves partial $R^2$ virtually unchanged ($\prtwotempfive{}$ vs.\
 0.003 with three models; $\prtwofmtfive{}$ vs.\ 0.367): the
 overturn-bound argument is invariant to model scale in the
 7--14B range.
+
+\paragraph{Extension to GPQA (loglikelihood benchmark).}
+To test whether configuration sensitivity extends to
+loglikelihood-scored multiple-choice benchmarks, we evaluated the
+same \expmodels{}~models on GPQA-Main (\gpqaexpruns{}~runs:
+4~models $\times$ 3~formats $\times$ 2~n-shots; temperature is a
+no-op by construction). Mean prompt-format effect is
+$\gpqafmteffectmean{}$~pp (max $\gpqafmteffectmax{}$~pp,
+Qwen2.5-14B-Instruct at 5-shot); mean n-shot effect is
+$\gpqanshoteffectmean{}$~pp (max $\gpqanshoteffectmax{}$~pp).
+Qwen2.5-14B-Instruct is particularly sensitive: scores range from
+$\gpqaxlmin{}\%$ (plain, 5-shot) to $\gpqaxlmax{}\%$ (cot,
+5-shot)---a $\gpqaxlrange{}$~pp gap from prompt format alone, and
+a $15$~pp gap from n-shot direction reversal (plain 0-shot
+outperforms plain 5-shot by 15~pp, while cot 5-shot outperforms cot
+0-shot by 14.5~pp). These results confirm that even
+loglikelihood benchmarks, where temperature and extraction are
+irrelevant, exhibit substantial configuration sensitivity through
+prompt format and n-shot---reinforcing the need for EvalSpec
+documentation (Fig.~\ref{fig:gpqa_sensitivity}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_gpqa_sensitivity.png}
+\caption{GPQA-Main configuration sensitivity (4~models, 3~formats,
+2~n-shots; loglikelihood scoring, temperature invariant).
+Prompt format produces up to $\gpqafmteffectmax{}$~pp variation
+(Qwen2.5-14B at 5-shot); n-shot direction reverses across formats
+for the same model. Dashed line = random baseline (25\%).}
+\label{fig:gpqa_sensitivity}
+\end{figure}
+
+\paragraph{Collision model validation (\colmodelid{}).}
+To directly test whether undocumented configuration choices can explain
+the divergences observed in our collision pairs, we evaluated
+\colmodelid{}---the model contributing five of eight independent
+collision pairs---across all four benchmarks under the same factorial
+design (\colmodelruns{}~runs: 4~benchmarks $\times$ 3~formats
+$\times$ 2~n-shots, $T{=}0$).  Results vary dramatically by benchmark:
+%
+\begin{itemize}[nosep,leftmargin=*]
+\item \textbf{GSM8K}: near-total 0-shot collapse
+  ($\colGsmZeroshotMean{}\%$ mean) vs.\ strong 5-shot performance
+  ($\colGsmFiveshotMean{}\%$ mean)---an $\colGsmNshotEffect{}$~pp
+  n-shot effect, with only $\colGsmFmtFive{}$~pp format variation at
+  5-shot.
+\item \textbf{BBH}: format effects reach $\colBbhZeroshotFmtRange{}$~pp
+  at 0-shot; n-shot effect averages $\colBbhNshotEffect{}$~pp.
+\item \textbf{MMLU}: highly stable---total range $\colMmluRange{}$~pp
+  across all configurations, format effect at 5-shot only
+  $\colMmluFmtFive{}$~pp.
+\item \textbf{GPQA}: moderate sensitivity---format effects of
+  $\colGpqaFmtZero{}$/$\colGpqaFmtFive{}$~pp at 0/5-shot, with
+  n-shot direction reversal (plain 0-shot outperforms plain 5-shot by
+  7.5~pp).
+\end{itemize}
+%
+The overall range across all 24 Tulu-3-8B runs is
+$\colOverallRange{}$~pp (Fig.~\ref{fig:collision_model}).
+This confirms that the \emph{same model} appearing in multiple
+collision pairs can produce vastly different scores depending on
+which configuration axis is varied---and that
+the dominant confounder is benchmark-dependent (n-shot for GSM8K,
+prompt format for BBH/GPQA, negligible for MMLU).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_collision_model.png}
+\caption{Tulu-3-8B configuration sensitivity across four benchmarks
+(3~formats $\times$ 2~n-shots, $T{=}0$). GSM8K and BBH show massive
+n-shot effects; MMLU is nearly invariant; GPQA shows moderate format
+sensitivity with n-shot direction reversal. Overall range:
+$\colOverallRange{}$~pp.}
+\label{fig:collision_model}
+\end{figure}
 
 \paragraph{The 14B CoT collapse is primarily an extraction artefact.}
 Qwen2.5-14B-Instruct on 5-shot GSM8K illustrates how a single
@@ -1166,7 +1269,8 @@ model family) and source quality; effective DoF is approximately
 tested with larger collision datasets.
 
 The controlled experiment (\S\ref{sec:experiment}) covers
-\expruns{}~runs on \expmodels{}~models (7B--14B).
+\expruns{}~runs on \expmodels{}~models (7B--14B) across
+\expbenches{}~benchmarks (GSM8K, BBH, MMLU, GPQA).
 70B-class models would require multi-GPU
 infrastructure beyond our single-A100 Colab budget, though the
 inclusion of Qwen2.5-14B-Instruct provides preliminary evidence
@@ -1524,6 +1628,14 @@ template, or harness fields can distinguish between
 log-likelihood and generation-based evaluation paradigms, so its
 absence makes the highest-impact attribution problem permanently
 unresolvable regardless of compliance with other tiers.
+EvalSpec v0.1 hashes the raw \texttt{prompt\_template} string
+(SHA-256), which means that semantically equivalent templates
+differing only in whitespace or variable formatting produce
+distinct hashes. A future revision should consider
+canonicalisation (e.g.\ stripping trailing whitespace and
+normalising line endings before hashing) or a prompt-ID registry
+to mitigate hash fragmentation while preserving the current
+zero-overhead, fully local hashing mechanism.
 The validator maps completeness scores to predicted
 divergence risk using the $\rho = \spearmanrho{}$ observational
 association from \S\ref{sec:collisions}: completeness 0 corresponds to
