@@ -1,0 +1,18 @@
+================================================================================
+FOUNDATION LLM PAPERS — BATCH 7 (verified IDs + HTML available)
+================================================================================
+
+2402.01739   — OpenMoE: Open Mixture-of-Experts Language Models (Xue et al.)
+2306.07629   — SqueezeLLM: Dense-and-Sparse Quantization (Kim et al.)
+2404.01226   — Stable Code Technical Report (Stability AI)
+2310.06694   — Sheared LLaMA: Accelerating LM Pre-training via Structured Pruning (Xia et al.)
+2309.16609   — Qwen Technical Report (Alibaba)
+2406.12793   — ChatGLM: A Family of Large Language Models from GLM-130B to GLM-4 (Zhipu AI)
+2405.20335   — Xwin-LM: Strong and Scalable Alignment Practice for LLMs (Xwin-LM Team)
+2309.05519   — NExT-GPT: Any-to-Any Multimodal LLM (Wu et al.)
+2411.12372   — RedPajama: Open Dataset for Training Large Language Models (Together AI)
+2211.05100   — BLOOM: A 176B-Parameter Open-Access Multilingual Language Model (BigScience)
+2312.00752   — Mamba: Linear-Time Sequence Modeling with Selective State Spaces (Gu & Dao)
+
+Total: 11 papers
+================================================================================

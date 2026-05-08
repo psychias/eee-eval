@@ -1,0 +1,27 @@
+================================================================================
+FOUNDATION LLM PAPERS — VERIFIED FROM ARXIV API
+================================================================================
+
+2305.13048   — RWKV: Reinventing RNNs for the Transformer Era (Peng et al.)
+2305.16264   — Scaling Data-Constrained Language Models (Muennighoff et al.)
+2306.01116   — The RefinedWeb Dataset for Falcon LLM (Penedo et al.)
+2309.10305   — Baichuan 2: Open Large-scale Language Models (Yang et al.)
+2311.16867   — The Falcon Series of Open Language Models (Almazrouei et al.)
+2312.00738   — SeaLLMs: Large Language Models for Southeast Asia (Nguyen et al.)
+2312.06550   — LLM360: Towards Fully Transparent Open-Source LLMs (Liu et al.)
+2312.15166   — SOLAR 10.7B: Scaling Large Language Models with Depth Up-Scaling (Kim et al.)
+2401.02385   — TinyLlama: An Open-Source Small Language Model (Zhang et al.)
+2401.04088   — Mixtral of Experts (Mistral AI, Jiang et al.)
+2402.00159   — Dolma: an Open Corpus of Three Trillion Tokens for LM Pretraining (Soldaini et al.)
+2402.00838   — OLMo: Accelerating the Science of Language Models (Groeneveld et al.)
+2402.15627   — MegaScale: Scaling LLM Training to More Than 10,000 GPUs (Jiang et al.)
+2402.16819   — Nemotron-4 15B Technical Report (Parmar et al.)
+2402.19173   — StarCoder 2 and The Stack v2 (Lozhkov et al.)
+2402.19427   — Griffin: Mixing Gated Linear Recurrences with Local Attention (De et al.)
+2403.04652   — Yi: Open Foundation Models (01.AI, Young et al.)
+2403.08295   — Gemma: Open Models Based on Gemini Research and Technology (Team et al.)
+2403.17297   — InternLM2 Technical Report (Yang et al.)
+2403.19887   — Jamba: Hybrid Transformer-Mamba Language Model (AI21, Lieber et al.)
+
+Total: 20 papers
+================================================================================

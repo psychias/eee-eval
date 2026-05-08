@@ -1,0 +1,17 @@
+================================================================================
+FOUNDATION LLM PAPERS — BATCH 6 (verified IDs + HTML available)
+================================================================================
+
+2310.06825   — Mistral 7B (Jiang et al.)
+2403.03853   — ShortGPT: Layers in LLMs are More Redundant Than You Expect (Men et al.)
+2405.03548   — MAmmoTH2: Scaling Instructions from the Web (Yue et al.)
+2406.04770   — WildBench: Benchmarking LLMs with Challenging Tasks (Lin et al.)
+2407.10759   — Qwen2-Audio Technical Report (Chu et al.)
+2408.00118   — Gemma 2: Improving Open Language Models at Practical Size (Google)
+2506.05176   — Qwen3-Embedding: Advancing Text Embedding and Reranking (Alibaba)
+2504.05299   — SmolVLM: Redefining Small and Efficient Multimodal Models (HuggingFace)
+2407.10671   — Qwen2 Technical Report (Alibaba)
+2403.17297   — InternLM2 Technical Report (Shanghai AI Lab)
+
+Total: 10 papers
+================================================================================

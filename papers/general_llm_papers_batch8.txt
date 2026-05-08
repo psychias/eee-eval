@@ -1,0 +1,17 @@
+================================================================================
+FOUNDATION LLM PAPERS — BATCH 8 (verified IDs + HTML available)
+================================================================================
+
+2309.03852   — FLM-101B: An Open LLM and How to Train It with $100K Budget (Li et al.)
+2511.06719   — MobileLLM-Pro Technical Report (Meta)
+2601.08584   — Ministral 3 (Mistral AI)
+2410.07073   — Pixtral 12B (Mistral AI)
+2407.14885   — Falcon2-11B Technical Report (TII)
+2401.02954   — DeepSeek LLM: Scaling Open-Source Language Models with Longtermism (DeepSeek-AI)
+2402.14830   — Orca-Math: Unlocking the Potential of SLMs in Grade School Math (Microsoft)
+2411.15124   — Tulu 3: Pushing Frontiers in Open Language Model Post-Training (AI2)
+2411.10414   — Llama Guard 3 Vision: Safeguarding Human-AI Image Understanding (Meta)
+2305.06161   — StarCoder: May the Source Be with You! (BigCode)
+
+Total: 10 papers
+================================================================================

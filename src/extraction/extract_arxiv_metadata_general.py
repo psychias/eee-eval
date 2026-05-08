@@ -6,7 +6,7 @@ Mitigations applied:
   3. Chunked extraction for long papers: split into chunks, extract from each, merge
   4. Title validation: check fetched paper title matches expected model name
 
-Output: data/arxiv_extraction_general/{naive,llm}/<paper>/<model>/<uuid>.json
+Output: data/arxiv_extraction_general/{naive,llm}/<paper>/<model>/<benchmark>/<uuid>.json
         data/arxiv_extraction_general/summary.{json,csv}
 
 Usage:
@@ -35,6 +35,11 @@ from tenacity import (
 )
 from bs4 import BeautifulSoup
 
+# ── Inline validation import ──────────────────────────────────────────
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from src.validation.validate_extractions import validate_record
+
 # ── Logging ────────────────────────────────────────────────────────────
 log = logging.getLogger("eee_extract")
 
@@ -60,7 +65,7 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 HAIKU_MODEL = "anthropic/claude-haiku-4.5"
 
 FIELDS = ["n_shot", "temperature", "prompt_template", "eval_harness",
-          "scoring_mode", "num_samples", "decoding_strategy", "seed"]
+          "decoding_strategy", "seed"]
 
 # Expanded section keywords
 SECTION_KEYWORDS = [
@@ -113,8 +118,28 @@ def _norm_metric(name: str) -> str:
     return re.sub(r"[\s\-_]+", "", name).lower().strip()
 
 
-def _get_metric_config(metric_name: str) -> dict:
-    """Return metric_config dict with correct bounds/direction."""
+def _parse_score_range(score_range: str | None) -> tuple[float | None, float | None]:
+    """Parse LLM-provided score_range like '0-100', '0-1', '1-inf' into (min, max)."""
+    if not score_range or not isinstance(score_range, str):
+        return None, None
+    parts = re.split(r"[\-–—to ]+", score_range.strip())
+    parts = [p.strip() for p in parts if p.strip()]
+    if len(parts) != 2:
+        return None, None
+    try:
+        lo = float(parts[0]) if parts[0].lower() not in ("inf", "-inf", "none") else None
+        hi = float(parts[1]) if parts[1].lower() not in ("inf", "none") else None
+        return lo, hi
+    except ValueError:
+        return None, None
+
+
+def _get_metric_config(metric_name: str, llm_lower_is_better=None, llm_score_range=None) -> dict:
+    """Return metric_config dict with correct bounds/direction.
+
+    For known metrics, use hardcoded bounds. For unknown metrics, fall back
+    to the LLM-provided lower_is_better and score_range values.
+    """
     normed = _norm_metric(metric_name)
     # Try exact match, then prefix match for pass@N variants
     cfg = METRIC_CONFIG.get(normed)
@@ -123,8 +148,12 @@ def _get_metric_config(metric_name: str) -> dict:
     if not cfg and normed.startswith("rouge"):
         cfg = METRIC_CONFIG.get("rouge")
     if not cfg:
-        log.warning("Unknown metric '%s', using default bounds", metric_name)
-        cfg = {"lower_is_better": False, "min": 0.0, "max": 100.0}
+        # Fall back to LLM-provided values
+        llm_min, llm_max = _parse_score_range(llm_score_range)
+        lib = llm_lower_is_better if isinstance(llm_lower_is_better, bool) else False
+        log.warning("Unknown metric '%s', using LLM-provided bounds (range=%s, lower_is_better=%s)",
+                    metric_name, llm_score_range, lib)
+        cfg = {"lower_is_better": lib, "min": llm_min or 0.0, "max": llm_max}
     return {
         "metric_name": metric_name,
         "lower_is_better": cfg["lower_is_better"],
@@ -166,8 +195,6 @@ class BenchmarkEntry(BaseModel):
     n_shot: Optional[int] = None
     temperature: Optional[float] = None
     prompt_template: Optional[str] = None
-    scoring_mode: Optional[str] = None
-    num_samples: Optional[int] = None
     decoding_strategy: Optional[str] = None
 
     @field_validator("n_shot", mode="before")
@@ -270,7 +297,7 @@ def fetch_html(arxiv_id: str) -> str | None:
     base_id = re.sub(r"v\d+$", "", arxiv_id)
     url = f"https://arxiv.org/html/{base_id}"
     try:
-        resp = requests.get(url, timeout=30,
+        resp = requests.get(url, timeout=30, verify=False,
                             headers={"User-Agent": "EEE-Eval-Research/1.0"})
         if resp.status_code == 200 and "<html" in resp.text[:500].lower():
             return resp.text
@@ -384,15 +411,9 @@ def naive_extract(text: str) -> dict:
     prompts = PROMPT_PAT.findall(text)
     if prompts:
         result["prompt_template"] = list(set(p.lower() for p in prompts))
-    scoring = SCORING_PAT.findall(text)
-    if scoring:
-        result["scoring_mode"] = list(set(s.lower() for s in scoring))
     seeds = SEED_PAT.findall(text)
     if seeds:
         result["seed"] = sorted(set(int(s) for s in seeds))
-    samples = SAMPLES_PAT.findall(text)
-    if samples:
-        result["num_samples"] = sorted(set(int(s) for s in samples))[:5]
     if re.search(r"greedy|temperature\s*(?:=|of)\s*0", text, re.I):
         result["decoding_strategy"] = "greedy"
     elif re.search(r"beam\s*search|num_beams", text, re.I):
@@ -435,8 +456,6 @@ Return a JSON object with:
      - n_shot: integer or null
      - temperature: float or null
      - prompt_template: string or null (e.g., "chain-of-thought", "direct")
-     - scoring_mode: string or null (e.g., "log-likelihood", "exact-match", "pass@k")
-     - num_samples: integer or null
      - decoding_strategy: string or null (e.g., "greedy", "nucleus sampling")
 
 Include ALL models mentioned in results tables — both the paper's own models AND baselines/competitors.
@@ -468,8 +487,6 @@ Here is an example of a correctly extracted entry for one model:
           "n_shot": 5,
           "temperature": null,
           "prompt_template": "direct",
-          "scoring_mode": "log-likelihood",
-          "num_samples": null,
           "decoding_strategy": "greedy"
         }},
         {{
@@ -481,8 +498,6 @@ Here is an example of a correctly extracted entry for one model:
           "n_shot": 8,
           "temperature": null,
           "prompt_template": "chain-of-thought",
-          "scoring_mode": "exact-match",
-          "num_samples": null,
           "decoding_strategy": "greedy"
         }}
       ]
@@ -502,8 +517,6 @@ Here is an example of a correctly extracted entry for one model:
           "n_shot": 5,
           "temperature": null,
           "prompt_template": "direct",
-          "scoring_mode": "log-likelihood",
-          "num_samples": null,
           "decoding_strategy": "greedy"
         }}
       ]
@@ -518,8 +531,7 @@ Paper text:
 {text}"""
 
 
-BENCH_FIELDS = ["n_shot", "temperature", "prompt_template", "scoring_mode",
-                "num_samples", "decoding_strategy"]
+BENCH_FIELDS = ["n_shot", "temperature", "prompt_template", "decoding_strategy"]
 
 
 def _clean_value(v: Any) -> Any:
@@ -672,6 +684,7 @@ def _llm_call(text: str, arxiv_id: str, own_model: str = "unknown") -> dict | No
             "temperature": 0.0,
         },
         timeout=120,
+        verify=False,
     )
     # 3.1: Retry on 429 and 5xx, raise immediately on other 4xx
     if resp.status_code == 429 or resp.status_code >= 500:
@@ -751,8 +764,12 @@ def make_benchmark_record(paper: dict, model_info: dict, benchmark_dict: dict, g
     # 2.5: Normalize score to 0-100 for percentage metrics
     score = _normalize_score(raw_score, metric)
 
-    # 2.1: Correct metric bounds/direction
-    metric_cfg = _get_metric_config(metric)
+    # 2.1: Correct metric bounds/direction — use LLM values for unknown metrics
+    metric_cfg = _get_metric_config(
+        metric,
+        llm_lower_is_better=benchmark_dict.get("lower_is_better"),
+        llm_score_range=benchmark_dict.get("score_range"),
+    )
 
     # 2.2: evaluator_relationship — same-org baselines are still self_reported
     is_baseline = model_info.get("is_baseline", False)
@@ -885,20 +902,29 @@ def make_fallback_record(paper: dict, extracted_flat: dict | None, approach: str
     }
 
 
-def save_records(paper: dict, llm_result: dict | None, naive_result: dict | None) -> dict[str, int]:
+def save_records(paper: dict, llm_result: dict | None, naive_result: dict | None, html_text: str | None = None) -> dict[str, int]:
     """Save per-model per-benchmark JSONs for LLM, plus naive fallback."""
     safe_paper = re.sub(r"[^\w\-.]", "_", paper["model_name"])[:80]
-    saved = {"llm": 0, "llm_models": 0, "naive": 0}
+    saved = {"llm": 0, "llm_models": 0, "naive": 0, "validated": 0, "invalid": 0}
 
     # LLM: per-model per-benchmark records
     if llm_result and llm_result.get("models"):
         gc = llm_result.get("global_config", {})
         for model in llm_result["models"]:
             safe_model = re.sub(r"[^\w\-.]", "_", model["model_name"])[:80]
-            d = OUT_DIR / "llm" / safe_paper / safe_model
-            d.mkdir(parents=True, exist_ok=True)
             for b in model.get("benchmarks", []):
                 rec = make_benchmark_record(paper, model, b, gc, "llm")
+                if html_text:
+                    valid, incorrect = validate_record(rec, html_text)
+                    rec["validated"] = valid
+                    if not valid:
+                        rec["incorrect_values"] = incorrect
+                    saved["validated" if valid else "invalid"] += 1
+                # Organize by paper/model/benchmark
+                bench_name = b.get("benchmark_name", "unknown")
+                safe_bench = re.sub(r"[^\w\-.]", "_", bench_name)[:80]
+                d = OUT_DIR / "llm" / safe_paper / safe_model / safe_bench
+                d.mkdir(parents=True, exist_ok=True)
                 with open(d / f"{_uuid.uuid4()}.json", "w", encoding="utf-8") as f:
                     json.dump(rec, f, indent=2, default=str)
                 saved["llm"] += 1
@@ -993,11 +1019,14 @@ def main() -> None:
         # 2.3: Inject validated HTML title for canonical use in records
         paper["actual_title"] = actual_title
 
-        saved = save_records(paper, llm_result, naive)
+        # Extract plain text from HTML for validation
+        html_plain = BeautifulSoup(html, "html.parser").get_text(separator=" ", strip=True)
+
+        saved = save_records(paper, llm_result, naive, html_text=html_plain)
         n_models = len(llm_result.get("models", [])) if llm_result else 0
         n_bench = sum(len(m.get("benchmarks", [])) for m in llm_result.get("models", [])) if llm_result else 0
-        log.info("  Saved: %d LLM JSONs (%d models, %d benchmarks), %d naive JSONs",
-                 saved["llm"], n_models, n_bench, saved["naive"])
+        log.info("  Saved: %d LLM JSONs (%d models, %d benchmarks), %d naive | Validated: %d, Invalid: %d",
+                 saved["llm"], n_models, n_bench, saved["naive"], saved["validated"], saved["invalid"])
 
         results.append({
             **paper, "available": True, "title_valid": title_valid,

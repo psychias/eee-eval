@@ -6,26 +6,30 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.11"
 dependencies = [
+    # Core extraction
+    "requests>=2.31,<3",
+    "beautifulsoup4>=4.12,<5",
+    "tenacity>=8.2,<10",
+    "pydantic>=2.5,<3",
+    # Analysis & figures
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.11",
+    "statsmodels>=0.14",
+    "matplotlib>=3.7",
+    "seaborn>=0.13",
+    # Schema validation
+    "jsonschema>=4.17",
+    # HuggingFace integration
+    "huggingface_hub>=0.20",
+    # LLM extraction
+    "openai>=1.0",
+    "dacite>=1.8",
     "google-generativeai>=0.8.0",
-    "openai>=2.29.0",
 ]
 
 [tool.setuptools.packages.find]
 include = [
     "src",
     "src.*",
-    "src.inspection_adapter",
-    "src.inspection_adapter.*",
-    "src.converters",
-    "src.converters.*",
-    "src.extraction",
-    "src.extraction.*",
-    "src.analysis",
-    "src.analysis.*",
-    "src.figures",
-    "src.figures.*",
-    "src.scrapers",
-    "src.scrapers.*",
-    "src.utils",
-    "src.utils.*",
 ]

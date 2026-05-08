@@ -67,10 +67,10 @@ REQUIRED_DIRS = [
 ]
 
 REQUIRED_FILES = [
-    ("eval.schema.json",          "blocking",  "Schema validation will be skipped"),
-    ("scripts/extract_paper.py",  "blocking",  "Core extraction script missing"),
-    ("scripts/generate_figures.py","blocking", "Figure generation script missing"),
-    ("scripts/arxiv_ids.txt",     "blocking",  "Batch input file missing"),
+    ("eval.schema.json",                      "blocking",  "Schema validation will be skipped"),
+    ("src/extraction/extract_paper.py",       "blocking",  "Core extraction script missing"),
+    ("src/figures/generate_all_figures.py",    "blocking",  "Figure generation script missing"),
+    ("data/arxiv_ids.txt",                    "blocking",  "Batch input file missing"),
 ]
 
 

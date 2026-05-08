@@ -1,0 +1,97 @@
+Global stats (no tolerance, strict matching):
+
+Total records: 25,831
+Validated: 18,387 (71.2%)
+Incorrect: 7,444
+Score errors: 67
+Model name errors: 2,396
+
+
+Validation method:
+- Fetch HTML from arxiv.org/html/{id}, parse with BeautifulSoup, extract plain text
+- For each extracted value (score, model_name, metric_name, gen_config):
+  check if it appears in the plain text via substring/regex matching
+- This is a PRESENCE CHECK, not a semantic check:
+  it verifies the value exists somewhere in the paper,
+  NOT that it corresponds to the right model/benchmark/row.
+  So it catches hallucinated values but misses row/column swaps.
+
+
+Score analysis:
+
+- Score found in HTML: 94.6% (24,429/25,831)
+
+- Score null: 5.3% (1,369)
+    -> RedPajama paper includes tables in HTML code
+    -> Xwin-LM has table as image reference, not in HTML source
+
+- Score errors: 67 (0.26%)
+
+    -> GLM-5 (28 cases): "Vending-Bench 2" and "GDPval-AA Elo" scores.
+    Numbers appear in rendered content not present in HTML source (possibly images or JS-rendered tables).
+    Likely real scores but unverifiable via HTML text parsing.
+
+    -> Marco-o1 v2 (1 case): Blocksworld score of 100.0.
+    Probably a formatting mismatch (HTML shows "100" without decimal).
+
+    -> Sheared LLaMA (4 cases): "Training Throughput" scores of 83000 and 139000.
+    NOT hallucination, the paper says "139K tokens/s" and "83K tokens/s".
+    The LLM correctly expanded K -> 1000, but misclassified throughput as a benchmark result.
+    This is a schema/task confusion error (throughput is not an evaluation benchmark).
+
+    -> Fabricated precision cases (~34 remaining): LLM adds extra decimal digits
+    Example: StarCoder2 paper (2402.19173) has "30.4" but LLM extracted "30.47"
+    Our extraction code does NOT round, so these are pure LLM fabrication.
+
+    Categories of score errors:
+    - Fabricated precision (LLM adds digits): 30.47
+    - Schema confusion (Sheared LLaMA throughput):
+      The LLM extracted a real number but categorized it wrong.
+      Example: paper says "139K tokens/s" (training speed), LLM saved it as
+      evaluation_name="Training Throughput", score=139000.0
+      The value is real but it's an operational metric, not a benchmark score.
+      The LLM confused "any number about a model" with "evaluation result."
+    - Unverifiable HTML (GLM-5 possibly rendered content)
+    - Formatting mismatch (Marco-o1)
+    - SI suffix expansion (139K -> 139000, not handled by validator)
+
+    Decision: NO tolerance applied. Any mismatch is flagged.
+    Rationale: our code doesn't round scores, so mismatches = LLM errors.
+
+
+=> Summary:
+- score, n_shot, temperature: near-perfect (99.7%+) -> the LLM extracts these very reliably
+- model_name, metric_name: ~80% — mostly validator false positives from formatting differences
+  (e.g. "Llama-2-7B" vs "Llama 2 7B", composed names from table_header + row_label)
+  NOTE: benchmark_name validation is skipped in code (too many false positives)
+- scoring_mode and eval_harness — most hallucinated, the LLM often guesses these when papers don't explicitly mention them
+
+
+Validator limitations:
+- Model names: high false-positive rate (~2,396 errors) because composed
+  names from table_header + row_label never appear as a single string in HTML
+- SI suffixes: validator doesn't expand K/M/B (139K != 139000)
+- Dollar signs/commas: $1,034 vs 1034 not handled
+- Presence-only: can't detect row/column swaps (wrong score for right model)
+
+Root causes of "incorrect" flags:
+- ~60% validator false positives (model name composition, formatting)
+- ~30% metric_name/eval_harness guessing (LLM fills in when paper is silent)
+- ~10% actual errors (schema confusion, fabricated precision)
+
+
+Which papers are good which bad:
+Good:
+- RedPajama
+- SOLAR 10.7B	588/588 validated
+- Instella
+- Gemma 3
+
+Bad:
+- Falcon Series
+- WizardCoder
+
+
+
+sampling for the harmness 
+exclude those and do sampling for the score 

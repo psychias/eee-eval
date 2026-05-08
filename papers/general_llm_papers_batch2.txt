@@ -1,0 +1,28 @@
+================================================================================
+FOUNDATION LLM PAPERS — VERIFIED FROM ARXIV API
+================================================================================
+
+2404.03608   — Sailor: Open Language Models for South-East Asia (Dou et al.)
+2404.05892   — Eagle and Finch: RWKV with Matrix-Valued States and Dynamic Recurrence (Peng et al.)
+2404.06395   — MiniCPM: Unveiling the Potential of Small Language Models (Hu et al.)
+2404.07839   — RecurrentGemma: Moving Past Transformers for Efficient Open LMs (Botev et al.)
+2404.12387   — Reka Core, Flash, and Edge: Powerful Multimodal Language Models (Team et al.)
+2404.14219   — Phi-3 Technical Report: A Small Language Model (Microsoft, Abdin et al.)
+2404.14619   — OpenELM: An Efficient Language Model Family (Mehta et al.)
+2405.04324   — Granite Code Models: Open Foundation Models for Code Intelligence (Mishra et al.)
+2405.04434   — DeepSeek-V2: A Strong Economical and Efficient Model (DeepSeek-AI)
+2405.05374   — Arctic-Embed: Scalable, Efficient, and Accurate Text Embedding Models (Merrick et al.)
+2405.15032   — Aya 23: Open Weight Releases to Further Multilingual Progress (Aryabumi et al.)
+2405.17428   — NV-Embed: Training LLMs as Generalist Embedding Models (Lee et al.)
+2405.19327   — MAP-Neo: Highly Capable and Transparent Bilingual LLM Series (Zhang et al.)
+2406.11409   — CodeGemma: Open Code Models Based on Gemma (Team et al.)
+2406.11704   — Nemotron-4 340B Technical Report (Nvidia et al.)
+2406.11794   — DataComp-LM: In Search of the Next Generation of Training Sets (Li et al.)
+2406.11931   — DeepSeek-Coder-V2: Breaking the Barrier of Closed-Source Models (DeepSeek-AI et al.)
+2406.17557   — The FineWeb Datasets: Decanting the Web for the Finest Text Data (Penedo et al.)
+2407.07726   — PaliGemma: A Versatile 3B VLM for Transfer (Beyer et al.)
+2407.10671   — Qwen2 Technical Report (Alibaba, Yang et al.)
+2407.19672   — SeaLLMs 3: Open Multilingual LLMs for Southeast Asian Languages (Zhang et al.)
+
+Total: 21 papers
+================================================================================
