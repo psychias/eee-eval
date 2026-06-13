@@ -34,23 +34,42 @@ import pandas as pd
 _ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
-from eee.normalization import normalize_model_id, normalize_benchmark_for_matching
-
 DATA_DIR = _ROOT / "data"
 OUT_DIR = _ROOT / "analysis_output"
 
 # ---------------------------------------------------------------------------
-# Normalisation — delegates to eee.normalization (single source of truth)
+# Normalisation
 # ---------------------------------------------------------------------------
 
 def normalise_model_id(raw: str) -> str:
-    """Normalize model ID for cross-source matching."""
-    return normalize_model_id(raw)
+    """Lowercase, strip org prefix, collapse whitespace."""
+    s = str(raw).strip()
+    if "/" in s:
+        s = s.rsplit("/", 1)[-1]
+    s = re.sub(r"\s*\((?:Prompt|FC|Chat)\)\s*$", "", s, flags=re.IGNORECASE)
+    s = s.lower()
+    s = s.replace("_", "-")
+    s = re.sub(r"\s+", "-", s)
+    return s
 
 
 def normalise_benchmark(raw: str) -> str:
-    """Normalize benchmark name for cross-source matching."""
-    return normalize_benchmark_for_matching(raw)
+    """Normalize benchmark names: lowercase, strip shot specs, resolve aliases."""
+    s = str(raw).strip().lower()
+    s = re.sub(r"\s*\(\d+-shot\)\s*$", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"\s+\d+-shot\s*$", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"\s+", " ", s).strip()
+    s_lookup = s.replace("-", " ").replace("_", " ").strip()
+    _BENCH_ALIASES = {
+        "bigbench hard": "bbh",
+        "big bench hard": "bbh",
+        "gpqa diamond": "gpqa-diamond",
+        "gpqa d": "gpqa-diamond",
+    }
+    s = _BENCH_ALIASES.get(s_lookup, s)
+    s = re.sub(r"^humaneval\+?\s*$", "humaneval+", s)
+    s = re.sub(r"^mbpp\+?\s*$", "mbpp+", s)
+    return s
 
 
 # ---------------------------------------------------------------------------

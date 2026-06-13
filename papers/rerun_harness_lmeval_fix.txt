@@ -1,0 +1,17 @@
+2405.15032 -- Aya 23  Open Weight Releases to Further Multilingual Progress
+2309.10305 -- Baichuan 2  Open Large-scale Language Models
+2211.05100 -- BLOOM  A 176B-Parameter Open-Access Multilingual Language Model
+2507.20534 -- Kimi K2  Open Agentic Intelligence
+2310.10631 -- Llemma  An Open Language Model for Mathematics
+2402.16819 -- Nemotron-4 15B Technical Report
+2406.11704 -- Nemotron-4 340B Technical Report
+2504.03624 -- Nemotron-H  Accurate and Efficient Hybrid Mamba-Transformer Models
+2404.14619 -- OpenELM  An Efficient Language Model Family
+2402.01739 -- OpenMoE  Open Mixture-of-Experts Language Models
+2411.12372 -- RedPajama  Open Dataset for Training Large Language Models
+2501.19393 -- s1  Simple Test-Time Scaling
+2310.06694 -- Sheared LLaMA  Accelerating LM Pre-training via Structured Pruning
+2306.07629 -- SqueezeLLM  Dense-and-Sparse Quantization
+2311.16867 -- The Falcon Series of Open Language Models
+2603.11510 -- Tiny Aya  Bridging Scale and Multilingual Depth
+2401.02385 -- TinyLlama  An Open-Source Small Language Model

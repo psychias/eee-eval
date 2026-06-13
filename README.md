@@ -10,7 +10,7 @@ Companion paper: *"Why LLM Leaderboards Are Incomparable: Structural Fragmentati
 
 ## Overview
 
-EEE ingests LLM evaluation results from **11 heterogeneous sources** — 8 leaderboards, HuggingFace model cards, and the Papers With Code archive — into the standardised EEE JSON schema (v0.2.1). The resulting dataset contains **29,331 records** covering **5,672 models** and **180 benchmarks**.
+EEE ingests LLM evaluation results from **11 heterogeneous sources** — 10 leaderboards (incl. HuggingFace model cards) and an ArXiv-paper LLM-extraction source — into the standardised EEE JSON schema (v0.2.1). The resulting dataset contains **43,788 records** covering approximately **7,000 unique models** and **1,400 unique benchmarks**.
 
 The pipeline then runs cross-source collision detection and metadata coverage analysis to quantify:
 
@@ -66,14 +66,24 @@ src/                          # All source code
 │   ├── helm/                 #   HELM leaderboard parser
 │   ├── hfopenllm_v2/        #   HF Open LLM v2 adapter
 │   └── ...
-├── extract_paper.py          # arXiv paper extraction (main entry point)
-├── validate_outputs.py       # Schema validation
-├── aggregate_results.py      # Flatten JSON → CSV
-├── generate_figures.py       # Generate paper figures
-├── run_analysis.py           # Tasks 1-5 comprehensive analysis
-├── run_collision_analysis.py # Collision-pair metadata analysis
-├── convert_eval_logs.py      # Convert eval framework logs → EEE
-└── preflight_check.py        # Environment verification
+├── extraction/               # Extraction scripts
+│   ├── extract_paper.py      #   arXiv paper extraction (main entry point)
+│   ├── constants.py          #   Canonical names, developer maps
+│   ├── add_leaderboard_records.py  # Leaderboard fetcher
+│   ├── hf_model_card_fetcher.py    # Model card extractor
+│   ├── pwc_fetcher.py        #   Papers With Code fetcher
+│   └── ...
+├── validation/               # Validation scripts
+│   ├── validate_outputs.py   #   Schema validation
+│   ├── quality_audit.py      #   Data quality checks
+│   └── preflight_check.py    #   Environment verification
+├── analysis/                 # Analysis scripts
+│   ├── aggregate_results.py  #   Flatten JSON → CSV
+│   ├── run_analysis.py       #   Tasks 1-5 comprehensive analysis
+│   ├── collision_detection.py #  Collision-pair analysis
+│   └── ...
+├── figures/                  # Figure generation
+│   └── generate_all_figures.py
 
 data/                         # Evaluation records (EEE JSON, per-source)
 ├── open_llm_leaderboard_v2/  #   26,790 records — lm_eval harness
@@ -117,31 +127,54 @@ pip install -r requirements.txt
 
 ```bash
 # 1. Fetch leaderboard data (requires HF_TOKEN in .env)
-python src/add_leaderboard_records.py
+python src/extraction/add_leaderboard_records.py
 
 # 2. Fetch HuggingFace model card results
-python src/hf_model_card_fetcher.py
+python src/extraction/hf_model_card_fetcher.py
 
 # 3. Fetch Papers With Code results
-python src/pwc_fetcher.py
+python src/extraction/pwc_fetcher.py
 
 # 4. Validate all records against the EEE schema
-python src/validate_outputs.py
+python src/validation/validate_outputs.py
 
 # 5. Aggregate into a single CSV
-python src/aggregate_results.py
+python src/analysis/aggregate_results.py
 
 # 6. Generate publication figures
-python src/generate_figures.py
+python src/figures/generate_all_figures.py
 ```
 
 ### Extract Results from arXiv Papers
 
 ```bash
 # Requires OPENROUTER_API_KEY in .env for LLM-augmented extraction
-python src/extract_paper.py --batch src/arxiv_ids_full.txt \
+python src/extraction/extract_paper.py --batch papers/general_llm_papers.txt \
     --llm-fallback --llm-model meta-llama/llama-3.3-70b-instruct
 ```
+
+### Verify Every Number in the Paper
+
+A single end-to-end script re-derives every quantitative claim in the paper
+from the raw data files and reports PASS/FAIL per claim:
+
+```bash
+python reproduce_paper.py             # full PASS/FAIL report
+python reproduce_paper.py --strict    # exit 1 if any check fails
+```
+
+The script verifies §3.2 dataset totals + Table 1 per-source counts, §4.1
+score-extraction audit (1,619 entries, Table 7), §4.2 harness audit (per-paper
+precision for BLOOM, Llemma, Sheared LLaMA, Aya 23, Nemotron-4 15B), §4.3
+metadata coverage (Figure 6 / Table 9), §5 factorial-grid ANOVA stats
+(F, p, η² for GSM8K and MMLU), Appendix E2 MMLU scoring-mode gaps, Appendix G
+per-format means, and delegates §5 case-study scores to
+`reproduce_case_studies.py`. Numbers from external citations (e.g. the
+MATH-Verify HF blog post) are documented but not locally recomputable.
+
+For richer raw-data provenance (the underlying JSON paths and harness/shot
+fields backing each case study), run `python generate_evidence_file.py` to
+write `section5_evidence.txt`.
 
 ### Convert Evaluation Framework Logs
 
@@ -175,13 +208,17 @@ Schema definition: [`eval.schema.json`](eval.schema.json)
 
 | Metric | Value |
 |---|---|
-| Total records | 29,331 |
-| Unique models | 5,672 |
-| Unique benchmarks | 180 |
+| Total records | 43,788 |
+| Unique models | ~7,000 |
+| Unique benchmarks | ~1,400 |
 | Data sources | 11 |
-| Cross-source collision pairs | 16 (8 independent) |
-| Temperature coverage | <0.1% |
-| Prompt template coverage | <0.1% |
+| 10-source leaderboard subset records | 28,755 |
+| ArXiv-extraction records | 14,457 (100 papers) |
+| Score-extraction audit agreement | 100% (1,619 entries / 10 papers) |
+| Harness-identification audit precision | 86.2% (817-row WITH sample) |
+| Harness-identification abstention quality | 100% (816-row WITHOUT sample) |
+| Temperature coverage (10-source) | 0.0% |
+| Prompt template coverage (10-source) | 0.0% |
 
 ## Citation
 
@@ -198,3 +235,12 @@ Schema definition: [`eval.schema.json`](eval.schema.json)
 ## License
 
 See [LICENSE](LICENSE).
+
+
+
+https://huggingface.co/blog/math_verify_leaderboard
+https://github.com/huggingface/lighteval
+
+https://huggingface.co/datasets/evaleval/EEE_datastore
+https://evalevalai.com/about/
+https://evalevalai.com/infrastructure/2026/02/17/everyevalever-launch/

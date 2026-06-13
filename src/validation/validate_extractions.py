@@ -2,9 +2,9 @@
 
 For each JSON record, checks whether extracted values (score, model_name,
 benchmark_name, metric_name, generation config) actually appear in the paper's
-HTML text. Adds:
-  - "validated": true/false
-  - "incorrect_values": [...] (list of value descriptions not found in HTML)
+HTML text. Stores results in source_metadata.additional_details:
+  - "validated": "True"/"False"
+  - "incorrect_values": semicolon-separated list of value descriptions not found in HTML
 
 Usage:
     # Validate all existing data
@@ -17,7 +17,6 @@ Usage:
     from src.validation.validate_extractions import validate_record
 """
 import argparse
-import glob
 import json
 import logging
 import re
@@ -253,11 +252,19 @@ def validate_paper_jsons(arxiv_id: str, json_paths: list[Path], html_text: str) 
         record = json.load(open(path, encoding="utf-8"))
         validated, incorrect = validate_record(record, html_text, html_numbers)
 
-        record["validated"] = validated
+        # Store validation metadata inside source_metadata.additional_details
+        # (top-level additionalProperties are forbidden by eval.schema.json)
+        sm = record.setdefault("source_metadata", {})
+        ad = sm.setdefault("additional_details", {})
+        ad["validated"] = str(validated)
         if not validated:
-            record["incorrect_values"] = incorrect
+            ad["incorrect_values"] = "; ".join(incorrect)
         else:
-            record.pop("incorrect_values", None)
+            ad.pop("incorrect_values", None)
+
+        # Remove legacy top-level keys if present
+        record.pop("validated", None)
+        record.pop("incorrect_values", None)
 
         with open(path, "w", encoding="utf-8") as f:
             json.dump(record, f, indent=2, default=str)

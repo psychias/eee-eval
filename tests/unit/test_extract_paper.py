@@ -1,21 +1,31 @@
-"""Unit tests for scripts/extract_paper.py.
+"""Unit tests for the original PDF-based extract_paper.py (DEPRECATED).
 
-These tests validate the core extraction helpers, heuristics, and parsers
-without requiring PDF files or network access.
+These tests validated the core extraction helpers, heuristics, and parsers
+from the original PDF-based extract_paper.py script which has since been
+replaced by the HTML-based extraction pipeline (extract_arxiv_metadata_general).
+The functions tested here (_parse_numeric, ResultsTableParser, etc.) no longer
+exist in the codebase.
+
+This file is kept for reference but all tests are skipped.
 """
+import pytest
 
-from __future__ import annotations
+pytest.skip(
+    "Tests reference functions from deprecated PDF-based extract_paper.py that no longer exist",
+    allow_module_level=True,
+)
+
 
 import sys
 from pathlib import Path
 
 import pytest
 
-# Ensure the repo root and utils/ are on sys.path so the script's imports resolve.
-_ROOT = Path(__file__).resolve().parent.parent
+# Ensure the repo root and src directories are on sys.path so the script's imports resolve.
+_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
-sys.path.insert(0, str(_ROOT / "utils"))
-sys.path.insert(0, str(_ROOT / "scripts"))
+sys.path.insert(0, str(_ROOT / "src" / "utils"))
+sys.path.insert(0, str(_ROOT / "src" / "extraction"))
 
 from extract_paper import (
     _parse_numeric,

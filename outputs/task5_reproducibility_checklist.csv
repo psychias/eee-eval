@@ -1,0 +1,9 @@
+Field,Column,Difficulty,Coverage (%),Note
+eval\_library.name,harness,Low,70.4681567307316,Already logged by all dedicated leaderboards
+eval\_library.version,eval_library,Low,70.4446706071163,One git tag or pip show away
+generation\_args.n\_shot,shots,Low,55.52706775746663,Already logged by most sources
+generation\_args.temperature,temperature,Medium,2.7733197635730225,"Requires per-run capture, not post-hoc"
+generation\_args.prompt\_template,prompt_template,High,11.349669237092417,Requires versioned template storage
+additional\_details.cot,chain_of_thought,Medium,43.79183465768975,"Boolean flag, easy once pipeline supports it"
+scoring\_mode,,High,0.0,Not yet a schema field; requires definition
+provenance\_link,,Medium,0.0,URL or DOI to upstream score source

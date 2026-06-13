@@ -1,0 +1,4 @@
+2307.09288 — Llama 2: Open Foundation and Fine-Tuned Chat Models (Meta AI)
+2403.08295 — Gemma: Open Models Based on Gemini Research and Technology (Google)
+2404.14219 — Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone (Microsoft)
+2312.15166 — SOLAR 10.7B: Scaling Large Language Models with Simple yet Effective Depth Up-Scaling (Upstage)

@@ -71,141 +71,184 @@ import collections
 
 ROOT    = pathlib.Path(__file__).resolve().parent.parent.parent
 OUT_DIR = ROOT / "data" / "aggregated"
-OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-rows: list[dict] = []
-# coverage[benchmark][field] = count of non-empty values
-coverage: dict = collections.defaultdict(lambda: collections.defaultdict(int))
+# ── Post-hoc benchmark name canonicalization ────────────────────────────────
+# Fixes stale names in already-written JSON files from before the normalisation
+# audit. Only maps clear aliases — ambiguous names (e.g. "GPQA" without subset
+# qualifier from an arxiv paper) are left as-is.
+_BENCHMARK_FIXUP: dict[str, str] = {
+    "ARC-C":   "ARC-Challenge",
+    "ARC-E":   "ARC-Easy",
+    "ARC-c":   "ARC-Challenge",
+    "ARC-e":   "ARC-Easy",
+    "arc-c":   "ARC-Challenge",
+    "arc-e":   "ARC-Easy",
+    # BigBench-Hard variants → BBH
+    "BigBench-Hard": "BBH", "bigbench-hard": "BBH",
+    "Big-Bench Hard": "BBH", "big-bench hard": "BBH",
+    "Big-Bench-Hard": "BBH", "big-bench-hard": "BBH",
+    "Bigbench Hard": "BBH", "bigbench hard": "BBH",
+    # GPQA variants → canonical
+    "GPQA Diamond": "GPQA-Diamond", "GPQA-D": "GPQA-Diamond",
+    "gpqa diamond": "GPQA-Diamond", "gpqa-d": "GPQA-Diamond",
+}
 
-for f in (ROOT / "data").rglob("*.json"):
-    if "aggregated" in str(f):
-        continue
-    try:
-        rec = json.loads(f.read_text(encoding="utf-8"))
 
-        # ── Top-level record fields ─────────────────────────────────────────
-        mi  = rec.get("model_info", {})
-        src = rec.get("source_metadata", {})
-        lib = rec.get("eval_library", {})
+def main() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-        # ── Each file has exactly ONE evaluation_result ─────────────────────
-        for er in rec.get("evaluation_results", []):
-            mc = er.get("metric_config", {})
-            sd = er.get("score_details", {})
-            gc = er.get("generation_config", {})
+    rows: list[dict] = []
+    # coverage[benchmark][field] = count of non-empty values
+    coverage: dict = collections.defaultdict(lambda: collections.defaultdict(int))
 
-            # generation_args is optional (excluded when all fields are None)
-            ga = gc.get("generation_args") or {}
+    for f in (ROOT / "data").rglob("*.json"):
+        if "aggregated" in str(f):
+            continue
+        try:
+            rec = json.loads(f.read_text(encoding="utf-8"))
 
-            # additional_details is always present — dict[str, str]
-            ad = gc.get("additional_details") or {}
+            # ── Top-level record fields ─────────────────────────────────────────
+            mi  = rec.get("model_info", {})
+            src = rec.get("source_metadata", {})
+            lib = rec.get("eval_library", {})
 
-            # score_details.details holds relative_to / comparability_warning
-            sd_details = sd.get("details") or {}
+            # ── Each file has exactly ONE evaluation_result ─────────────────────
+            for er in rec.get("evaluation_results", []):
+                mc = er.get("metric_config", {})
+                sd = er.get("score_details", {})
+                gc = er.get("generation_config", {})
 
-            row = {
-                # ── Model identity ──────────────────────────────────────────
-                "model":                  mi.get("name", ""),
-                "model_id":               mi.get("id", ""),
-                "developer":              mi.get("developer", ""),
-                "parameter_count":        mi.get("parameter_count", ""),
-                "model_alignment":        mi.get("model_alignment", ""),
-                "quantization":           mi.get("quantization", ""),
+                # generation_args is optional (excluded when all fields are None)
+                ga = gc.get("generation_args") or {}
 
-                # ── Benchmark + score ───────────────────────────────────────
-                "benchmark":              er.get("evaluation_name", ""),
-                "score":                  sd.get("score", ""),
-                "lower_is_better":        mc.get("lower_is_better", ""),
-                "min_score":              mc.get("min_score", ""),
-                "max_score":              mc.get("max_score", ""),
-                "metric_name":            mc.get("metric_name", ""),
-                "score_type":             sd_details.get("score_type", "absolute"),
-                "relative_to":            sd_details.get("relative_to", ""),
+                # additional_details is always present — dict[str, str]
+                ad = gc.get("additional_details") or {}
 
-                # ── Evaluation protocol (generation_args) ───────────────────
-                # Paths: generation_config.generation_args.*
-                "shots":                  ga.get("shots", ""),
-                "temperature":            ga.get("temperature", ""),
-                "top_p":                  ga.get("top_p", ""),
-                "reasoning":              ga.get("reasoning", ""),
-                "chain_of_thought":       ga.get("chain_of_thought", ""),
-                "prompt_template":        ga.get("prompt_template", ""),
+                # score_details.details holds relative_to / comparability_warning
+                sd_details = sd.get("details") or {}
 
-                # ── Extraction provenance (additional_details) ───────────────
-                # Paths: generation_config.additional_details.*
-                "extraction_confidence":  ad.get("extraction_confidence", ""),
-                # harness: prefer additional_details.harness, fall back to eval_library.name
-                "harness":                ad.get("harness", "") or lib.get("name", ""),
-                "scoring_method":         ad.get("scoring_method", ""),
-                "protocol_source":        ad.get("protocol_source", ""),
-                "page_number":            ad.get("page_number", ""),
-                "table_id":               ad.get("table", ""),
-                "table_caption":          ad.get("table_caption", ""),
+                row = {
+                    # ── Model identity ──────────────────────────────────────────
+                    "model":                  mi.get("name", ""),
+                    "model_id":               mi.get("id", ""),
+                    "developer":              mi.get("developer", ""),
+                    "parameter_count":        mi.get("parameter_count", ""),
+                    "model_alignment":        mi.get("model_alignment", ""),
+                    "quantization":           mi.get("quantization", ""),
 
-                # ── Source metadata ─────────────────────────────────────────
-                # source_name may be a paper title; arxiv_id is always
-                # the arXiv identifier for consistent grouping.
-                "source":                 ad.get("source", src.get("source_name", "")),
-                "source_name":            src.get("source_name", ""),
-                # evaluator_relationship: EvaluatorRelationship enum → string
-                "evaluator_relationship": src.get("evaluator_relationship", ""),
-                "eval_library":           lib.get("name", ""),
-                "eval_library_version":   lib.get("version", ""),
+                    # ── Benchmark + score ───────────────────────────────────────
+                    "benchmark":              _BENCHMARK_FIXUP.get(er.get("evaluation_name", ""), er.get("evaluation_name", "")),
+                    "score":                  sd.get("score", ""),
+                    "lower_is_better":        mc.get("lower_is_better", ""),
+                    "min_score":              mc.get("min_score", ""),
+                    "max_score":              mc.get("max_score", ""),
+                    "metric_name":            mc.get("metric_name", ""),
+                    "score_type":             sd_details.get("score_type", "absolute"),
+                    "relative_to":            sd_details.get("relative_to", ""),
 
-                # ── Record provenance ───────────────────────────────────────
-                "evaluation_id":          rec.get("evaluation_id", ""),
-                "retrieved_timestamp":    rec.get("retrieved_timestamp", ""),
-                "file":                   str(f.relative_to(ROOT)),
-            }
-            rows.append(row)
+                    # ── Evaluation protocol (generation_args) ───────────────────
+                    # Paths: generation_config.generation_args.*
+                    "shots":                  ga.get("shots", ""),
+                    "temperature":            ga.get("temperature", ""),
+                    "top_p":                  ga.get("top_p", ""),
+                    "reasoning":              ga.get("reasoning", ""),
+                    "chain_of_thought":       ga.get("chain_of_thought", ""),
+                    "prompt_template":        ga.get("prompt_template", ""),
 
-            # Coverage tracking — which metadata fields are documented
-            b = row["benchmark"]
-            for field in ("shots", "temperature", "top_p",
-                          "prompt_template", "harness", "chain_of_thought",
-                          "reasoning"):
-                val = row.get(field, "")
-                if val not in ("", None, "unknown"):
-                    coverage[b][field] += 1
-            coverage[b]["total"] += 1
+                    # ── Extraction provenance (additional_details) ───────────────
+                    # Paths: generation_config.additional_details.*
+                    "extraction_confidence":  ad.get("extraction_confidence", ""),
+                    # harness: prefer additional_details.harness, fall back to eval_library.name
+                    "harness":                ad.get("harness", "") or lib.get("name", ""),
+                    "scoring_method":         ad.get("scoring_method", ""),
+                    "protocol_source":        ad.get("protocol_source", ""),
+                    "page_number":            ad.get("page_number", ""),
+                    "table_id":               ad.get("table", ""),
+                    "table_caption":          ad.get("table_caption", ""),
 
-    except Exception as e:
-        print(f"  skip {f.name}: {e}")
+                    # ── Source metadata ─────────────────────────────────────────
+                    # source_name may be a paper title; arxiv_id is always
+                    # the arXiv identifier for consistent grouping.
+                    "source":                 ad.get("source", src.get("source_name", "")),
+                    "source_name":            src.get("source_name", ""),
+                    # evaluator_relationship: EvaluatorRelationship enum → string
+                    "evaluator_relationship": src.get("evaluator_relationship", ""),
+                    "eval_library":           lib.get("name", ""),
+                    "eval_library_version":   lib.get("version", ""),
 
-if rows:
-    keys = list(rows[0].keys())
-    with open(OUT_DIR / "all_results.csv", "w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=keys)
-        w.writeheader()
-        w.writerows(rows)
+                    # ── Record provenance ───────────────────────────────────────
+                    "evaluation_id":          rec.get("evaluation_id", ""),
+                    "retrieved_timestamp":    rec.get("retrieved_timestamp", ""),
+                    "file":                   str(f.relative_to(ROOT)),
+                }
+                rows.append(row)
 
-    with open(OUT_DIR / "coverage_stats.json", "w", encoding="utf-8") as fh:
-        json.dump(dict(coverage), fh, indent=2)
+                # Coverage tracking — which metadata fields are documented
+                b = row["benchmark"]
+                for field in ("shots", "temperature", "top_p",
+                              "prompt_template", "harness", "chain_of_thought",
+                              "reasoning"):
+                    val = row.get(field, "")
+                    if val not in ("", None, "unknown"):
+                        coverage[b][field] += 1
+                coverage[b]["total"] += 1
 
-    # Also collect the native coverage_report_*.json files the pipeline writes
-    native_reports = sorted(
-        (ROOT / "scripts" / "scrapers" / "raw").glob("coverage_report_*.json")
-    )
-    if native_reports:
-        latest = json.loads(native_reports[-1].read_text(encoding="utf-8"))
-        with open(OUT_DIR / "pipeline_coverage_report.json", "w", encoding="utf-8") as fh:
-            json.dump(latest, fh, indent=2)
-        print(f"  pipeline coverage report -> data/aggregated/pipeline_coverage_report.json")
+        except Exception as e:
+            print(f"  skip {f.name}: {e}")
 
-    models      = len({r["model"]     for r in rows})
-    benchmarks  = len({r["benchmark"] for r in rows})
-    sources     = len({r["source"]    for r in rows})
-    developers  = len({r["developer"] for r in rows})
+    if rows:
+        # ── Fix OLv2 GPQA-Diamond metric mismatch ──────────────────────────
+        # OLv2 reports GPQA-Diamond using acc_norm (max ~29) but mislabels it
+        # "accuracy". Papers report raw accuracy (up to 92). Relabel so they
+        # are not treated as the same benchmark in downstream analysis.
+        n_gpqa_relabeled = 0
+        for row in rows:
+            if (row["benchmark"] == "GPQA-Diamond"
+                    and row.get("source", "") == "open_llm_leaderboard_v2"):
+                row["benchmark"] = "GPQA-Diamond (acc_norm)"
+                row["metric_name"] = "acc_norm"
+                n_gpqa_relabeled += 1
+        if n_gpqa_relabeled:
+            print(f"  Relabeled {n_gpqa_relabeled:,} OLv2 GPQA-Diamond → GPQA-Diamond (acc_norm)")
 
-    print(f"OK {len(rows)} records -> data/aggregated/all_results.csv")
-    print(f"  {models} models  |  {benchmarks} benchmarks  |  "
-          f"{sources} sources  |  {developers} developers")
+        keys = list(rows[0].keys())
+        with open(OUT_DIR / "all_results.csv", "w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=keys)
+            w.writeheader()
+            w.writerows(rows)
 
-    # Quick metadata coverage summary
-    print("\n  Metadata documentation rates:")
-    for field in ("shots", "temperature", "prompt_template", "harness", "chain_of_thought", "reasoning"):
-        filled = sum(1 for r in rows if r.get(field) not in ("", None, "unknown"))
-        pct = filled / len(rows) * 100
-        print(f"    {field:20s}  {filled:4d}/{len(rows)}  ({pct:.1f}%)")
-else:
-    print("  no records found — run extraction first (pipeline: 1b — extract batch)")
+        with open(OUT_DIR / "coverage_stats.json", "w", encoding="utf-8") as fh:
+            json.dump(dict(coverage), fh, indent=2)
+
+        # Also collect the native coverage_report_*.json files the pipeline writes
+        native_reports = sorted(
+            (ROOT / "scripts" / "scrapers" / "raw").glob("coverage_report_*.json")
+        )
+        if native_reports:
+            latest = json.loads(native_reports[-1].read_text(encoding="utf-8"))
+            with open(OUT_DIR / "pipeline_coverage_report.json", "w", encoding="utf-8") as fh:
+                json.dump(latest, fh, indent=2)
+            print(f"  pipeline coverage report -> data/aggregated/pipeline_coverage_report.json")
+
+        models      = len({r["model"]     for r in rows})
+        benchmarks  = len({r["benchmark"] for r in rows})
+        sources     = len({r["source"]    for r in rows})
+        developers  = len({r["developer"] for r in rows})
+
+        print(f"OK {len(rows)} records -> data/aggregated/all_results.csv")
+        print(f"  {models} models  |  {benchmarks} benchmarks  |  "
+              f"{sources} sources  |  {developers} developers")
+
+        # Quick metadata coverage summary
+        print("\n  Metadata documentation rates:")
+        for field in ("shots", "temperature", "prompt_template", "harness", "chain_of_thought", "reasoning"):
+            filled = sum(1 for r in rows if r.get(field) not in ("", None, "unknown"))
+            pct = filled / len(rows) * 100
+            print(f"    {field:20s}  {filled:4d}/{len(rows)}  ({pct:.1f}%)")
+    else:
+        print("  no records found — run extraction first (pipeline: 1b — extract batch)")
+
+
+if __name__ == "__main__":
+    main()
+

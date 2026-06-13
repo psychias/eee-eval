@@ -1,29 +1,34 @@
-"""validate_outputs.py — schema-check every JSON written under data/."""
-import json, sys, pathlib
+"""validate_outputs.py — thin wrapper delegating to schema.py.
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-schema_path = ROOT / "eval.schema.json"
+DEPRECATED: Use `python -m src.validation.schema` instead.
+Kept for backward compatibility with existing task runners.
+"""
+import sys
+from pathlib import Path
 
-if not schema_path.exists():
-    print("  [validation] eval.schema.json not found — skipping")
+from src.validation.schema import SchemaValidator, AutoFixer, FileValidator, BatchValidator
+
+ROOT = Path(__file__).resolve().parent.parent.parent
+
+
+def main() -> None:
+    sv = SchemaValidator()
+    fixer = AutoFixer()
+    fv = FileValidator(sv, fixer, fix_mode=False)
+    bv = BatchValidator(fv)
+    report = bv.run(ROOT / "data", quiet=True)
+
+    passed = report["valid"] + report.get("fixed", 0)
+    failed = report.get("invalid", 0)
+
+    print(f"schema validation: {passed} passed, {failed} failed")
+    if failed:
+        for r in report.get("files", []):
+            if r.get("status") == "invalid":
+                print(f"  FAIL {r['path']}: {r.get('error', 'unknown')}")
+        sys.exit(1)
     sys.exit(0)
 
-from jsonschema.validators import validator_for
-schema = json.loads(schema_path.read_text(encoding="utf-8"))
-cls = validator_for(schema)
-v = cls(schema)
 
-files = [f for f in (ROOT / "data").rglob("*.json")
-         if "aggregated" not in str(f)]
-
-passed = failed = 0
-for f in files:
-    try:
-        v.validate(json.loads(f.read_text(encoding="utf-8")))
-        passed += 1
-    except Exception as e:
-        failed += 1
-        print(f"  FAIL {f.relative_to(ROOT)}: {e}")
-
-print(f"\n✓ {passed} passed  ✗ {failed} failed  ({len(files)} total)")
-sys.exit(1 if failed else 0)
+if __name__ == "__main__":
+    main()

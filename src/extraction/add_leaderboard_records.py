@@ -58,6 +58,8 @@ import requests
 _ROOT     = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from src.extraction.constants import infer_developer
+
 DATA_DIR  = _ROOT / "data"
 CACHE_DIR = pathlib.Path(".cache/leaderboards")
 CACHE_TTL = 24 * 3600
@@ -247,52 +249,10 @@ def _add(
 
 
 # ---------------------------------------------------------------------------
-# Developer inference
+# Developer inference — delegated to constants.infer_developer()
 # ---------------------------------------------------------------------------
 
-_DEV_PATTERNS: list[tuple[str, str]] = sorted([
-    ("gpt",       "openai"),    ("o1",        "openai"),
-    ("o3",        "openai"),    ("openai",    "openai"),
-    ("claude",    "anthropic"), ("gemini",    "google"),
-    ("gemma",     "google"),    ("palm",      "google"),
-    ("codellama", "meta-llama"),("llama",     "meta-llama"),
-    ("mistral",   "mistralai"), ("mixtral",   "mistralai"),
-    ("codestral", "mistralai"), ("qwen",      "Qwen"),
-    ("qwq",       "Qwen"),      ("phi",       "microsoft"),
-    ("falcon",    "tiiuae"),    ("bloom",     "bigscience"),
-    ("pythia",    "EleutherAI"),("gpt-j",     "EleutherAI"),
-    ("mpt",       "mosaicml"), ("dbrx",       "databricks"),
-    ("deepseek",  "deepseek-ai"),("yi",        "01-ai"),
-    ("olmo",      "allenai"),  ("command",    "CohereForAI"),
-    ("aya",       "CohereForAI"),("jamba",    "ai21labs"),
-    ("nemotron",  "nvidia"),   ("starcoder",  "bigcode"),
-    ("vicuna",    "lmsys"),    ("alpaca",     "stanford"),
-    ("grok",      "xai"),      ("glm",        "THUDM"),
-    ("internlm",  "internlm"), ("baichuan",   "baichuan-inc"),
-], key=lambda kv: len(kv[0]), reverse=True)
-
-_ORG_MAP: dict[str, str] = {
-    "openai": "openai", "google": "google", "meta": "meta-llama",
-    "anthropic": "anthropic", "mistral": "mistralai", "alibaba": "Qwen",
-    "microsoft": "microsoft", "deepseek": "deepseek-ai",
-    "cohere": "CohereForAI", "01.ai": "01-ai", "nvidia": "nvidia",
-    "ai21": "ai21labs", "tii": "tiiuae", "xai": "xai",
-    "lmsys": "lmsys", "databricks": "databricks", "bigcode": "bigcode",
-    "eleutherai": "EleutherAI", "mosaicml": "mosaicml",
-    "allenai": "allenai", "together": "togethercomputer",
-}
-
-
-def _infer_developer(model_name: str, organization: str = "") -> str:
-    if organization:
-        for label, dev in _ORG_MAP.items():
-            if label in organization.lower():
-                return dev
-    lower = model_name.lower()
-    for prefix, dev in _DEV_PATTERNS:
-        if lower.startswith(prefix) or f"-{prefix}" in lower or f"/{prefix}" in lower:
-            return dev
-    return "unknown"
+_infer_developer = infer_developer  # backward-compat alias for internal use
 
 
 def _extract_meta_from_text(text: str) -> dict:
@@ -327,7 +287,10 @@ def _extract_meta_from_text(text: str) -> dict:
 
 
 def _normalize_model_name(name: str) -> str:
-    return re.sub(r'(\d+)([bB])\b', lambda m: m.group(1) + 'B', name).strip()
+    name = re.sub(r'(\d+)([bB])\b', lambda m: m.group(1) + 'B', name).strip()
+    # Normalize underscores to hyphens for consistency with HF model IDs
+    name = name.replace('_', '-')
+    return name
 
 
 def _model_id(name: str, org: str = "") -> str:
@@ -723,7 +686,7 @@ class OpenLLMLeaderboardV2Fetcher(LiveLeaderboardFetcher):
     SOURCE_NAME = "Open LLM Leaderboard v2"
     SOURCE_ORG  = "HuggingFace"
     SOURCE_URL  = "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard"
-    EVAL_LIB    = "lm_eval"
+    EVAL_LIB    = "unknown"  # API does not expose harness; actual harness is lighteval
     CACHE_KEY   = "open_llm_v2"
 
     _DATASET_ID = "open-llm-leaderboard/contents"
@@ -731,10 +694,10 @@ class OpenLLMLeaderboardV2Fetcher(LiveLeaderboardFetcher):
 
     # Exact column names → (bench_name, shots, metric, note, cot)
     _BENCH_COLS: dict[str, tuple[str, int, str, str, bool]] = {
-        "IFEval":     ("IFEval",   0, "prompt_level_strict_acc", "",                         False),
+        "IFEval":     ("IFEval (strict-prompt)", 0, "prompt_level_strict_acc", "", False),
         "BBH":        ("BBH",      3, "accuracy",                "3-shot CoT",               True),
-        "MATH Lvl 5": ("MATH-500", 4, "accuracy",                "4-shot CoT, level 5 only", True),
-        "GPQA":       ("GPQA",     0, "accuracy",                "0-shot CoT",               True),
+        "MATH Lvl 5": ("MATH Lvl 5", 4, "accuracy",               "4-shot CoT, level 5 only", True),
+        "GPQA":       ("GPQA-Diamond", 0, "acc_norm",              "0-shot CoT, Diamond subset", True),
         "MUSR":       ("MuSR",     0, "accuracy",                "0-shot CoT",               True),
         "MMLU-PRO":   ("MMLU-Pro", 5, "accuracy",                "5-shot CoT",               True),
     }

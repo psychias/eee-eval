@@ -218,6 +218,39 @@ class BaseLeaderboardScraper(ABC):
         print(f"[{self.eval_name}] done — {count} files written.")
         return count
 
+    def run_standalone(
+        self, limit: int | None = None, dry_run: bool = False
+    ) -> int:
+        """CLI-friendly run: fetch, optionally limit, skip write if dry_run.
+
+        Provides the common main() boilerplate so scrapers don't need to
+        duplicate it. Returns count of records written (0 if dry_run).
+        """
+        import time
+
+        raw_dir = Path("scripts/scrapers/raw")
+        retrieved_timestamp = str(time.time())
+
+        print(f"[{self.eval_name}] fetching raw data...")
+        raw = self.fetch_raw()
+
+        self.save_raw(raw, raw_dir)
+
+        if limit and isinstance(raw, list):
+            raw = raw[:limit]
+
+        records = self.convert(raw, retrieved_timestamp)
+        print(f"[{self.eval_name}] converted {len(records)} records")
+
+        if dry_run:
+            print(f"[{self.eval_name}] dry-run mode — no files written")
+            return 0
+
+        count = self._write_records(records)
+        self._write_methodology(retrieved_timestamp)
+        print(f"[{self.eval_name}] done — {count} files written.")
+        return count
+
     def _write_records(self, records: list[dict]) -> int:
         """validate against eval.schema.json then write to data/{eval_name}/.
 

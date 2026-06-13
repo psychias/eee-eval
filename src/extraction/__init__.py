@@ -1,44 +1,18 @@
-﻿"""Extraction package — split from the monolithic extract_paper.py.
-
-Public API::
-
-    from src.extraction.pipeline import main
-    from src.extraction.pipeline import PaperExtractionPipeline
 """
-import sys
-from pathlib import Path
+src.extraction — EEE evaluation data extraction package.
 
-# Ensure repo root + utils/ are importable.
-_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
-if str(_ROOT / 'utils') not in sys.path:
-    sys.path.insert(0, str(_ROOT / 'utils'))
+Modules
+-------
+constants           Canonical benchmark names, developer maps, shared inference.
+add_leaderboard_records   Fetch live leaderboard scores and write EEE records.
+hf_model_card_fetcher     Extract benchmark results from HuggingFace model cards.
+pwc_fetcher               Fetch Papers With Code evaluation results.
+extract_paper               LLM-assisted extraction from arXiv PDFs (main CLI).
+convert_eval_logs         Convert raw evaluation logs to EEE format.
+fetch_arxiv_papers        Download arXiv PDFs.
+run_hf_pipeline           Orchestrate HF-based extraction stages.
+"""
 
-# Raise Python 3.11+ integer-string conversion limit (Docling artifacts).
-sys.set_int_max_str_digits(0)
+from src.extraction.constants import infer_developer
 
-from .download import PDFDownloader
-from .docling_parser import DoclingParser, TableExtractor
-from .table_parser import ResultsTableParser
-from .converter import PaperConverter, PaperWriter
-from .llm_fallback import LLMFallbackExtractor, CoverageStats
-from .prose import ProseExtractor
-from .protocol import EvalProtocolExtractor, GeminiProtocolExtractor
-from .pipeline import PaperExtractionPipeline, main
-
-__all__ = [
-    "PDFDownloader",
-    "DoclingParser",
-    "TableExtractor",
-    "ResultsTableParser",
-    "PaperConverter",
-    "PaperWriter",
-    "LLMFallbackExtractor",
-    "CoverageStats",
-    "ProseExtractor",
-    "EvalProtocolExtractor",
-    "GeminiProtocolExtractor",
-    "PaperExtractionPipeline",
-    "main",
-]
+__all__ = ["infer_developer"]

@@ -1,0 +1,9 @@
+================================================================================
+RESAMPLE: 5 WITH-harness papers for re-extraction with per-benchmark pipeline
+================================================================================
+
+2211.05100   — BLOOM: A 176B-Parameter Open-Access Multilingual Language Model (BigScience)
+2310.10631   — Llemma: an open language model for mathematics (Azerbayev et al.)
+2310.06694   — Sheared LLaMA: Accelerating LM Pre-training via Structured Pruning (Xia et al.)
+2405.15032   — Aya 23: Open Weight Releases to Further Multilingual Progress (Aryabumi et al.)
+2402.16819   — Nemotron-4 15B Technical Report (Parmar et al.)

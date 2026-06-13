@@ -38,7 +38,7 @@ from eval_types import (
     SourceDataUrl,
     SourceMetadata,
 )
-from helpers import get_developer, sanitize_filename
+from src.scrapers.utils import get_developer
 
 from src.converters import SCHEMA_VERSION as _SCHEMA_VERSION
 from src.scrapers.base import BaseLeaderboardScraper

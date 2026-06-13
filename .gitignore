@@ -86,4 +86,5 @@ uv.lock
 
 # Claude / Copilot agent metadata
 .claude/
+CLAUDE.md
 dmypy.json

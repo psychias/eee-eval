@@ -1,0 +1,644 @@
+section5_evidence.txt
+==============================================================================
+Raw evidence for Section 5 (Case Studies) of:
+  "How To Report Evaluations of your LLM"
+
+Generated: 2026-05-20
+Script   : generate_evidence_file.py
+
+Each block shows the exact stored file path and the relevant fields
+extracted from it, so every number in the paper can be traced to a
+single source artefact.
+
+API provenance:
+  OLv2 scores were fetched via the HuggingFace Space API at:
+  https://open-llm-leaderboard-open-llm-leaderboard.hf.space/api/leaderboard/formatted
+  Responses were converted to EEE schema and stored as JSON under
+  data/open_llm_leaderboard_v2/.
+
+Paper-extraction provenance:
+  ArXiv HTML papers were parsed by src/extraction/extract_paper.py.
+  Each extracted (model, benchmark, score) triple is stored as an
+  EEE JSON file under data/arxiv_extraction_general/llm/.
+
+==============================================================================
+  CASE STUDY 1a — BBH: lighteval log-likelihood vs CoT generation
+==============================================================================
+  OLv2 evaluates BBH with lighteval using log-likelihood scoring: each candidate
+  answer is presented to the model and the answer receiving the highest token
+  log-probability is selected. The paper-reported scores use 3-shot chain-of-
+  thought generation (Suzgun et al. 2023 protocol). These are not comparable.
+
+-- OLv2 API response — google/gemma-7B  (stored EEE record) ------------------
+    File                        : data\open_llm_leaderboard_v2\google\gemma-7B\3ce9060c-07c3-4b21-ba23-4b65994bd8f6.json
+    API endpoint                : https://open-llm-leaderboard-open-llm-leaderboard.hf.space/api/leaderboard/formatted
+    model_id                    : google/gemma-7B
+    eval_library (harness)      : lm_eval
+    benchmark                   : BBH
+    BBH score                   : 21.12
+    shots                       : 3
+
+  Full evaluation_results entry for BBH:
+    {
+      "evaluation_name": "BBH",
+      "source_data": {
+        "dataset_name": "BBH",
+        "source_type": "url",
+        "url": [
+          "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard"
+        ]
+      },
+      "metric_config": {
+        "metric_name": "accuracy",
+        "lower_is_better": false,
+        "score_type": "continuous",
+        "min_score": 0.0,
+        "max_score": 100.0
+      },
+      "score_details": {
+        "score": 21.12
+      },
+      "generation_config": {
+        "generation_args": {
+          "shots": 3,
+          "chain_of_thought": true
+        },
+        "additional_details": {
+          "source": "open_llm_leaderboard_v2",
+          "note": "3-shot CoT"
+        }
+      }
+    }
+
+
+-- OLv2 API response — google/gemma-2-2B  (stored EEE record) ----------------
+    File                        : data\open_llm_leaderboard_v2\google\gemma-2-2B\75bba401-bec5-4285-9fd9-5f20c5547c85.json
+    model_id                    : google/gemma-2-2B
+    eval_library (harness)      : lm_eval
+    BBH score                   : 11.76
+    shots                       : 3
+
+
+-- OLv2 API response — unknown/MAmmoTH2-7B-Plus  (from all_results.csv) ------
+  OLv2 model_id is 'unknown/MAmmoTH2-7B-Plus' (the submitter did not set an
+  organisation prefix). Score and harness come from the leaderboard API.
+    Source                      : data/aggregated/all_results.csv, source=open_llm_leaderboard_v2
+    model_id                    : unknown/MAmmoTH2-7B-Plus
+    eval_library                : lm_eval
+    benchmark                   : BBH
+    score                       : 18.93
+    shots                       : 3
+
+
+-- ArXiv paper extraction — Jamba paper, Gemma-7B BBH = 55.10 ----------------
+    File                        : data\arxiv_extraction_general\llm\Jamba__Hybrid_Transformer-Mamba_Language_Model\Gemma-7B\BBH\be0e2a07-3fa8-4ca2-9913-ca1ef4d430bc.json
+    model_id                    : Gemma-7B
+    eval_library                : unknown
+    score                       : 55.1
+    n_shot                      : 3
+    source (extraction)         : arxiv_html_llm
+
+
+-- ArXiv paper extraction — RecurrentGemma paper, Gemma-7B BBH = 55.10 -------
+    File                        : data\arxiv_extraction_general\llm\RecurrentGemma__Moving_Past_Transformers_for_Efficient_Open_LMs\Gemma-7B\BBH\546463f1-f907-4f3d-b473-361a9272f45e.json
+    model_id                    : Gemma-7B
+    eval_library                : unknown
+    score                       : 55.1
+    n_shot                      : ?
+
+
+-- ArXiv paper extraction — MAmmoTH2 paper, Gemma-7B BBH = 57.40 -------------
+    File                        : data\arxiv_extraction_general\llm\MAmmoTH2__Scaling_Instructions_from_the_Web\Gemma-7B\BBH\9889a234-be7c-4bde-ac71-c0e34975f4d6.json
+    model_id                    : Gemma-7B
+    eval_library                : unknown
+    score                       : 57.4
+    n_shot                      : 3
+
+
+-- ArXiv paper extraction — Instella paper, Gemma-2-2B BBH = 40.80 -----------
+    File                        : data\arxiv_extraction_general\llm\Instella__Fully_Open_Language_Models_with_Stellar_Performance\Gemma-2-2B\BBH\64693042-ed44-4da0-8307-fbaff0d0d5c5.json
+    model_id                    : Gemma-2-2B
+    eval_library                : unknown
+    score                       : 40.8
+    n_shot                      : 3
+
+
+-- ArXiv paper extraction — MAmmoTH2 paper, MAmmoTH2-7B-Plus BBH = 63.10 -----
+    File                        : data\arxiv_extraction_general\llm\MAmmoTH2__Scaling_Instructions_from_the_Web\MAmmoTH2-7B-Plus\BBH\1e625eba-4e98-477a-b21e-e41f3df2d15f.json
+    model_id                    : MAmmoTH2-7B-Plus
+    eval_library                : unknown
+    score                       : 63.1
+    n_shot                      : 3
+
+  COMPARISON SUMMARY — Gemma-7B BBH:
+    OLv2 (lighteval, log-likelihood, 3-shot) : 21.12
+    Jamba paper (CoT generation)              : 55.10
+    RecurrentGemma paper (CoT generation)     : 55.10
+    MAmmoTH2 paper (CoT generation)           : 57.40
+    Gap: ~35 pp. Both protocols are correctly executed; they measure different
+  things.
+
+==============================================================================
+  CASE STUDY 1c — GSM8K: CoT Parser Failure (Experiment E3)
+==============================================================================
+  lm-evaluation-harness 0.4.11 was run on Qwen2.5-14B-Instruct at 5-shot under
+  three prompt formats (plain, instruct, cot). The raw lm-eval sample files are
+  stored under experiments/controlled_eval/5-shot-GSM8K/. Below are
+  representative examples from the first item in each file.
+
+-- lm-eval output — PLAIN — direct few-shot (58.5% accuracy) -----------------
+    File                        : experiments/controlled_eval/5-shot-GSM8K/Qwen2.5-14B-Instruct_gsm8k_5shot_plain/samples_gsm8k_5shot.jsonl
+    Harness                     : lm-evaluation-harness 0.4.11
+    Model                       : Qwen/Qwen2.5-14B-Instruct
+    Shots                       : 5
+    Temperature                 : 0.0
+    Random seed                 : 42
+
+  Question:
+    Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fre
+
+  Prompt sent to model (last 400 chars of context):
+    er day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?\nAnswer:<|im_end|>\n<|im_start|>assistant\n", {'until': ['Question:', '</s>', '<|im_end|>'], 'do_sample': False, 'temperature': 0.0, 'seed': 42}]]
+
+  Model response (first 500 chars):
+    Janet's ducks lay 16 eggs per day. She uses 3 eggs for breakfast and 4 eggs for baking muffins, which totals 3 + 4 = <<3+4=7>>7 eggs used daily.
+    
+    This leaves her with 16 - 7 = <<16-7=9>>9 eggs to sell at the farmers' market.
+    
+    Since she sells each egg for $2, the total amount she makes from selling the eggs is 9 * $2 = $<<9*2=18>>18 per day.
+    
+    Therefore, Janet makes $18 every day at the farmers' market.
+    #### 18
+
+  Expected answer (GSM8K #### delimiter):
+    a day.
+    She makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.
+    #### 18
+    exact_match                 : 1.0
+
+
+-- lm-eval output — INSTRUCT — system-prompt formatted (57.0% accuracy) ------
+    File                        : experiments/controlled_eval/5-shot-GSM8K/Qwen2.5-14B-Instruct_gsm8k_5shot_instruct/samples_gsm8k_5shot.jsonl
+    Harness                     : lm-evaluation-harness 0.4.11
+    Model                       : Qwen/Qwen2.5-14B-Instruct
+    Shots                       : 5
+    Temperature                 : 0.0
+    Random seed                 : 42
+
+  Question:
+    Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fre
+
+  Prompt sent to model (last 400 chars of context):
+    er day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?\nAnswer:<|im_end|>\n<|im_start|>assistant\n", {'until': ['Question:', '</s>', '<|im_end|>'], 'do_sample': False, 'temperature': 0.0, 'seed': 42}]]
+
+  Model response (first 500 chars):
+    Janet's ducks lay 16 eggs per day. She uses 3 eggs for breakfast and 4 eggs for baking muffins, which totals 3 + 4 = 7 eggs used daily.
+    
+    This leaves her with 16 - 7 = 9 eggs to sell at the farmers' market.
+    
+    Since she sells each egg for $2, the total amount she makes from selling the eggs is 9 * $2 = $18 per day.
+    
+    #### 18
+
+  Expected answer (GSM8K #### delimiter):
+    a day.
+    She makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.
+    #### 18
+    exact_match                 : 1.0
+
+
+-- lm-eval output — CHAIN-OF-THOUGHT — extended reasoning prompt (2.5% accuracy) 
+    File                        : experiments/controlled_eval/5-shot-GSM8K/Qwen2.5-14B-Instruct_gsm8k_5shot_cot/samples_gsm8k_5shot.jsonl
+    Harness                     : lm-evaluation-harness 0.4.11
+    Model                       : Qwen/Qwen2.5-14B-Instruct
+    Shots                       : 5
+    Temperature                 : 0.0
+    Random seed                 : 42
+
+  Question:
+    Janet’s ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fre
+
+  Prompt sent to model (last 400 chars of context):
+    er day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?\nAnswer:<|im_end|>\n<|im_start|>assistant\n", {'until': ['Question:', '</s>', '<|im_end|>'], 'do_sample': False, 'temperature': 0.0, 'seed': 42}]]
+
+  Model response (first 500 chars):
+    First, let's calculate the total number of eggs Janet uses each day:
+    
+    - Janet eats 3 eggs for breakfast every day.
+    - She uses 4 eggs to bake muffins for her friends every day.
+    
+    So, Janet uses a total of 3 + 4 = 7 eggs each day.
+    
+    Next, we know that Janet's ducks lay 16 eggs per day. Therefore, the number of eggs left for selling at the farmers' market is:
+    
+    16 (total eggs) - 7 (eggs used) = 9 eggs.
+    
+    Since Janet sells these remaining eggs at the farmers' market for $2 each, the total amount she mak
+
+  Expected answer (GSM8K #### delimiter):
+    a day.
+    She makes 9 * 2 = $<<9*2=18>>18 every day at the farmer’s market.
+    #### 18
+    exact_match                 : 0.0
+
+  Parser failure: the model produces a correct numerical answer but as prose
+  ('the total amount she makes ... is 9 * $2 = $18'). The harness searches for
+  the pattern '#### {number}' and finds nothing, recording 0 for the item. The
+  model's arithmetic is correct; the parser cannot read the output format the
+  CoT prompt instructed it to produce.
+
+  SCORE SUMMARY (Qwen2.5-14B-Instruct, GSM8K, 5-shot, temperature=0.0, mean over
+  seeds 7/42/123):
+    plain   : 58.5%  — parser finds #### delimiter correctly
+    instruct: 57.0%  — chat template wraps output, delimiter still present
+    cot     :  2.5%  — extended reasoning suppresses the delimiter
+
+==============================================================================
+  CASE STUDY 2a — TruthfulQA: Shot Count + Judge Model Confound
+==============================================================================
+  Both records below use the generation-based TruthfulQA metric
+  (%truthful+informative). The 30-point gap comes from two confounded
+  differences: (1) 6-shot vs 0-shot, (2) GPT-3 judge vs Llama-2-7B fine-tuned
+  classifier.
+
+-- ArXiv extraction — Code Llama paper: Llama-2-Chat-7B TruthfulQA = 57.04 ---
+  6-shot, GPT-3-based judge. Llama-2-Chat-7B evaluated as comparison baseline.
+    File                        : data\arxiv_extraction_general\llm\Code_Llama__Open_Foundation_Models_for_Code\Llama_2_Chat_7B\TruthfulQA\e5f8bff6-1002-4ebf-8ca4-332ae1396242.json
+    model_id (in record)        : Llama_2_Chat_7B
+    eval_library                : unknown
+    benchmark                   : TruthfulQA
+    score                       : 57.04
+    n_shot                      : 6
+
+  Full EEE record (evaluation_results[0]):
+    {
+      "evaluation_name": "TruthfulQA",
+      "evaluation_timestamp": "2026-04-29",
+      "source_data": {
+        "dataset_name": "TruthfulQA",
+        "source_type": "url",
+        "url": [
+          "https://arxiv.org/abs/2308.12950"
+        ]
+      },
+      "metric_config": {
+        "metric_name": "truthful_and_informative",
+        "lower_is_better": false,
+        "score_type": "continuous",
+        "min_score": 0,
+        "max_score": 100
+      },
+      "score_details": {
+        "score": 57.04
+      },
+      "generation_config": {
+        "generation_args": {
+          "n_shot": 6,
+          "temperature": 0.1,
+          "prompt_template": "InstructGPT"
+        },
+        "additional_details": {
+          "source": "arxiv_html_llm"
+        }
+      }
+    }
+
+
+-- ArXiv extraction — OLMo paper: Llama-2-Chat-7B TruthfulQA = 26.30 ---------
+  0-shot, Tulu 2 suite, Llama-2-7B fine-tuned classifier judge.
+    File                        : data\arxiv_extraction_general\llm\OLMo__Accelerating_the_Science_of_Language_Models\Llama-2-Chat-7B\TruthfulQA\9831c296-bdf6-4c46-bdd0-9771ed963580.json
+    model_id (in record)        : Llama-2-Chat-7B
+    eval_library                : Catwalk
+    benchmark                   : TruthfulQA
+    score                       : 26.3
+    n_shot                      : 6
+
+  Full EEE record (evaluation_results[0]):
+    {
+      "evaluation_name": "TruthfulQA",
+      "evaluation_timestamp": "2026-04-25",
+      "source_data": {
+        "dataset_name": "TruthfulQA",
+        "source_type": "url",
+        "url": [
+          "https://arxiv.org/abs/2402.00838"
+        ]
+      },
+      "metric_config": {
+        "metric_name": "percent_informative_and_truthful",
+        "lower_is_better": false,
+        "score_type": "continuous",
+        "min_score": 0,
+        "max_score": 100
+      },
+      "score_details": {
+        "score": 26.3
+      },
+      "generation_config": {
+        "generation_args": {
+          "eval_harness": "Catwalk",
+          "n_shot": 6,
+          "prompt_template": "direct",
+          "decoding_strategy": "greedy"
+        },
+        "additional_details": {
+          "source": "arxiv_html_llm"
+        }
+      }
+    }
+
+  COMPARISON: Both labeled 'TruthfulQA' in the source papers.
+    Code Llama paper (6-shot, GPT-3 judge) : 57.04
+    OLMo paper       (0-shot, Llama-2-7B)  : 26.30
+    Neither paper records shot count or judge model in the metric label.
+
+==============================================================================
+  CASE STUDY 2b — Belebele: N-Shot + Language Scope Confound
+==============================================================================
+
+-- ArXiv extraction — Reka paper: Mistral-7B Belebele = 32.80 ----------------
+  0-shot, multilingual average over 150 language variants (dagger: self-run).
+    File                        : data\arxiv_extraction_general\llm\Reka_Core__Flash__and_Edge__Powerful_Multimodal_Language_Models\Mistral_7B\Belebele\351d6ef2-f1be-4750-b72a-fb333bcb2dad.json
+    eval_library                : unknown
+    score                       : 32.8
+    n_shot                      : 0
+
+  Full EEE record (evaluation_results[0]):
+    {
+      "evaluation_name": "Belebele",
+      "evaluation_timestamp": "2026-04-27",
+      "source_data": {
+        "dataset_name": "Belebele",
+        "source_type": "url",
+        "url": [
+          "https://arxiv.org/abs/2404.12387"
+        ]
+      },
+      "metric_config": {
+        "metric_name": "accuracy",
+        "lower_is_better": false,
+        "score_type": "continuous",
+        "min_score": 0.0,
+        "max_score": 100.0
+      },
+      "score_details": {
+        "score": 32.8
+      },
+      "generation_config": {
+        "generation_args": {
+          "n_shot": 0
+        },
+        "additional_details": {
+          "source": "arxiv_html_llm"
+        }
+      }
+    }
+
+
+-- ArXiv extraction — Falcon2 paper: Mistral-7B Belebele = 79.42 -------------
+  5-shot, English only. Same paper also reports 0-shot English = 32.48.
+    File                        : data\arxiv_extraction_general\llm\Falcon2-11B_Technical_Report\Mistral-7B\Belebele\6b60d80a-7b8c-4131-a7a0-986b87837e65.json
+    eval_library                : unknown
+    score                       : 79.42
+    n_shot                      : 5
+
+  Full EEE record (evaluation_results[0]):
+    {
+      "evaluation_name": "Belebele",
+      "evaluation_timestamp": "2026-04-29",
+      "source_data": {
+        "dataset_name": "Belebele",
+        "source_type": "url",
+        "url": [
+          "https://arxiv.org/abs/2407.14885"
+        ]
+      },
+      "metric_config": {
+        "metric_name": "accuracy",
+        "lower_is_better": false,
+        "score_type": "continuous",
+        "min_score": 0.0,
+        "max_score": 100.0
+      },
+      "score_details": {
+        "score": 79.42
+      },
+      "generation_config": {
+        "generation_args": {
+          "n_shot": 5
+        },
+        "additional_details": {
+          "source": "arxiv_html_llm"
+        }
+      }
+    }
+
+  COMPARISON: Both labeled 'Belebele' in the source papers.
+    Reka paper   (0-shot, 150-language multilingual avg) : 32.80
+    Falcon2 paper (5-shot, English only)                 : 79.42
+    Falcon2 also reports Mistral-7B at 0-shot English = 32.48,
+    isolating n-shot as the dominant driver of the 47-point gap.
+
+==============================================================================
+  CASE STUDY 2c — HellaSwag: Scoring Mode + N-Shot Confound
+==============================================================================
+  The ~31-point gap is driven by scoring mode, not shot count. Generation-based
+  evaluation (Phi-3 pipeline) asks the model to produce the correct continuation
+  as free text. Log-likelihood evaluation (Gemma paper, HF leaderboard) presents
+  all four candidate continuations and scores token probability.
+
+-- ArXiv extraction — Phi-3 paper: Gemma-7B HellaSwag = 49.80 ----------------
+  5-shot, generation-based (direct-answer format, temperature=0).
+    File                        : data\arxiv_extraction_general\llm\Phi-3_Technical_Report__A_Small_Language_Model\Gemma-7B\HellaSwag\7407b6ae-a6bd-4fc4-a31e-96bfca859ab6.json
+    eval_library                : unknown
+    score                       : 49.8
+    n_shot                      : 5
+    temperature                 : 0.0
+    prompt_template             : direct
+
+  Full generation_config (records scoring mode metadata):
+    {
+      "generation_args": {
+        "seed": 0,
+        "n_shot": 5,
+        "temperature": 0.0,
+        "prompt_template": "direct"
+      },
+      "additional_details": {
+        "source": "arxiv_html_llm"
+      }
+    }
+
+
+-- ArXiv extraction — RecurrentGemma paper: Gemma-7B HellaSwag = 81.20 -------
+  0-shot, log-likelihood over 4 candidate continuations. This is Gemma's self-
+  reported Table 6 score; the Gemma paper's own HTML extraction captures 82.2
+  from Table 7 (HF leaderboard reprint). Multiple papers citing Gemma's self-
+  reported evals carry 81.2.
+    File                        : data\arxiv_extraction_general\llm\RecurrentGemma__Moving_Past_Transformers_for_Efficient_Open_LMs\Gemma-7B\HellaSwag\52a8f508-6950-4946-9647-c52ced5c3774.json
+    eval_library                : unknown
+    score                       : 81.2
+    n_shot                      : 0
+    temperature                 : not stored
+
+  Full generation_config:
+    {
+      "generation_args": {
+        "n_shot": 0
+      },
+      "additional_details": {
+        "source": "arxiv_html_llm"
+      }
+    }
+
+  COMPARISON: Both labeled 'HellaSwag' in the source papers.
+    Phi-3 paper        (5-shot, generation-based, direct format) : 49.80
+    RecurrentGemma ref (0-shot, log-likelihood, 4 candidates)    : 81.20
+    31-point gap. On a log-likelihood benchmark, shot count alone
+    shifts scores by a few points; scoring mode is the primary driver.
+
+==============================================================================
+  CASE STUDY 3 — SEA-LION: Gemma-2-9B BBH Score Clusters
+==============================================================================
+  OLv2 and the SEA-LION paper report an identical score to two decimal places.
+  Three other ArXiv papers report a score ~35 pp higher, reflecting 0-shot CoT
+  generation vs OLv2's 3-shot log-likelihood.
+
+-- OLv2 API response — google/gemma-2-9B  BBH = 34.10 ------------------------
+    File                        : data\open_llm_leaderboard_v2\google\gemma-2-9B\7b56b94b-0193-4d2a-a73a-8ed44d0314f0.json
+    API endpoint                : https://open-llm-leaderboard-open-llm-leaderboard.hf.space/api/leaderboard/formatted
+    model_id                    : google/gemma-2-9B
+    eval_library (harness)      : lm_eval
+    BBH score                   : 34.1
+    shots                       : 3
+
+  Full evaluation_results entry for BBH:
+    {
+      "evaluation_name": "BBH",
+      "source_data": {
+        "dataset_name": "BBH",
+        "source_type": "url",
+        "url": [
+          "https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard"
+        ]
+      },
+      "metric_config": {
+        "metric_name": "accuracy",
+        "lower_is_better": false,
+        "score_type": "continuous",
+        "min_score": 0.0,
+        "max_score": 100.0
+      },
+      "score_details": {
+        "score": 34.1
+      },
+      "generation_config": {
+        "generation_args": {
+          "shots": 3,
+          "chain_of_thought": true
+        },
+        "additional_details": {
+          "source": "open_llm_leaderboard_v2",
+          "note": "3-shot CoT"
+        }
+      }
+    }
+
+
+-- ArXiv extraction — SEA-LION paper: Gemma-2-9B BBH = 34.10  (exact match) --
+  The SEA-LION paper lists 'SEA-HELM Leaderboard, SEACrowd, Open LLM
+  Leaderboard' as its benchmark sources. The score matches OLv2 to two decimal
+  places, consistent with direct importation of the OLv2 score.
+    File                        : data\arxiv_extraction_general\llm\SEA-LION__Southeast_Asian_Languages_in_One_Network\Gemma-2-9B\BBH\937f8a74-e28d-4657-ac41-cbf676f12a7f.json
+    eval_library                : SEA-HELM Leaderboard, SEACrowd, Open LLM Leaderboard
+    score                       : 34.1
+    n_shot                      : not stored
+
+  Full EEE record (evaluation_results[0]):
+    {
+      "evaluation_name": "BBH",
+      "evaluation_timestamp": "2026-04-28",
+      "source_data": {
+        "dataset_name": "BBH",
+        "source_type": "url",
+        "url": [
+          "https://arxiv.org/abs/2504.05747"
+        ]
+      },
+      "metric_config": {
+        "metric_name": "accuracy",
+        "lower_is_better": false,
+        "score_type": "continuous",
+        "min_score": 0.0,
+        "max_score": 100.0
+      },
+      "score_details": {
+        "score": 34.1
+      },
+      "generation_config": {
+        "generation_args": {
+          "eval_harness": "SEA-HELM Leaderboard, SEACrowd, Open LLM Leaderboard"
+        },
+        "additional_details": {
+          "source": "arxiv_html_llm"
+        }
+      }
+    }
+
+
+-- High-score cluster — Gemma-2-9B BBH ~ 68-69 (0-shot CoT generation) -------
+  Scores at 68.20 and 69.00 appear in the Gemma 2 and Gemma 3 technical reports
+  citing OLMoE, SmolLM2, and RecurrentGemma evaluations. These papers used
+  0-shot chain-of-thought generation, not OLv2's 3-shot log-likelihood protocol.
+    File                        : data\arxiv_extraction_general\llm\Gemma_2__Improving_Open_Language_Models_at_Practical_Size\Gemma_2_9B\BBH\98ce4c58-2129-44b8-a44b-52ddf43818c1.json
+    Label                       : Gemma 2 paper (citing OLMoE-style eval): 68.20
+    score                       : 68.2
+    File                        : data\arxiv_extraction_general\llm\Gemma_3_Technical_Report\Gemma_2_9B\BBH\34ff61a7-9fb6-4580-b118-f289c00ee9ff.json
+    Label                       : Gemma 3 paper (citing SmolLM2-style eval): 69.00
+    score                       : 69.0
+
+  COMPARISON SUMMARY — Gemma-2-9B BBH:
+    OLv2 (lighteval, 3-shot log-likelihood)     : 34.10
+    SEA-LION paper (shared pipeline origin)      : 34.10  [exact match]
+    High cluster (0-shot CoT generation papers)  : 68.20, 69.00
+    The two 34.10 records cannot be verified as independent measurements.
+    The ~35-point gap between clusters is the same harness-mismatch
+    mechanism as Case Study 1a.
+
+==============================================================================
+  EXPERIMENT E5 — MMLU: Max Scoring-Mode Gap Across Models
+==============================================================================
+  Three models were evaluated on MMLU at 5-shot under both log-likelihood and
+  generation-based scoring. The maximum gap across all models is 0.28 percentage
+  points, confirming that the ~35-point BBH gap is not a generic scoring-mode
+  effect but is specific to the interaction between lighteval's log-likelihood
+  approach and BBH's CoT structure.
+    File                        : experiments\scoring_mode_eval\scoring_mode_results.jsonl
+      Mistral-7B-Instruct-v0.3 [log_likelihood]: 61.9214  (n_shot=5)
+      Qwen2.5-7B-Instruct [log_likelihood]: 74.2558  (n_shot=5)
+      Llama-3.1-8B-Instruct [log_likelihood]: 68.3022  (n_shot=5)
+      Mistral-7B-Instruct-v0.3 [generation]: 61.6365  (n_shot=5)
+      Qwen2.5-7B-Instruct [generation]: 74.4267  (n_shot=5)
+      Llama-3.1-8B-Instruct [generation]: 68.1598  (n_shot=5)
+      Qwen2.5-14B-Instruct [generation]: 79.7892  (n_shot=5)
+
+  Max gap: 0.28 pp (Mistral-7B-Instruct-v0.3, log-likelihood vs generation).
+
+==============================================================================
+  END OF EVIDENCE FILE
+==============================================================================
+  All EEE JSON files were produced by the extraction pipeline at:
+    src/extraction/extract_paper.py
+    src/extraction/extract_arxiv_metadata_general.py
+
+  All OLv2 JSON files were produced by:
+    src/scrapers/hfopenllm_v2_scraper.py
+    (fetches from https://open-llm-leaderboard-open-llm-
+  leaderboard.hf.space/api/leaderboard/formatted)
+
+  The controlled-experiment samples were produced by running:
+    lm-evaluation-harness 0.4.11
+    experiments/controlled_eval/run.py
+
+  The scoring-mode experiment samples were produced by:
+    experiments/scoring_mode_eval/scoring_mode_eval.ipynb

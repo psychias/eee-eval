@@ -32,7 +32,7 @@ pip install -q docling huggingface_hub openai requests jsonschema pandas matplot
 
 ### Stage 1 — Extract (test batch)
 ```powershell
-python src/extract_paper.py --batch src/arxiv_ids_test.txt --llm-fallback --llm-model meta-llama/llama-3.3-70b-instruct
+python src/extraction/extract_paper.py --paper-list papers/general_llm_papers_batch1.txt --yes
 ```
 This takes several minutes per paper. Watch for:
 - `results tables accepted:` — should be > 0 for each paper
@@ -42,20 +42,20 @@ This takes several minutes per paper. Watch for:
 
 ### Stage 2 — Validate
 ```powershell
-python src/validate_outputs.py
+python src/validation/validate_outputs.py
 ```
 Must exit with code 0. If any files fail, read them and fix.
 
 ### Stage 3 — Aggregate
 ```powershell
-python src/aggregate_results.py
+python src/analysis/aggregate_results.py
 ```
 Produces `data/aggregated/all_results.csv` and `coverage_stats.json`.
 Read the metadata documentation rates printed at the end.
 
 ### Stage 4 — Generate figures
 ```powershell
-python src/generate_figures.py
+python src/figures/generate_all_figures.py
 ```
 Produces 5 figures in `data/figures/`.
 
@@ -98,7 +98,7 @@ This means both LLM and Docling found nothing. Steps:
    python -c "from docling.document_converter import DocumentConverter; r = DocumentConverter().convert('src/scrapers/raw/papers/<id>.pdf'); print(r.document.export_to_markdown()[:500])"
    ```
 4. If scanned PDF: Docling needs OCR enabled. Edit `DoclingParser.__init__` in
-   `src/extract_paper.py` and set `pipeline_options.do_ocr = True`
+   `src/extraction/extract_paper.py` and set `pipeline_options.do_ocr = True`
 
 ### LLM rate limit (429)
 The pipeline already retries with exponential backoff and model fallbacks.

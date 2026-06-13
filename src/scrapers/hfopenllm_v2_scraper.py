@@ -32,7 +32,7 @@ from eval_types import (
     SourceDataHf,
     SourceMetadata,
 )
-from helpers import fetch_json, get_developer, sanitize_filename, save_evaluation_log
+from src.scrapers.utils import fetch_json
 
 from src.converters import SCHEMA_VERSION as _SCHEMA_VERSION
 from src.scrapers.base import BaseLeaderboardScraper
@@ -52,7 +52,7 @@ _EVAL_DISPLAY = {
     "ifeval": "IFEval",
     "bbh": "BBH",
     "math": "MATH Level 5",
-    "gpqa": "GPQA",
+    "gpqa": "GPQA-Diamond (acc_norm)",
     "musr": "MUSR",
     "mmlu_pro": "MMLU-PRO",
 }
@@ -75,7 +75,7 @@ _SOURCE_DATA: dict[str, SourceDataHf] = {
         hf_repo="DigitalLearningGmbH/MATH-lighteval",
     ),
     "gpqa": SourceDataHf(
-        dataset_name="GPQA",
+        dataset_name="GPQA-Diamond (acc_norm)",
         source_type="hf_dataset",
         hf_repo="Idavidrein/gpqa",
     ),

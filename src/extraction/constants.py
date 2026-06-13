@@ -86,12 +86,21 @@ _BENCHMARK_CANONICAL: dict[str, str] = {
     "mt-aime 2024": "MT-AIME2024",
     "aime 2024": "AIME 2024",
     "aime 2025": "AIME 2025",
-    # IFEval scoring variant → parent benchmark
-    "ifeval strict prompt": "IFEval",
+    # IFEval — preserve metric variant when specified
+    "ifeval strict prompt": "IFEval (strict-prompt)",
+    "ifeval strict-prompt": "IFEval (strict-prompt)",
+    "ifeval strict instruction": "IFEval (strict-inst)",
+    "ifeval strict-instruction": "IFEval (strict-inst)",
+    "ifeval loose prompt": "IFEval (loose-prompt)",
+    "ifeval loose-prompt": "IFEval (loose-prompt)",
+    "ifeval loose instruction": "IFEval (loose-inst)",
+    "ifeval loose-instruction": "IFEval (loose-inst)",
+    "ifeval average": "IFEval",
     "ifeval": "IFEval",
     # GPQA variants
     "gpqa-diamond": "GPQA-Diamond",
     "gpqa diamond": "GPQA-Diamond",
+    "gpqa-d": "GPQA-Diamond",
     "gpqa": "GPQA",
     # Case normalization for common benchmarks
     "mmlu": "MMLU",
@@ -104,6 +113,12 @@ _BENCHMARK_CANONICAL: dict[str, str] = {
     "big-bench hard": "BBH",
     "big bench hard": "BBH",
     "bigbench hard": "BBH",
+    "bigbench-hard": "BBH",
+    "big-bench-hard": "BBH",
+    # BIG-Bench (full 204-task suite) ≠ BBH (23-task hard subset)
+    "big-bench": "BIG-Bench",
+    "big bench": "BIG-Bench",
+    "bigbench": "BIG-Bench",
     "gsm8k": "GSM8K",
     "mbpp": "MBPP",
     "mbpp+": "MBPP+",
@@ -117,17 +132,17 @@ _BENCHMARK_CANONICAL: dict[str, str] = {
     "hellaswag": "HellaSwag",
     "piqa": "PIQA",
     "siqa": "SIQA",
-    # ARC variants — covers hyphen, space, and abbreviation forms
-    "arc-c": "ARC-C",
-    "arc-e": "ARC-E",
-    "arc-challenge": "ARC-C",
-    "arc challenge": "ARC-C",
-    "arc_challenge": "ARC-C",
-    "arc-easy": "ARC-E",
-    "arc easy": "ARC-E",
-    "arc_easy": "ARC-E",
-    "arc c": "ARC-C",
-    "arc e": "ARC-E",
+    # ARC variants — all collapse to ARC-Challenge / ARC-Easy
+    "arc-c": "ARC-Challenge",
+    "arc-e": "ARC-Easy",
+    "arc-challenge": "ARC-Challenge",
+    "arc challenge": "ARC-Challenge",
+    "arc_challenge": "ARC-Challenge",
+    "arc-easy": "ARC-Easy",
+    "arc easy": "ARC-Easy",
+    "arc_easy": "ARC-Easy",
+    "arc c": "ARC-Challenge",
+    "arc e": "ARC-Easy",
     "commonsenseqa": "CommonsenseQA",
     "openbookqa": "OpenBookQA",
     "triviaqa": "TriviaQA",
@@ -180,6 +195,15 @@ _BENCHMARK_CANONICAL: dict[str, str] = {
     # Additional common benchmarks
     "truthfulqa": "TruthfulQA",
     "truthful qa": "TruthfulQA",
+    "truthfulqa mc1": "TruthfulQA-MC1",
+    "truthfulqa-mc1": "TruthfulQA-MC1",
+    "truthfulqa mc2": "TruthfulQA-MC2",
+    "truthfulqa-mc2": "TruthfulQA-MC2",
+    # MATH variants — distinct subsets, do not collapse
+    "math lvl 5": "MATH Lvl 5",
+    "math level 5": "MATH Lvl 5",
+    "math-hard": "MATH Lvl 5",
+    "math hard": "MATH Lvl 5",
     "nq": "NQ",
     "natural questions": "NQ",
     "copa": "COPA",
@@ -207,10 +231,8 @@ _BENCHMARK_CANONICAL: dict[str, str] = {
     "zebralogic": "ZebraLogic",
     # Truncated/short variants
     "winog": "WinoGrande",
-    # pass@k variants
-    "pass@1": "HumanEval pass@1",
-    "pass@10": "HumanEval pass@10",
-    "pass@100": "HumanEval pass@100",
+    # pass@k variants — bare pass@k is ambiguous (could be HumanEval or MBPP)
+    # Only map when benchmark context is explicit
     "humaneval pass@1": "HumanEval pass@1",
     "humaneval pass@10": "HumanEval pass@10",
     "humaneval pass@100": "HumanEval pass@100",
@@ -561,6 +583,40 @@ _AMBIGUOUS_DEVELOPER_PATTERNS: frozenset[str] = frozenset({
     "hermes",
     "vicuna",
 })
+
+
+# Organization name → canonical developer ID mapping
+_ORG_MAP: dict[str, str] = {
+    "openai": "openai", "google": "google", "meta": "meta-llama",
+    "anthropic": "anthropic", "mistral": "mistralai", "alibaba": "Qwen",
+    "microsoft": "microsoft", "deepseek": "deepseek-ai",
+    "cohere": "CohereForAI", "01.ai": "01-ai", "nvidia": "nvidia",
+    "ai21": "ai21labs", "tii": "tiiuae", "xai": "xai",
+    "lmsys": "lmsys", "databricks": "databricks", "bigcode": "bigcode",
+    "eleutherai": "EleutherAI", "mosaicml": "mosaicml",
+    "allenai": "allenai", "together": "togethercomputer",
+}
+
+
+def infer_developer(model_name: str, organization: str = "") -> str:
+    """Infer the developer/organization for a model name.
+
+    Uses organization hint first, then falls back to _DEVELOPER_PATTERNS
+    substring matching. Returns 'unknown' if no match found.
+    """
+    # Try organization hint first
+    if organization:
+        org_lower = organization.lower()
+        for label, dev in _ORG_MAP.items():
+            if label in org_lower:
+                return dev
+
+    # Fall back to model name pattern matching
+    lower = model_name.lower()
+    for prefix, dev in _DEVELOPER_PATTERNS:
+        if lower.startswith(prefix) or f"-{prefix}" in lower or f"/{prefix}" in lower:
+            return dev
+    return "unknown"
 
 
 # ---------------------------------------------------------------------------

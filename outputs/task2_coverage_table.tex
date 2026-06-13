@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Metadata coverage sensitivity to source exclusion.}
+\label{tab:coverage_sensitivity}
+\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+Subset & Records & Models & Benchmarks & Harness & N-shot & CoT & Temp. \\
+\midrule
+All & 51,094 & 7496 & 1458 & 70.5\% & 55.5\% & 43.8\% & 2.8\% \\
+$-$OLv2 & 24,304 & 3152 & 1455 & 37.9\% & 6.5\% & 0.1\% & 5.8\% \\
+$-$PWC & 50,518 & 7125 & 1458 & 71.3\% & 55.8\% & 44.2\% & 2.8\% \\
+$-$OLv2$-$PWC & 23,728 & 2774 & 1455 & 38.8\% & 5.9\% & 0.0\% & 5.9\% \\
+\bottomrule
+\end{tabular}
+\end{table}

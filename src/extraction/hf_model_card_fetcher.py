@@ -45,6 +45,8 @@ import requests
 _ROOT    = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from src.extraction.constants import infer_developer
+
 DATA_DIR   = _ROOT / "data"
 CACHE_DIR  = pathlib.Path(".cache/hf_model_cards")
 CACHE_TTL  = 7 * 24 * 3600  # 7 days
@@ -89,34 +91,14 @@ class ModelCardData:
 
 
 # ---------------------------------------------------------------------------
-# Developer inference (shared with add_leaderboard_records)
+# Developer inference — delegated to constants.infer_developer()
 # ---------------------------------------------------------------------------
-
-_DEV_PATTERNS: list[tuple[str, str]] = [
-    ("gpt", "openai"), ("o1", "openai"), ("o3", "openai"),
-    ("claude", "anthropic"), ("gemini", "google"), ("gemma", "google"),
-    ("codellama", "meta-llama"), ("llama", "meta-llama"),
-    ("mistral", "mistralai"), ("mixtral", "mistralai"),
-    ("qwen", "Qwen"), ("phi", "microsoft"),
-    ("falcon", "tiiuae"), ("deepseek", "deepseek-ai"),
-    ("yi-", "01-ai"), ("olmo", "allenai"),
-    ("command", "CohereForAI"), ("starcoder", "bigcode"),
-    ("vicuna", "lmsys"), ("grok", "xai"), ("internlm", "internlm"),
-    ("baichuan", "baichuan-inc"), ("glm", "THUDM"),
-    ("nemotron", "nvidia"), ("dbrx", "databricks"),
-]
-
 
 def _infer_developer(model_id: str) -> str:
     """Infer developer from model_id (org/model format or model name)."""
-    # If model_id has org prefix, use it directly
     if "/" in model_id:
         return model_id.split("/")[0]
-    lower = model_id.lower()
-    for prefix, dev in _DEV_PATTERNS:
-        if prefix in lower:
-            return dev
-    return "unknown"
+    return infer_developer(model_id)
 
 
 # ---------------------------------------------------------------------------

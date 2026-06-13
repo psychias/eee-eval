@@ -40,7 +40,7 @@ import seaborn as sns
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-ROOT    = Path(__file__).resolve().parent
+ROOT    = Path(__file__).resolve().parent.parent.parent
 AGG_CSV = ROOT / "data" / "aggregated" / "all_results.csv"
 COV_CSV = ROOT / "analysis_output" / "coverage_stats.csv"
 FIG_DIR = ROOT / "figures"

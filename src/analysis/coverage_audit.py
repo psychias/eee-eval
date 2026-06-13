@@ -31,13 +31,19 @@ def audit_source(source_dir: Path) -> dict:
     has_temperature = 0
     has_top_k = 0
     has_reasoning_mode = 0
+    has_chain_of_thought = 0
 
     for fpath in source_dir.rglob("*.json"):
         try:
             rec = json.loads(fpath.read_text())
         except Exception:
             continue
-        harness = rec.get("eval_library", {}).get("name", "")
+        if not isinstance(rec, dict):
+            continue
+        eval_lib = rec.get("eval_library") or {}
+        if not isinstance(eval_lib, dict):
+            eval_lib = {}
+        harness = eval_lib.get("name", "")
         harness_known = harness not in ("", "unknown")
 
         for result in rec.get("evaluation_results", []):
@@ -52,9 +58,20 @@ def audit_source(source_dir: Path) -> dict:
 
             has_harness += 1 if harness_known else 0
 
+            # Check both locations for prompt_template
             # "standard" is a generic placeholder, not a real template
-            pt = details.get("prompt_template", "")
-            has_prompt_template += 1 if (pt not in ("", None, "standard")) else 0
+            pt = gen_args.get("prompt_template") or details.get("prompt_template", "")
+            # coerce lists/dicts to a string for robust matching
+            if isinstance(pt, (list, tuple)):
+                pt = " ".join(str(x) for x in pt)
+            elif not isinstance(pt, str):
+                pt = "" if pt is None else str(pt)
+            has_prompt_template += 1 if (pt.strip() not in ("", "standard")) else 0
+            # chain_of_thought: prompt template names CoT, or an explicit cot flag
+            cot_flag = gen_args.get("chain_of_thought") or details.get("chain_of_thought")
+            pt_lower = pt.lower()
+            is_cot = bool(cot_flag) or ("chain" in pt_lower) or ("cot" in pt_lower)
+            has_chain_of_thought += 1 if is_cot else 0
 
             # Check both locations for temperature
             temp = gen_args.get("temperature") or details.get("temperature")
@@ -78,6 +95,7 @@ def audit_source(source_dir: Path) -> dict:
             "pct_temperature": 0.0,
             "pct_top_k": 0.0,
             "pct_reasoning_mode": 0.0,
+            "pct_chain_of_thought": 0.0,
         }
 
     return {
@@ -89,6 +107,7 @@ def audit_source(source_dir: Path) -> dict:
         "pct_temperature": round(100 * has_temperature / n_records, 1),
         "pct_top_k": round(100 * has_top_k / n_records, 1),
         "pct_reasoning_mode": round(100 * has_reasoning_mode / n_records, 1),
+        "pct_chain_of_thought": round(100 * has_chain_of_thought / n_records, 1),
     }
 
 
@@ -104,7 +123,7 @@ def main():
 
     out_path = OUT_DIR / "coverage_stats.csv"
     df.to_csv(out_path, index=False)
-    print(f"Coverage audit saved → {out_path}")
+    print(f"Coverage audit saved -> {out_path}")
     print()
     print(df.to_string(index=False))
 

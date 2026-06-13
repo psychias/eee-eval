@@ -53,7 +53,10 @@ def main():
         n_shot_a = pd.to_numeric(grp["n_shot_a"], errors="coerce").fillna(0).values
         n_shot_b = pd.to_numeric(grp["n_shot_b"], errors="coerce").fillna(0).values
         n_shot_diff = np.abs(n_shot_a - n_shot_b)
-        pt_differs = (grp["prompt_template_a"] != grp["prompt_template_b"]).astype(int).values
+        if "prompt_template_a" in grp.columns:
+            pt_differs = (grp["prompt_template_a"] != grp["prompt_template_b"]).astype(int).values
+        else:
+            pt_differs = np.zeros(n, dtype=int)
 
         # Simple OLS via numpy
         X = np.column_stack([

@@ -164,6 +164,14 @@ class FileValidator:
                 "fixes_applied": [],
             }
 
+        if not isinstance(data, dict):
+            return {
+                "path": str(path),
+                "status": "invalid",
+                "error": f"Top-level JSON is {type(data).__name__}, expected object",
+                "fixes_applied": [],
+            }
+
         # first validation pass
         errors = _collect_errors(self._schema_validator, data)
         if not errors:

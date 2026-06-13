@@ -51,6 +51,8 @@ except ImportError:
 _ROOT     = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
+from src.extraction.constants import infer_developer
+
 DATA_DIR  = _ROOT / "data"
 CACHE_DIR = pathlib.Path(".cache/pwc")
 CACHE_TTL = 7 * 24 * 3600  # 7 days — PWC archive updates rarely
@@ -613,23 +615,7 @@ def _already_exists_cache() -> set[str]:
 
 def _infer_developer_from_model(model_name: str) -> str:
     """Best-effort developer inference from PWC model names."""
-    name_lower = model_name.lower()
-    patterns = [
-        ("gpt", "openai"), ("o1", "openai"), ("o3", "openai"),
-        ("claude", "anthropic"), ("gemini", "google"), ("gemma", "google"),
-        ("llama", "meta-llama"), ("codellama", "meta-llama"),
-        ("mistral", "mistralai"), ("mixtral", "mistralai"),
-        ("qwen", "Qwen"), ("phi", "microsoft"),
-        ("falcon", "tiiuae"), ("deepseek", "deepseek-ai"),
-        ("yi-", "01-ai"), ("olmo", "allenai"),
-        ("palm", "google"), ("command", "CohereForAI"),
-        ("starcoder", "bigcode"), ("vicuna", "lmsys"),
-        ("grok", "xai"), ("internlm", "internlm"),
-    ]
-    for pat, dev in patterns:
-        if pat in name_lower:
-            return dev
-    return "unknown"
+    return infer_developer(model_name)
 
 
 def _make_model_id(model_name: str) -> str:

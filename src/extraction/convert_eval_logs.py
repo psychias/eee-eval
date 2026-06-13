@@ -27,8 +27,18 @@ sys.path.insert(0, str(_ROOT))
 
 from src.converters.common.adapter import BaseEvaluationAdapter, SupportedLibrary
 from src.converters.lm_eval.adapter import LMEvalAdapter
-from src.converters.inspect.adapter import InspectAIAdapter
-from src.converters.helm.adapter import HELMAdapter
+try:
+    from src.converters.inspect.adapter import InspectAIAdapter
+    _HAS_INSPECT = True
+except ImportError:
+    _HAS_INSPECT = False
+    InspectAIAdapter = None  # type: ignore[assignment,misc]
+try:
+    from src.converters.helm.adapter import HELMAdapter
+    _HAS_HELM = True
+except ImportError:
+    _HAS_HELM = False
+    HELMAdapter = None  # type: ignore[assignment,misc]
 from eval_types import EvaluationLog
 
 
@@ -41,9 +51,11 @@ class _EnumEncoder(json.JSONEncoder):
 
 _ADAPTER_MAP: dict[str, type[BaseEvaluationAdapter]] = {
     "lm_eval": LMEvalAdapter,
-    "inspect": InspectAIAdapter,
-    "helm": HELMAdapter,
 }
+if _HAS_INSPECT:
+    _ADAPTER_MAP["inspect"] = InspectAIAdapter
+if _HAS_HELM:
+    _ADAPTER_MAP["helm"] = HELMAdapter
 
 
 def _detect_framework(log_path: Path) -> str:
