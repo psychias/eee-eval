@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 
-MODULE_PATH = Path(__file__).resolve().parents[2] / "src" / "utils" / "check_duplicate_entries.py"
+MODULE_PATH = Path(__file__).resolve().parents[2] / "src" / "eee_eval" / "utils" / "check_duplicate_entries.py"
 DATA_ROOT = Path(__file__).resolve().parents[2] / "data"
 SAMPLE_FILES = [
     Path(__file__).resolve().parent / "data" / "98ea850e-7019-4728-a558-8b1819ec47c2.json",

@@ -6,9 +6,9 @@ import pytest
 
 pytest.importorskip("inspect_ai", reason="inspect_ai not installed")
 
-from src.converters.inspect.adapter import InspectAIAdapter
-from src.converters.inspect.utils import extract_model_info_from_model_path
-from eval_types import (
+from eee_eval.converters.inspect.adapter import InspectAIAdapter
+from eee_eval.converters.inspect.utils import extract_model_info_from_model_path
+from eee_eval.eval_types import (
     EvaluationLog,
     EvaluatorRelationship,
     SourceDataHf,

@@ -12,7 +12,7 @@ from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Import both canonical dicts — use importlib to avoid triggering
-# src.extraction.__init__ which pulls in docling and has broken imports
+# eee_eval.extraction.__init__ which pulls in docling and has broken imports
 # ---------------------------------------------------------------------------
 import importlib.util
 import sys
@@ -30,7 +30,7 @@ def _load_module_from_file(name: str, filepath: str):
 # constants.py is self-contained (no problematic imports)
 _const_mod = _load_module_from_file(
     "extraction_constants",
-    str(_root / "src" / "extraction" / "constants.py"),
+    str(_root / "src" / "eee_eval" / "extraction" / "constants.py"),
 )
 CONST_MAP = _const_mod._BENCHMARK_CANONICAL
 

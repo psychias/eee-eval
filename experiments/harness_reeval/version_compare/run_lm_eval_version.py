@@ -52,7 +52,10 @@ OLD_STACK_VERSIONS = {"0.4.0", "0.4.1", "0.4.2", "0.4.3", "0.4.4"}
 
 def pip_install_lm_eval(version: str) -> None:
     """Install one lm-eval version with the dependency stack it actually runs on."""
-    spec = f"lm-eval=={version}"
+    # "latest" installs the current release (used for E4 quantisation, where the
+    # harness version is not the variable but a modern lm-eval is needed to build
+    # a BitsAndBytesConfig compatible with current transformers).
+    spec = "lm-eval" if version == "latest" else f"lm-eval=={version}"
     print(f"[runner] installing {spec} ...", flush=True)
     subprocess.check_call(
         [sys.executable, "-m", "pip", "install", "--quiet", spec]
@@ -168,6 +171,10 @@ def main():
     ap.add_argument("--quant", default="none", choices=["none", "4bit", "8bit"],
                     help="weight quantisation (E4); installs bitsandbytes when set")
     ap.add_argument("--batch-size", default="auto")
+    ap.add_argument("--transformers-pin", default="",
+                    help="pin transformers to this version after lm-eval install "
+                         "(E4 quant needs a version that still accepts load_in_4bit; "
+                         "newer transformers raise TypeError on that kwarg)")
     ap.add_argument("--no-fewshot-override", action="store_true",
                     help="don't pass --num_fewshot (let group tasks like "
                          "leaderboard_bbh/bbh_cot_fewshot use their built-in shots)")
@@ -192,6 +199,12 @@ def main():
     }
     try:
         pip_install_lm_eval(args.lm_eval_version)
+        if args.transformers_pin:
+            print(f"[runner] pinning transformers=={args.transformers_pin}", flush=True)
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "--quiet",
+                 f"transformers=={args.transformers_pin}"]
+            )
         if args.quant in ("4bit", "8bit"):
             print(f"[runner] installing bitsandbytes for {args.quant}", flush=True)
             subprocess.check_call(

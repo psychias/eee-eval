@@ -5,8 +5,8 @@ import pytest
 
 pytest.importorskip("helm", reason="helm (crfm-helm) not installed")
 
-from src.converters.helm.adapter import HELMAdapter
-from eval_types import (
+from eee_eval.converters.helm.adapter import HELMAdapter
+from eee_eval.eval_types import (
     EvaluationLog,
     EvaluatorRelationship,
     SourceDataHf,

@@ -6,9 +6,9 @@ import pytest
 
 pytest.importorskip("helm", reason="helm (crfm-helm) not installed")
 
-from src.converters.helm.adapter import HELMAdapter
-from eval_types import EvaluatorRelationship
-from instance_level_types import InstanceLevelEvaluationLog, InteractionType
+from eee_eval.converters.helm.adapter import HELMAdapter
+from eee_eval.eval_types import EvaluatorRelationship
+from eee_eval.instance_level_types import InstanceLevelEvaluationLog, InteractionType
 
 
 def _load_instance_level_data(adapter, filepath, metadata_args):

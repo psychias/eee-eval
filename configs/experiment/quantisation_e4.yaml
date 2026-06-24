@@ -1,0 +1,21 @@
+# E4 — quantisation sensitivity.
+name: quantisation_e4
+goal: >
+  Does weight quantisation change scores, motivating a quantisation /
+  software_environment field in EvalSpec?
+backend: hf
+task: gsm8k
+num_fewshot: 5
+limit: 200
+model: Qwen/Qwen2.5-7B-Instruct
+seeds: [42, 123, 1234]
+quant_levels: [none, 4bit, 8bit]   # none = bf16 baseline
+lm_eval_version: latest            # see note
+note: >
+  4-bit/8-bit on lm-eval 0.4.11 hit a dependency conflict (the version of
+  transformers new enough for lm-eval's `dtype=` kwarg rejects `load_in_4bit`,
+  while an older one that accepts `load_in_4bit` rejects `dtype`). Using a
+  current lm-eval (which builds a BitsAndBytesConfig) is the workaround — itself
+  a concrete instance of the harness/dependency fragility this paper documents.
+results: experiments/harness_reeval/version_compare/results/e4_runs.jsonl
+status: bf16 baseline ok (~76); quant runs in progress on current lm-eval

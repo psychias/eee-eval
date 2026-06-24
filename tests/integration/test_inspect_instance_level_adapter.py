@@ -6,9 +6,9 @@ import pytest
 
 pytest.importorskip("inspect_ai", reason="inspect_ai not installed")
 
-from src.converters.inspect.adapter import InspectAIAdapter
-from eval_types import EvaluatorRelationship
-from instance_level_types import InstanceLevelEvaluationLog, InteractionType
+from eee_eval.converters.inspect.adapter import InspectAIAdapter
+from eee_eval.eval_types import EvaluatorRelationship
+from eee_eval.instance_level_types import InstanceLevelEvaluationLog, InteractionType
 
 
 def _load_instance_level_data(adapter, filepath, metadata_args):

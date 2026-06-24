@@ -1,0 +1,15 @@
+# E3 — harness-version sensitivity (one config file per experiment = the run log).
+name: harness_version_e3
+goal: >
+  Does the lm-evaluation-harness VERSION change scores under identical config?
+  Headline: the two versions are dependency-irreconcilable; score deltas are
+  within seed noise.
+backend: hf            # Colab A100 via colab-cli
+task: gsm8k
+num_fewshot: 5
+limit: 0               # full GSM8K (1319)
+versions: [0.4.3, 0.4.11]
+models: [Qwen/Qwen2.5-1.5B-Instruct, Qwen/Qwen2.5-7B-Instruct]
+seeds: [42, 123]       # cut from 3 (dropped 1234) for runtime
+results: experiments/harness_reeval/version_compare/results/full_version_runs.jsonl
+status: 7/8 cells (0.4.11/7B/seed123 lost to repeated Colab connection drops)

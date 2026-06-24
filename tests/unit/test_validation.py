@@ -11,14 +11,14 @@ from pathlib import Path
 
 import pytest
 
-from src.validation.schema import SchemaValidator, AutoFixer, FileValidator
-from src.validation.quality_audit import (
+from eee_eval.validation.schema import SchemaValidator, AutoFixer, FileValidator
+from eee_eval.validation.quality_audit import (
     Record, Issue, RecordLoader,
     SchemaCheck, ShotsCheck, HarnessCheck, ScoreCheck,
     DuplicateCheck, RequiredFieldsCheck, BenchmarkNamingCheck,
     ModelIdentityCheck, MetadataCoverageCheck, AuditRunner,
 )
-from src.validation.fix_data_quality import (
+from eee_eval.validation.fix_data_quality import (
     ParameterLeakFix, BenchmarkCanonFix, FixStats,
     _is_metadata_metric, _is_score_out_of_range,
 )
