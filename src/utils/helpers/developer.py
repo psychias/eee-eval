@@ -104,20 +104,12 @@ def get_developer(model_name: str) -> str:
         >>> get_developer("some-random-model")
         "unknown"
     """
-    if not model_name:
-        return "unknown"
-
-    # If already has org prefix (e.g., "meta-llama/Llama-3-8B"), use it
-    if "/" in model_name:
-        return model_name.split("/")[0]
-
-    # Pattern match against known model families
-    lower_name = model_name.lower()
-    for pattern, developer in DEVELOPER_PATTERNS.items():
-        if lower_name.startswith(pattern) or f"-{pattern}" in lower_name:
-            return developer
-
-    return "unknown"
+    # Delegate to the single canonical implementation so all callers agree on
+    # org IDs. The local DEVELOPER_PATTERNS map disagreed with it (e.g.
+    # llama -> "meta" vs canonical "meta-llama"), which split the same model
+    # across developer folders and manufactured phantom cross-source conflicts.
+    from src.extraction.constants import infer_developer
+    return infer_developer(model_name)
 
 
 def get_model_id(model_name: str, developer: Optional[str] = None) -> str:

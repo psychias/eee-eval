@@ -60,14 +60,16 @@ def extract_model_name(row: dict[str, Any], keys: list[str] | None = None) -> st
 
 
 def get_developer(model_name: str) -> str:
-    """Heuristic: extract developer/organization from model name.
+    """Extract developer/organisation from a model name.
 
-    If model_name contains '/', returns the prefix.
-    Otherwise returns "unknown".
+    Delegates to the single canonical implementation
+    (``src.extraction.constants.infer_developer``) so every source agrees on
+    org IDs (e.g. ``meta-llama``, ``Qwen``) and the same model never lands
+    under two different developer folders — which previously manufactured
+    phantom cross-source score conflicts.
     """
-    if "/" in model_name:
-        return model_name.split("/")[0]
-    return "unknown"
+    from src.extraction.constants import infer_developer
+    return infer_developer(model_name)
 
 
 # ─── Score extraction ─────────────────────────────────────────────────────────
