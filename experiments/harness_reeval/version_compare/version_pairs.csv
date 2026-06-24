@@ -1,0 +1,3 @@
+model_id,benchmark,n_shot,limit,seed,score_a,metric_a,score_b,metric_b,delta,abs_delta
+Qwen/Qwen2.5-7B-Instruct,gsm8k,5,200,42,75.5,"exact_match,strict-match",77.0,"exact_match,strict-match",1.5,1.5
+Qwen/Qwen2.5-1.5B-Instruct,gsm8k,5,200,42,29.5,"exact_match,strict-match",30.0,"exact_match,strict-match",0.5,0.5

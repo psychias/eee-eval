@@ -1399,7 +1399,9 @@ class BigCodeBenchFetcher(LiveLeaderboardFetcher):
 
 ALL_FETCHERS: list[type[LiveLeaderboardFetcher]] = [
     # Tier 1 — benchmark overlap with paper sources
-    OpenLLMLeaderboardV1Fetcher,
+    # NOTE: OpenLLMLeaderboardV1Fetcher is intentionally NOT registered — the v1
+    # leaderboard API is retired and its _fetch_rows raises unconditionally. The
+    # class is kept (deprecated) for reference but must not run in a full sweep.
     OpenLLMLeaderboardV2Fetcher,
     # Tier 2 — coding / agentic
     EvalPlusFetcher,

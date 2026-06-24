@@ -119,12 +119,14 @@ class HELMAdapter(BaseEvaluationAdapter):
 			'stats': stats
 		}
 
-    def transform_from_directory(self, dir_path: str, output_path: str, metadata_args: Dict[str, Any]):
+    def transform_from_directory(self, dir_path: str, metadata_args: Dict[str, Any] = None):
         """
-        Transforms HELM results into one aggregate EvaluationLog and one 
-        instance-level JSONL file containing all samples.
+        Transforms HELM results into a list of aggregate EvaluationLogs.
+
+        Signature matches BaseEvaluationAdapter.transform_from_directory so the
+        adapter can be driven polymorphically by convert_eval_logs.py (the old
+        required ``output_path`` positional broke that call and is removed).
         """
-        # all_instance_logs: List[InstanceLevelEvaluationLog] = []
         aggregate_logs: List[EvaluationLog] = []
 
         if self._directory_contains_required_files(dir_path):
@@ -138,11 +140,6 @@ class HELMAdapter(BaseEvaluationAdapter):
                     agg = self._transform_single(data, metadata_args)
                     aggregate_logs.append(agg)
 
-        # # Write all consolidated instance logs to JSONL
-        # with open(output_path, 'w', encoding='utf-8') as f:
-        #     for log in all_instance_logs:
-        #         f.write(json.dumps(log.model_dump(), ensure_ascii=False) + '\n')
-        
         return aggregate_logs
 
 

@@ -1,0 +1,36 @@
+====================================================================================
+JUDGE-MODEL SENSITIVITY (E5): identical responses, judge varied
+====================================================================================
+Contestants: 5  |  Judges: 4  |  MT-Bench turn-1 questions
+
+contestant                            gpt-4o-mini gemini-3.5-fla llama-3.1-70b- claude-haiku-4   spread
+-------------------------------------------------------------------------------------------------------
+google/gemma-3-4b-it                         8.24           7.96           8.31           7.26     1.04
+qwen/qwen-2.5-7b-instruct                    7.86           8.02           7.96           6.97     1.05
+meta-llama/llama-3.1-8b-instruct             8.04           7.61           8.22           6.87     1.35
+mistralai/ministral-8b-2512                  8.44           7.54           8.62           7.51     1.11
+qwen/qwen-2.5-72b-instruct                   8.32           8.59           8.38           7.74     0.84
+
+Judge-induced score spread per contestant (max judge mean - min judge mean):
+  google/gemma-3-4b-it               1.04 pts (1-10 scale)
+  qwen/qwen-2.5-7b-instruct          1.05 pts (1-10 scale)
+  meta-llama/llama-3.1-8b-instruct   1.35 pts (1-10 scale)
+  mistralai/ministral-8b-2512        1.11 pts (1-10 scale)
+  qwen/qwen-2.5-72b-instruct         0.84 pts (1-10 scale)
+  mean spread: 1.08  |  max spread: 1.35
+
+Ranking per judge (best -> worst by mean rating):
+  gpt-4o-mini           : ministral-8b-2512(8.44) > qwen-2.5-72b-instruct(8.32) > gemma-3-4b-it(8.24) > llama-3.1-8b-instruct(8.04) > qwen-2.5-7b-instruct(7.86)
+  gemini-3.5-flash      : qwen-2.5-72b-instruct(8.59) > qwen-2.5-7b-instruct(8.02) > gemma-3-4b-it(7.96) > llama-3.1-8b-instruct(7.61) > ministral-8b-2512(7.54)
+  llama-3.1-70b-instruct: ministral-8b-2512(8.62) > qwen-2.5-72b-instruct(8.38) > gemma-3-4b-it(8.31) > llama-3.1-8b-instruct(8.22) > qwen-2.5-7b-instruct(7.96)
+  claude-haiku-4.5      : qwen-2.5-72b-instruct(7.74) > ministral-8b-2512(7.51) > gemma-3-4b-it(7.26) > qwen-2.5-7b-instruct(6.97) > llama-3.1-8b-instruct(6.87)
+
+Pairwise Spearman rank correlation between judges:
+  gpt-4o-mini          vs gemini-3.5-flash    : rho=-0.300
+  gpt-4o-mini          vs llama-3.1-70b-instruct: rho=+1.000
+  gpt-4o-mini          vs claude-haiku-4.5    : rho=+0.800
+  gemini-3.5-flash     vs llama-3.1-70b-instruct: rho=-0.300
+  gemini-3.5-flash     vs claude-haiku-4.5    : rho=+0.300
+  llama-3.1-70b-instruct vs claude-haiku-4.5    : rho=+0.800
+
+Rows scored: 1472  |  written C:\Users\z004knva\Desktop\Projects\eee-eval\experiments\judge_sensitivity\results\judge_runs.jsonl

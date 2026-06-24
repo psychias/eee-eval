@@ -464,7 +464,7 @@ class InspectAIAdapter(BaseEvaluationAdapter):
             else []
         )
 
-        evaluation_id = f'{source_data.dataset_name}/{model_path.replace('/', '_')}/{evaluation_unix_timestamp}'
+        evaluation_id = f'{source_data.dataset_name}/{model_path.replace("/", "_")}/{evaluation_unix_timestamp}'
 
         evaluation_name = eval_spec.dataset.name or eval_spec.task
 

@@ -19,7 +19,7 @@ def main():
     # Fix Windows console encoding
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     OUT = os.path.join(ROOT, "outputs")
     os.makedirs(OUT, exist_ok=True)
 

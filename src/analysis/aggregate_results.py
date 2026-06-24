@@ -104,6 +104,11 @@ def main() -> None:
     for f in (ROOT / "data").rglob("*.json"):
         if "aggregated" in str(f):
             continue
+        # Canonical ArXiv source is data/arxiv_extraction_general/llm/ only.
+        # Exclude the audit-sample copies (samples/) and the superseded naive
+        # extraction (naive/) so they do not inflate the aggregate.
+        if "samples" in f.parts or "naive" in f.parts:
+            continue
         try:
             rec = json.loads(f.read_text(encoding="utf-8"))
 
@@ -209,7 +214,7 @@ def main() -> None:
                 row["metric_name"] = "acc_norm"
                 n_gpqa_relabeled += 1
         if n_gpqa_relabeled:
-            print(f"  Relabeled {n_gpqa_relabeled:,} OLv2 GPQA-Diamond → GPQA-Diamond (acc_norm)")
+            print(f"  Relabeled {n_gpqa_relabeled:,} OLv2 GPQA-Diamond -> GPQA-Diamond (acc_norm)")
 
         keys = list(rows[0].keys())
         with open(OUT_DIR / "all_results.csv", "w", newline="", encoding="utf-8") as fh:

@@ -184,12 +184,16 @@ scrapes the leaderboard, and a downstream paper cites the aggregator. At
 each stage, information about how the score was produced is lost, dropped,
 or quietly reinterpreted. By the time two scores meet on a comparison table,
 the procedures behind them may share nothing more than a benchmark name.
-For that reason we assemble a dataset of 43{,}788 evaluation records from
-11 sources covering 7{,}002 models and 1{,}457 benchmarks, and for a
+For that reason we assemble a dataset of 37{,}718 evaluation records from
+12 sources covering 6{,}455 models and 1{,}289 benchmarks, and for a
 10-source leaderboard subset of 28{,}755 records ask what configuration
-information survives. The fields most responsible for score divergence,
-harness identity, prompt template, and temperature, have zero valid
-coverage in the leaderboard subset. We then work through cases where the
+information survives. The fields most responsible for score divergence are
+missing from the leaderboard subset: prompt template and temperature have
+zero valid coverage, and no leaderboard API exposes the evaluation harness at
+all (where harness identity appears it is attached by our pipeline from
+platform documentation, not returned by the source). A controlled factorial
+experiment (\S\ref{sec:cases}) further shows that temperature itself drives
+under 1\% of score variance. We then work through cases where the
 same model received sharply different scores on the same benchmark and
 diagnose the mechanism that produced each gap.
 
@@ -206,7 +210,7 @@ pipeline origin.
     \item A cross-source audit of metadata coverage in the public evaluation ecosystem.
     \item Three case studies of cross-source score divergence, diagnosed end-to-end.
     \item EvalSpec v0.1, a proposed reporting specification grounded in the audit.
-    \item Public release of the full dataset (43{,}788 records), ingestion
+    \item Public release of the full dataset (37{,}718 records), ingestion
       pipeline, EvalSpec v0.1 vocabulary and reference validator, and analysis
       code under CC-BY-4.0, contributed back to the EvalEval shared task
       \citep{evaleval2026everyevalever} as a worked example of the EEE schema
@@ -424,8 +428,8 @@ unverified at scale.
 %% END DRAFT ----------------------------------------------------------
 
 
-The full dataset contains 43{,}788 evaluation records covering approximately
-7{,}000 unique models and 1{,}400 unique benchmarks across 11 sources.
+The full dataset contains 37{,}718 evaluation records covering
+6{,}455 unique models and 1{,}289 unique benchmarks across 12 sources.
 Table~\ref{tab:sources} reports per-source counts.
 
 The 10 leaderboard sources contribute 28{,}755 records across 5{,}301 models
@@ -439,8 +443,12 @@ task-specific evaluation structure. The remaining leaderboard sources
 (AlpacaEval 2, BFCL, BigCodeBench, EvalPlus, WildBench) contribute
 benchmark-specific coverage within their respective domains.
 
-The ArXiv extraction source contributes a further 14{,}457 records from
-100 papers. The ArXiv source is excluded from the headline leaderboard-subset
+The ArXiv extraction source contributes a further 8{,}387 records from
+100 papers (counting only the canonical per-benchmark LLM extraction; audit
+re-extractions are not double-counted). Papers With Code contributes a further
+576 records but is excluded from all statistical analyses due to systematic
+scraping artefacts (parameter counts parsed as scores). The ArXiv source is
+excluded from the headline leaderboard-subset
 metadata coverage analysis (Figure~\ref{fig:coverage}) because its metadata
 fields were LLM-populated rather than read from a structured API; coverage
 figures would otherwise be inflated by unverified values. The 10-source
@@ -471,9 +479,10 @@ MT-Bench & 34 & 34 & 1 \\
 \midrule
 \textit{Leaderboard subtotal} & \textit{28{,}755} & \textit{5{,}301} & \textit{174} \\
 \midrule
-ArXiv papers (LLM extraction) & 14{,}457 & $\sim$1{,}700 & $\sim$1{,}300 \\
+ArXiv papers (LLM extraction) & 8{,}387 & 783 & 1{,}134 \\
+Papers With Code & 576 & 383 & 16 \\
 \midrule
-\textbf{Total (11 sources)} & \textbf{43{,}788} & $\sim$\textbf{7{,}000} & $\sim$\textbf{1{,}400} \\
+\textbf{Total (12 sources)} & \textbf{37{,}718} & \textbf{6{,}455} & \textbf{1{,}289} \\
 \bottomrule
 \end{tabular}
 \caption{Per-source record, model, and benchmark counts. The leaderboard
@@ -507,8 +516,8 @@ correctly captures metadata (harness, n-shot, metric variant), which is a
 harder problem.
 
 \paragraph{Structural presence check.}
-Across the 20{,}665 LLM-extracted ArXiv records,
-19{,}877 (96.2\%) carry a non-null score value. This is a JSON-level
+Across the 8{,}387 LLM-extracted ArXiv records,
+8{,}192 (97.7\%) carry a non-null score value. This is a JSON-level
 structural check, which confirms that the extraction pipeline placed a value
 in the score field and is not a verification that the value is semantically
 correct. 
@@ -560,7 +569,7 @@ all.
 
 \paragraph{Metadata coverage.}
 Figure~\ref{fig:coverage} reports coverage for five configuration fields
-across both the full 43{,}788-record dataset and the 10-source
+across both the full 37{,}718-record dataset and the 10-source
 28{,}755-record leaderboard subset. Coverage counts a field as populated
 whenever the EEE record carries a non-``unknown'' value, irrespective of
 whether that value was returned by the source API, attached by the
@@ -571,7 +580,7 @@ the LLM extractor.
 \centering
 \includegraphics[width=\linewidth]{./figures/coverage_bars.pdf}
 \caption{Metadata coverage across five configuration fields, full
-  dataset (43{,}788 records) vs.\ the 10-source leaderboard subset
+  dataset (37{,}718 records) vs.\ the 10-source leaderboard subset
   (28{,}755 records). Prompt template and temperature have zero valid
   coverage in the leaderboard subset. Harness identity shows 93\% in the
   subset, but this is entirely pipeline-attached: OLv2's API does not
@@ -620,7 +629,11 @@ descriptively consistent (\(\eta^2 \approx 24.5\%\)) but underpowered
 (\(F = 0.98\), \(p = 0.43\)); the per-format means agree with the GSM8K
 pattern but cannot independently confirm it. Temperature contributes
 under 1\% on GSM8K (\(\eta^2 = 0.25\%\)); MMLU was run at a single
-temperature, so the temperature comparison is not available. Full
+temperature, so the temperature comparison is not available. The n-shot
+count's contribution is benchmark-dependent: negligible on MMLU
+(\(\eta^2 \approx 1\%\)), but on GSM8K inseparable from the answer parser,
+because 0-shot runs collapse to zero when the models omit the delimiter the
+extractor expects (\S\ref{app:exp-grid}). Full
 per-cell results and per-benchmark ANOVAs are in
 Appendix~\ref{app:experiments}. The three case studies below trace this
 pattern to specific, mechanistically distinct interactions between format
@@ -825,7 +838,12 @@ classifier). Both factors inflate the Code Llama score relative to the Tülu
 score. Neither source paper records the shot count or the judge model in the
 metric label; both simply report ``TruthfulQA''. Without explicit
 \texttt{n\_shot} and judge fields in the record, the 30-point gap is
-uninterpretable from the label alone.
+uninterpretable from the label alone. We isolate the judge factor directly in a
+controlled experiment (Appendix~\ref{app:exp-judge}): holding a fixed set of
+model responses constant and varying only the judge model shifts mean scores by
+up to 1.35 points on a 10-point scale and can reverse the ranking of two
+systems, confirming that judge identity alone---independent of shot count---is
+enough to make two ``TruthfulQA'' scores incomparable.
 
 \subsubsection{Belebele: N-Shot and Language Scope Confounded}
 \label{sec:belebele}
@@ -887,7 +905,9 @@ reveals that the scores differ on both dimensions:
 
 The $\approx$31-point gap is too large to be explained by the shot-count
 difference alone: on a log-likelihood benchmark, varying n-shot typically shifts
-scores by a few points at most. The primary driver is the scoring mode.
+scores by a few points at most, a bound we confirm directly in our factorial
+grid, where MMLU's 0-shot and 5-shot log-likelihood means differ by 2.6 pp
+($\eta^2 \approx 1\%$; Appendix~\ref{app:exp-grid}). The primary driver is the scoring mode.
 Generation-based evaluation of HellaSwag, asking the model to produce the
 correct continuation as free text, is structurally harder than log-likelihood
 evaluation, where the model ranks pre-specified continuations by token
@@ -1023,7 +1043,7 @@ automatic re-extraction from public artefacts. Our extraction pipeline is
 reliable when the source contains the information: the score-verification
 audit (\S\ref{sec:score-ann}) confirms 100\% agreement across 1{,}619
 row-level annotations on 10 papers, and the harness-identification audit
-(\S\ref{sec:harness-ann}) achieves 86.1\% per-row precision on the
+(\S\ref{sec:harness-ann}) achieves 86.2\% per-row precision on the
 with-harness sample (3/5 papers at 100\%; the remaining 2 expose a
 specific failure mode where broad group attributions like ``across all
 aforementioned tasks'' are under-extracted) and 100\% correct abstention
@@ -1099,7 +1119,11 @@ as \texttt{mc1} vs.\ \texttt{mc2}) is motivated by TruthfulQA and Belebele
 metrics with opposite definitions of correctness. \texttt{judge\_model} is
 required because TruthfulQA (\S\ref{sec:truthfulqa}) uses a fine-tuned
 judge whose identity is material to the score and absent from the
-aggregated record. \texttt{evaluation\_timestamp} is required because the
+aggregated record; a controlled experiment (Appendix~\ref{app:exp-judge})
+confirms the effect is not marginal---varying only the judge over fixed
+responses moves mean scores by up to 1.35 points on a 10-point scale and
+reorders the system ranking (cross-judge rank correlations span $+1.0$ to
+$-0.3$), so the judge is not an offset that cancels in a comparison. \texttt{evaluation\_timestamp} is required because the
 Math-Verify parser replacement (\S\ref{sec:math}) demonstrates that a
 silent infrastructure change produces a different score under the same
 benchmark label. The full field set by tier is in
@@ -1332,15 +1356,15 @@ coverage bar chart in Figure~\ref{fig:coverage} (\S\ref{sec:discrepancies}).
 \toprule
 Field & Full dataset & 10-source subset \\
 \midrule
-shots & 36.0\% & 46.9\% \\
-harness$^{\dagger}$ & 70.8\% & 93.2\% \\
-chain\_of\_thought & 53.3\% & 77.7\% \\
-prompt\_template & 10.2\% & 0.0\% \\
-temperature & 1.2\% & 0.0\% \\
+shots & 86.7\% & 98.0\% \\
+harness$^{\dagger}$ & 74.2\% & 93.2\% \\
+chain\_of\_thought & 60.5\% & 77.7\% \\
+prompt\_template & 7.0\% & 0.0\% \\
+temperature & 1.1\% & 0.0\% \\
 \bottomrule
 \end{tabular}
 \caption{Metadata coverage (fraction of records with a non-null,
-non-``unknown'' value). Full dataset: 43{,}788 records / 11 sources.
+non-``unknown'' value). Full dataset: 37{,}718 records / 12 sources.
 10-source subset: 28{,}755 records, excluding the ArXiv extraction
 source. Numerical values underlying Figure~\ref{fig:coverage}.
 $^{\dagger}$The harness row counts pipeline-auto-attached values
@@ -1492,6 +1516,25 @@ per-format means agree with the GSM8K pattern but cannot independently
 confirm it. Per-format means for both benchmarks are reported in
 Table~\ref{tab:anova-per-benchmark}.
 
+We attribute variance to the n-shot factor the same way, pooling each
+benchmark's successful cells by shot count (0-shot vs.\ 5-shot;
+Table~\ref{tab:anova-nshot}), and the two benchmarks behave oppositely in a
+way that is itself diagnostic. On MMLU the n-shot effect is negligible:
+pooled across models and formats, 0-shot scores 61.94 and 5-shot 59.34
+(\(\eta^2 \approx 1.0\%\), \(F = 0.16\), \(p = 0.69\)). This corroborates
+the HellaSwag analysis (\S\ref{sec:hellaswag}) with a controlled
+measurement: on a log-likelihood-scored benchmark, varying n-shot moves the
+score by at most a few points. On GSM8K the n-shot factor appears dominant
+(\(\eta^2 \approx 65\%\) pooled, \(80\%\) within \texttt{plain}), but the
+effect is not a capability gain: every 0-shot cell scores exactly 0.0,
+because the instruction-tuned models without few-shot priming do not emit
+the \texttt{\#\#\#\#} answer delimiter the GSM8K extractor requires, so the
+parser records zero for every item. This is the same parser--format
+coupling documented in Case Study~1 (\S\ref{sec:gsm8k}), here triggered by
+shot count rather than prompt format: on a generation-and-parse benchmark
+n-shot and scoring interact, whereas on a log-likelihood benchmark n-shot is
+nearly inert.
+
 \begin{table}[h]
 \centering
 \small
@@ -1516,6 +1559,32 @@ the same on both benchmarks; the GSM8K plain--cot gap is 19.50 pp and
 the MMLU plain--cot gap is 11.61 pp. Raw values released with the
 analysis code.}
 \label{tab:anova-per-benchmark}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llrr}
+\toprule
+Benchmark & n-shot & $n$ & Mean \\
+\midrule
+GSM8K & 0-shot & 72 & ~~0.00 \\
+GSM8K & 5-shot & 72 & 30.73 \\
+\midrule
+MMLU  & 0-shot &  9 & 61.94 \\
+MMLU  & 5-shot &  9 & 59.34 \\
+\bottomrule
+\end{tabular}
+\caption{Per-benchmark, per-shot score means, pooled across models, prompt
+formats, temperatures, and seeds. One-way ANOVA on the n-shot factor:
+GSM8K \(\eta^2 \approx 65.1\%\) (\(F = 264.6\), \(p < 10^{-30}\)), MMLU
+\(\eta^2 \approx 1.0\%\) (\(F = 0.16\), \(p = 0.69\)). The GSM8K 0-shot
+mean of exactly 0.00 reflects parser failure, not absent capability: the
+instruction-tuned models omit the \texttt{\#\#\#\#} answer delimiter
+without few-shot priming (\S\ref{sec:gsm8k}), so the apparent n-shot effect
+is the same parser--format coupling as Case Study~1. On MMLU
+(log-likelihood) the n-shot effect is negligible.}
+\label{tab:anova-nshot}
 \end{table}
 
 
@@ -1587,6 +1656,59 @@ the interaction between lighteval's log-likelihood approach and BBH's
 chain-of-thought structure, not a property of log-likelihood scoring in
 general.}
 \label{tab:e2-scoring-mode}
+\end{table}
+
+
+\subsection{Judge-Model Sensitivity}
+\label{app:exp-judge}
+
+Motivated by the TruthfulQA judge confound (\S\ref{sec:truthfulqa}) and the four
+LLM-judge sources in the dataset (Chatbot Arena, AlpacaEval~2, MT-Bench,
+WildBench), this experiment isolates the effect of the judge model. Five
+instruction-tuned ``contestant'' models each generated one response to the 80
+turn-1 MT-Bench questions \citep{zheng2023mtbench}; the identical responses were
+then scored by four judge models from different providers (GPT-4o-mini,
+Gemini-3.5-Flash, Llama-3.1-70B-Instruct, Claude-Haiku-4.5) using the canonical
+MT-Bench single-answer 1--10 grading rubric at temperature~0. Because the
+responses are held fixed, any variation in a contestant's mean score across
+judges is attributable to the judge alone. Each cell aggregates 78--80 ratings,
+except Gemini-3.5-Flash (48--63), which intermittently returned empty completions.
+
+Table~\ref{tab:judge-sensitivity} reports the mean rating per
+(contestant, judge). The judge-induced spread---the gap between a contestant's
+highest and lowest judge mean---averages 1.08 points and reaches 1.35 points on
+the 10-point scale. More consequentially, the judge choice reorders the
+leaderboard: Ministral-8B is ranked first by GPT-4o-mini and Llama-3.1-70B but
+last by Gemini-3.5-Flash. Pairwise Spearman rank correlations between judges
+span the full usable range, from $+1.00$ (GPT-4o-mini vs.\ Llama-3.1-70B,
+identical order) down to $-0.30$ (GPT-4o-mini vs.\ Gemini-3.5-Flash,
+anti-correlated). The judge model is therefore not a calibration offset that
+cancels in a comparison; it can invert which system appears better, so a
+benchmark score produced by an LLM judge is uninterpretable without recording
+the judge (\S\ref{sec:evalspec}).
+
+\begin{table}[ht]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Contestant & GPT-4o-m & Gem-3.5 & Llama-70B & Cl-Haiku & spread \\
+\midrule
+Gemma-3-4B   & 8.24 & 7.96 & 8.31 & 7.26 & 1.04 \\
+Qwen2.5-7B   & 7.86 & 8.02 & 7.96 & 6.97 & 1.05 \\
+Llama-3.1-8B & 8.04 & 7.61 & 8.22 & 6.87 & 1.35 \\
+Ministral-8B & 8.44 & 7.54 & 8.62 & 7.51 & 1.11 \\
+Qwen2.5-72B  & 8.32 & 8.59 & 8.38 & 7.74 & 0.84 \\
+\bottomrule
+\end{tabular}
+\caption{Mean MT-Bench turn-1 rating (1--10) per contestant under each judge;
+identical responses are scored by all four judges. ``spread'' is the
+max$-$min judge mean for that contestant (mean 1.08, max 1.35). Ministral-8B
+ranks first under GPT-4o-mini and Llama-70B but last under Gemini; cross-judge
+Spearman rank correlation ranges from $+1.00$ to $-0.30$. Raw ratings released
+with the analysis code.}
+\label{tab:judge-sensitivity}
 \end{table}
 
 

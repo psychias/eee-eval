@@ -99,6 +99,48 @@ def anova(group_dict, factor_name):
     }
 
 
+def per_nshot_stats(rows, benchmark, format_filter=None):
+    """Group `benchmark` rows by n_shot (the factor), pooling across models,
+    temperatures, and seeds. If `format_filter` is given, restrict to that
+    prompt_format (isolates n_shot from the CoT parser-collapse interaction).
+    """
+    subset = [r for r in rows
+              if r.get("benchmark") == benchmark
+              and r.get("status")   == "ok"
+              and (format_filter is None or r.get("prompt_format") == format_filter)]
+    groups = defaultdict(list)
+    for r in subset:
+        groups[r["n_shot"]].append(float(r["score"]))
+    summary = {}
+    for level, vals in sorted(groups.items()):
+        summary[str(level)] = {
+            "n":     len(vals),
+            "mean":  sum(vals) / len(vals) if vals else float("nan"),
+            "min":   min(vals)             if vals else float("nan"),
+            "max":   max(vals)             if vals else float("nan"),
+            "scores": vals,
+        }
+    return summary
+
+
+def compute_nshot_for_benchmark(rows, benchmark):
+    pooled = per_nshot_stats(rows, benchmark, format_filter=None)
+    plain  = per_nshot_stats(rows, benchmark, format_filter="plain")
+    return {
+        "benchmark": benchmark,
+        "pooled": {
+            "summary": {k: {kk: vv for kk, vv in v.items() if kk != "scores"}
+                        for k, v in pooled.items()},
+            "anova":   anova(pooled, "n_shot"),
+        },
+        "plain_only": {
+            "summary": {k: {kk: vv for kk, vv in v.items() if kk != "scores"}
+                        for k, v in plain.items()},
+            "anova":   anova(plain, "n_shot"),
+        },
+    }
+
+
 def compute_for_benchmark(rows, benchmark, n_shot):
     fmt_groups  = per_format_stats(rows, benchmark, n_shot, "prompt_format")
     temp_groups = per_format_stats(rows, benchmark, n_shot, "temperature")
@@ -152,9 +194,27 @@ def main():
         print(f"ANOVA(temperature): F={fmt_F(a['F'])}  p={fmt_p(a['p'])}  eta^2={fmt_pct(a['eta_squared'])}")
         print()
 
+    # n_shot factor: pooled across formats, and within plain format only
+    nshot_results = {}
+    for benchmark in ("gsm8k", "mmlu"):
+        block = compute_nshot_for_benchmark(rows, benchmark)
+        nshot_results[benchmark] = block
+        print(f"=== {benchmark.upper()} — n_shot factor ===")
+        for variant in ("pooled", "plain_only"):
+            print(f"[{variant}]")
+            print(f"  {'n_shot':<8} {'n':>3}  {'mean':>8}  {'min':>8}  {'max':>8}")
+            for lvl, s in sorted(block[variant]["summary"].items(), key=lambda kv: int(kv[0])):
+                print(f"  {lvl:<8} {s['n']:>3}  {s['mean']:>8.4f}  {s['min']:>8.4f}  {s['max']:>8.4f}")
+            a = block[variant]["anova"]
+            print(f"  ANOVA(n_shot): F={fmt_F(a['F'])}  p={fmt_p(a['p'])}  eta^2={fmt_pct(a['eta_squared'])}")
+        print()
+    results["_nshot"] = nshot_results
+
     # diagnostics: range over formats per benchmark
     print("=== Descriptive ranges (max format mean - min format mean) ===")
     for benchmark, block in results.items():
+        if benchmark.startswith("_"):
+            continue
         means = [s["mean"] for s in block["format"]["summary"].values()]
         print(f"  {benchmark.upper()}: {max(means) - min(means):.4f} pp")
     print()

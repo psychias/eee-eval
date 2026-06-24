@@ -34,6 +34,10 @@ def audit_source(source_dir: Path) -> dict:
     has_chain_of_thought = 0
 
     for fpath in source_dir.rglob("*.json"):
+        # Canonical ArXiv source is data/arxiv_extraction_general/llm/ only;
+        # skip audit-sample copies (samples/) and the naive extraction (naive/).
+        if "samples" in fpath.parts or "naive" in fpath.parts:
+            continue
         try:
             rec = json.loads(fpath.read_text())
         except Exception:
@@ -52,8 +56,13 @@ def audit_source(source_dir: Path) -> dict:
             gen_args = gen_cfg.get("generation_args") or {}
             details = gen_cfg.get("additional_details") or {}
 
-            # Check generation_args first (new pipeline), fall back to additional_details
-            n_shot_val = gen_args.get("shots") or details.get("n_shot", "")
+            # Check generation_args first (new pipeline), fall back to
+            # additional_details. NB: use an explicit None check, not `or`, so a
+            # documented 0-shot (shots == 0) counts as present rather than being
+            # swallowed as falsy.
+            n_shot_val = gen_args.get("shots")
+            if n_shot_val is None:
+                n_shot_val = details.get("n_shot", "")
             has_n_shot += 1 if (n_shot_val not in ("", None)) else 0
 
             has_harness += 1 if harness_known else 0
@@ -73,8 +82,11 @@ def audit_source(source_dir: Path) -> dict:
             is_cot = bool(cot_flag) or ("chain" in pt_lower) or ("cot" in pt_lower)
             has_chain_of_thought += 1 if is_cot else 0
 
-            # Check both locations for temperature
-            temp = gen_args.get("temperature") or details.get("temperature")
+            # Check both locations for temperature. Explicit None check so a
+            # documented temperature of 0.0 is not swallowed as falsy.
+            temp = gen_args.get("temperature")
+            if temp is None:
+                temp = details.get("temperature")
             has_temperature += 1 if (temp not in ("", None)) else 0
 
             # top_k
