@@ -91,3 +91,15 @@ uv.lock
 .claude/
 CLAUDE.md
 dmypy.json
+
+# Release hygiene
+data.zip
+section5_evidence.txt
+VALIDATION_REPORT.json
+.env
+# Ad-hoc experiment launchers / logs (scaffolding, not part of the release)
+experiments/**/_run_*.sh
+experiments/**/_queue_*.sh
+experiments/**/auth_start.sh
+experiments/**/make_html.sh
+experiments/**/results/*.log
