@@ -298,7 +298,7 @@ class HELMAdapter(BaseEvaluationAdapter):
 
         if request_states:
             parent_eval_output_dir = metadata_args.get('parent_eval_output_dir')
-            detailed_results_id = f'{metadata_args.get('file_uuid')}_samples'
+            detailed_results_id = f'{metadata_args.get("file_uuid")}_samples'
             model_dev, model_name = model_info.id.split('/', 1)
             evaluation_dir = f'{parent_eval_output_dir}/{source_data.dataset_name}/{model_dev}/{model_name}'
 

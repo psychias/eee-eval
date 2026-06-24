@@ -2,6 +2,10 @@
 import tempfile
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip("inspect_ai", reason="inspect_ai not installed")
+
 from src.converters.inspect.adapter import InspectAIAdapter
 from eval_types import EvaluatorRelationship
 from instance_level_types import InstanceLevelEvaluationLog, InteractionType

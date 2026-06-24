@@ -28,14 +28,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # ---------------------------------------------------------------------------
-# ensure repo root and utils/ are importable
+# ensure repo root is importable (so `src.*` and `eval_types` resolve)
 # ---------------------------------------------------------------------------
 
 _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
-if str(_ROOT / "utils") not in sys.path:
-    sys.path.insert(0, str(_ROOT / "utils"))
 
 # ---------------------------------------------------------------------------
 # JSON-schema validator — skip gracefully when jsonschema is unavailable
@@ -100,7 +98,7 @@ def test_mtbench_jsonl_primary_path():
     from src.scrapers.mtbench_scraper import MTBenchScraper
 
     with patch(
-        "scripts.scrapers.mtbench_scraper.requests.get",
+        "src.scrapers.mtbench_scraper.requests.get",
         return_value=_mock_ok(None, text=_MTBENCH_JSONL),
     ):
         scraper = MTBenchScraper(allow_fallback=False)
@@ -128,7 +126,7 @@ def test_mtbench_fallback_backdates_timestamp():
         _FALLBACK_TS,
     )
 
-    with patch("scripts.scrapers.mtbench_scraper.requests.get", _mock_fail()):
+    with patch("src.scrapers.mtbench_scraper.requests.get", _mock_fail()):
         scraper = MTBenchScraper(allow_fallback=True)
         raw = scraper.fetch_raw()
 
@@ -150,7 +148,7 @@ def test_mtbench_no_fallback_raises():
     """MTBenchScraper(allow_fallback=False) must raise RuntimeError when offline."""
     from src.scrapers.mtbench_scraper import MTBenchScraper
 
-    with patch("scripts.scrapers.mtbench_scraper.requests.get", _mock_fail()):
+    with patch("src.scrapers.mtbench_scraper.requests.get", _mock_fail()):
         scraper = MTBenchScraper(allow_fallback=False)
         with pytest.raises(RuntimeError, match="no-fallback"):
             scraper.fetch_raw()
@@ -173,7 +171,7 @@ def test_alpacaeval2_csv_primary_path():
     from src.scrapers.alpacaeval2_scraper import AlpacaEval2Scraper
 
     with patch(
-        "scripts.scrapers.alpacaeval2_scraper.requests.get",
+        "src.scrapers.alpacaeval2_scraper.requests.get",
         return_value=_mock_ok(None, text=_ALPACA_CSV),
     ):
         scraper = AlpacaEval2Scraper()
@@ -209,7 +207,7 @@ def test_alpacaeval2_zero_standard_winrate_omits_secondary_result():
     csv_no_wr = "name,lc_win_rate\nmeta-llama/Llama-2-7b-chat-hf,3.50\n"
 
     with patch(
-        "scripts.scrapers.alpacaeval2_scraper.requests.get",
+        "src.scrapers.alpacaeval2_scraper.requests.get",
         return_value=_mock_ok(None, text=csv_no_wr),
     ):
         scraper = AlpacaEval2Scraper()
@@ -238,8 +236,8 @@ def test_chatbot_arena_fallback_backdates_timestamp():
     )
 
     with (
-        patch("scripts.scrapers.chatbot_arena_scraper.requests.get", _mock_fail()),
-        patch("scripts.scrapers.chatbot_arena_scraper.requests.post", _mock_fail()),
+        patch("src.scrapers.chatbot_arena_scraper.requests.get", _mock_fail()),
+        patch("src.scrapers.chatbot_arena_scraper.requests.post", _mock_fail()),
     ):
         scraper = ChatbotArenaScraper(allow_fallback=True)
         raw = scraper.fetch_raw()
@@ -265,8 +263,8 @@ def test_chatbot_arena_no_fallback_raises():
     from src.scrapers.chatbot_arena_scraper import ChatbotArenaScraper
 
     with (
-        patch("scripts.scrapers.chatbot_arena_scraper.requests.get", _mock_fail()),
-        patch("scripts.scrapers.chatbot_arena_scraper.requests.post", _mock_fail()),
+        patch("src.scrapers.chatbot_arena_scraper.requests.get", _mock_fail()),
+        patch("src.scrapers.chatbot_arena_scraper.requests.post", _mock_fail()),
     ):
         scraper = ChatbotArenaScraper(allow_fallback=False)
         with pytest.raises(RuntimeError):
@@ -307,7 +305,7 @@ def test_wildbench_list_layout():
     from src.scrapers.wildbench_scraper import WildBenchScraper
 
     with patch(
-        "scripts.scrapers.wildbench_scraper.requests.get",
+        "src.scrapers.wildbench_scraper.requests.get",
         return_value=_mock_ok(_WILDBENCH_LIST),
     ):
         scraper = WildBenchScraper(allow_fallback=False)
@@ -331,7 +329,7 @@ def test_wildbench_dict_layout():
     from src.scrapers.wildbench_scraper import WildBenchScraper
 
     with patch(
-        "scripts.scrapers.wildbench_scraper.requests.get",
+        "src.scrapers.wildbench_scraper.requests.get",
         return_value=_mock_ok(_WILDBENCH_DICT),
     ):
         scraper = WildBenchScraper(allow_fallback=False)
@@ -350,7 +348,7 @@ def test_wildbench_no_fallback_raises():
     """WildBenchScraper(allow_fallback=False) must raise when offline."""
     from src.scrapers.wildbench_scraper import WildBenchScraper
 
-    with patch("scripts.scrapers.wildbench_scraper.requests.get", _mock_fail()):
+    with patch("src.scrapers.wildbench_scraper.requests.get", _mock_fail()):
         scraper = WildBenchScraper(allow_fallback=False)
         with pytest.raises(RuntimeError):
             scraper.fetch_raw()
@@ -390,7 +388,7 @@ def test_hfopenllm_v2_primary_path():
     from src.scrapers.hfopenllm_v2_scraper import HFOpenLLMv2Scraper
 
     with patch(
-        "helpers.fetch.requests.get",
+        "src.scrapers.utils.requests.get",
         return_value=_mock_ok(_HFOPENLLM_DATA),
     ):
         scraper = HFOpenLLMv2Scraper()
@@ -433,7 +431,7 @@ def test_hfopenllm_v2_skips_non_hf_model_id():
         }
     ]
 
-    with patch("helpers.fetch.requests.get", return_value=_mock_ok(bad_data)):
+    with patch("src.scrapers.utils.requests.get", return_value=_mock_ok(bad_data)):
         scraper = HFOpenLLMv2Scraper()
         raw = scraper.fetch_raw()
 

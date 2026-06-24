@@ -4,7 +4,7 @@ version = "0.2.1"
 description = "Unified schema and extraction pipeline for LLM evaluation results — ACL 2026 EvalEval Shared Task submission"
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     # Core extraction
     "requests>=2.31,<3",

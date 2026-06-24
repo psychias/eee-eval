@@ -2,6 +2,10 @@
 from pathlib import Path
 import tempfile
 
+import pytest
+
+pytest.importorskip("inspect_ai", reason="inspect_ai not installed")
+
 from src.converters.inspect.adapter import InspectAIAdapter
 from src.converters.inspect.utils import extract_model_info_from_model_path
 from eval_types import (

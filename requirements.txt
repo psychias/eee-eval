@@ -1,0 +1,38 @@
+# Runtime dependencies for every-eval-ever (EEE).
+# Pinned to versions verified working on Python 3.10.
+# Install with:  pip install -r requirements.txt
+
+# --- Core extraction / scraping ---
+requests==2.33.1
+beautifulsoup4==4.14.3
+tenacity==9.1.4
+pydantic==2.13.3
+PyYAML==6.0.3
+
+# --- Analysis, statistics & figures ---
+numpy==2.2.6
+pandas==2.3.3
+scipy==1.15.3
+statsmodels==0.14.6
+matplotlib==3.10.8
+seaborn==0.13.2
+
+# --- Schema validation ---
+jsonschema==4.26.0
+
+# --- HuggingFace integration (leaderboard / model-card fetchers; needs HF_TOKEN) ---
+huggingface_hub==1.17.0
+
+# --- LLM extraction (OpenRouter via the OpenAI client; needs OPENROUTER_API_KEY) ---
+openai==2.41.1
+
+# --- Optional ---
+# python-dotenv: loads .env automatically. The fetchers fall back to a manual
+#   .env parser if it is absent, so it is optional. Uncomment to enable.
+# python-dotenv
+# dacite: only required for the optional CRFM HELM log converter
+#   (src/converters/helm/). Not needed to reproduce the paper. Uncomment if used.
+# dacite
+
+# --- Tests (dev only) ---
+# Run the test suite with: pip install pytest && pytest

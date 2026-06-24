@@ -43,7 +43,10 @@ htmlcov/
 
 # Data directory — large; not committed to git
 # (upload to Hugging Face Hub instead)
-data/
+/data/
+# ...but small test fixtures under tests/data/ MUST be tracked so the suite runs
+!tests/data/
+!tests/data/**
 
 # Raw scraper output (large JSON dumps)
 src/scrapers/raw/

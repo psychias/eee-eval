@@ -1,0 +1,58 @@
+{
+  "results": {
+    "math_perturbed_full": {
+      "alias": "math_perturbed_full",
+      "exact_match,none": 0.0,
+      "exact_match_stderr,none": 0.0
+    },
+    "math_rephrased_full": {
+      "alias": "math_rephrased_full",
+      "exact_match,none": 0.0004,
+      "exact_match_stderr,none": 0.0002828144211304471
+    }
+  },
+  "configs": {
+    "math_perturbed_full": {
+      "task": "math_perturbed_full",
+      "dataset_path": "stellaathena/math_perturbed_5000",
+      "test_split": "test",
+      "num_fewshot": 0,
+      "generation_kwargs": {
+        "temperature": 0.0,
+        "max_gen_toks": 512,
+        "do_sample": false,
+        "until": ["Problem:"]
+      }
+    },
+    "math_rephrased_full": {
+      "task": "math_rephrased_full",
+      "dataset_path": "stellaathena/math_rephrased_5000",
+      "test_split": "test",
+      "num_fewshot": 0,
+      "generation_kwargs": {
+        "temperature": 0.0,
+        "max_gen_toks": 512,
+        "do_sample": false,
+        "until": ["Problem:"]
+      }
+    }
+  },
+  "higher_is_better": {
+    "math_perturbed_full": {"exact_match": true},
+    "math_rephrased_full": {"exact_match": true}
+  },
+  "n-samples": {
+    "math_perturbed_full": {"original": 5000, "effective": 5000},
+    "math_rephrased_full": {"original": 5000, "effective": 5000}
+  },
+  "config": {
+    "model": "hf",
+    "model_args": "pretrained=RylanSchaeffer/mem_Qwen3-93M_minerva_math_rep_0_sbst_1.0000_epch_1_ot_1,trust_remote_code=True,dtype=bfloat16",
+    "model_num_parameters": 93069280,
+    "model_dtype": "torch.bfloat16",
+    "batch_size": "auto"
+  },
+  "model_name": "RylanSchaeffer/mem_Qwen3-93M_minerva_math_rep_0_sbst_1.0000_epch_1_ot_1",
+  "lm_eval_version": "0.4.3",
+  "date": 1768964383.0
+}
