@@ -935,9 +935,13 @@ SEACrowd, Open LLM Leaderboard''. An exact two-decimal match of this kind is
 consistent with either of two mechanisms: direct importation of the OLv2
 score for a competitor model, or independent re-evaluation using identical
 infrastructure (the same lighteval configuration and task suite that OLv2
-runs). The EEE record cannot distinguish between them. In either case, the
-two records share a pipeline origin and are not independent measurements of
-Gemma-2-9B's BBH capability. Figure~\ref{fig:chain} visualises the
+runs). The EEE record cannot distinguish between them. Our harness-version
+control (Appendix~\ref{app:exp-e3}) shows that independent reruns of the same
+harness vary by up to 1.3 pp across seeds, so an \emph{exact} two-decimal match
+is far more consistent with a re-imported score than with an independent
+re-evaluation, which would almost never agree to the second decimal. In either
+case, the two records share a pipeline origin and are not independent
+measurements of Gemma-2-9B's BBH capability. Figure~\ref{fig:chain} visualises the
 attrition that produces this collision: the fields that would distinguish
 replication from re-import \texttt{harness},
 \texttt{prompt\_template\_hash}, \texttt{evaluation\_timestamp} were
@@ -1442,10 +1446,10 @@ paper publishes its HellaSwag prompts verbatim.}
 \section{Experimental Setup}
 \label{app:experiments}
 
-Two experiments and one framing factorial grid anchor the case-study
-claims in \S\ref{sec:cases}. Table~\ref{tab:experiments-master} summarises
-all three; per-experiment design and results follow in
-\S\S\ref{app:exp-grid}--\ref{app:exp-e2}.
+Four experiments and one framing factorial grid anchor the analyses in
+\S\ref{sec:cases}. Table~\ref{tab:experiments-master} summarises them;
+per-experiment design and results follow in
+\S\S\ref{app:exp-grid}--\ref{app:exp-judge}.
 
 \begin{table*}[ht]
 \centering
@@ -1472,12 +1476,24 @@ Isolate scoring-mode effect from other factors &
 Mistral-7B-Instruct-v0.3, Qwen2.5-7B-Instruct, Llama-3.1-8B-Instruct (paired); Qwen2.5-14B-Instruct (generation only) &
 MMLU, 5-shot, plain prompt, temperature 0.0; log-likelihood vs.\ generation-based scoring &
 Maximum gap across three paired models: 0.28 pp (\S\ref{sec:bbh}, ruling out a generic scoring-mode effect) \\
+\midrule
+E3 &
+Test whether the harness \emph{version} alone shifts scores &
+Qwen2.5-1.5B-Instruct, Qwen2.5-7B-Instruct &
+GSM8K full, 5-shot, \texttt{hf} backend; lm-evaluation-harness 0.4.3 vs.\ 0.4.11; seeds 42, 123 &
+Cross-version $\le$0.45 pp, below the seed spread ($\le$1.29 pp); backs \texttt{harness\_version} + the SEA-LION argument (\S\ref{sec:sealion}) \\
+\midrule
+Judge &
+Isolate the judge-model effect (LLM-as-judge) &
+5 contestant models, 4 judges (GPT-4o-mini, Gemini-3.5-Flash, Llama-3.1-70B, Claude-Haiku) &
+MT-Bench turn-1; identical responses scored by each judge &
+Judge-induced spread up to 1.35 pts/10; ranking flips (cross-judge Spearman $+1.0$ to $-0.3$); see \S\ref{app:exp-judge} \\
 \bottomrule
 \end{tabular}
-\caption{All experiments anchoring case-study claims. The Factorial Grid
-is the framing experiment for \S\ref{sec:cases}; E1 and E2 each isolate
-a specific mechanism cited in the case studies. Per-cell results and
-full configurations are in the subsections below.}
+\caption{All experiments anchoring the analyses in \S\ref{sec:cases}. The
+Factorial Grid is the framing experiment; E1, E2, E3, and the judge-model
+experiment each isolate a specific mechanism. Per-cell results and full
+configurations are in the subsections below.}
 \label{tab:experiments-master}
 \end{table*}
 
@@ -1657,6 +1673,47 @@ chain-of-thought structure, not a property of log-likelihood scoring in
 general.}
 \label{tab:e2-scoring-mode}
 \end{table}
+
+
+\subsection{E3: Harness-Version Sensitivity}
+\label{app:exp-e3}
+
+To isolate the effect of the evaluation-harness \emph{version}, two
+instruction-tuned models (Qwen2.5-1.5B-Instruct, Qwen2.5-7B-Instruct) were
+evaluated on the full GSM8K test set (5-shot, \texttt{hf} backend) under two
+versions of lm-evaluation-harness, 0.4.3 and 0.4.11, with two random seeds
+(42, 123). The model, benchmark, and all generation settings are held fixed, so
+the only variable is the harness version (Table~\ref{tab:e3-harness-version}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{llrr}
+\toprule
+Model & Harness & seed 42 & seed 123 \\
+\midrule
+Qwen2.5-1.5B-Instruct & 0.4.3  & 32.83 & 33.74 \\
+Qwen2.5-1.5B-Instruct & 0.4.11 & 33.06 & 33.36 \\
+Qwen2.5-7B-Instruct   & 0.4.3  & 75.06 & 76.35 \\
+Qwen2.5-7B-Instruct   & 0.4.11 & 75.51 & ---   \\
+\bottomrule
+\end{tabular}
+\caption{GSM8K (full test set, 5-shot, \texttt{hf} backend) under
+lm-evaluation-harness 0.4.3 vs.\ 0.4.11 with identical configuration. The
+largest seed-matched cross-version difference is 0.45 pp (Qwen2.5-7B, seed 42),
+below the within-version seed spread (up to 1.29 pp on Qwen2.5-7B/0.4.3). The
+0.4.11 / 7B seed-123 cell is omitted. Raw records released with the analysis
+code.}
+\label{tab:e3-harness-version}
+\end{table}
+
+The harness version shifts the GSM8K score by less than the run-to-run seed
+variation: cross-version differences are at most 0.45 pp, while seeds alone move
+the same configuration by up to 1.29 pp. The effect is real but small relative
+to seed noise, which is precisely why \texttt{harness\_version} belongs in the
+EvalSpec Required tier (\S\ref{sec:evalspec})---so that a future divergence can
+be attributed to the version rather than guessed at. The same control bounds the
+run-to-run variability invoked in the SEA-LION analysis (\S\ref{sec:sealion}).
 
 
 \subsection{Judge-Model Sensitivity}
