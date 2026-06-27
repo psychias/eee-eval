@@ -11,12 +11,10 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 from eee_eval.extraction.constants import _BENCHMARK_CANONICAL
 

@@ -41,12 +41,10 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import pathlib
 import sys
 import time
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
 _ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(_ROOT))
@@ -388,7 +386,7 @@ def step_detect_conflicts(min_severity: str = "minor") -> list[ConflictRecord]:
             print(f"    {sev:12s}: {len(by_sev[sev])}")
 
     if conflicts:
-        print(f"\n  Top 10 by severity:")
+        print("\n  Top 10 by severity:")
         for c in conflicts[:10]:
             print(
                 f"    [{c.severity:11s}] {c.model_id}  ×  {c.benchmark}\n"

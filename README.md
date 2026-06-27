@@ -1,10 +1,6 @@
-# Every Eval Ever (EEE)
+﻿# Every Eval Ever (EEE)
 
 **A unified schema and pipeline for collecting, standardising, and analysing LLM evaluation results at scale.**
-
-Submission for the [EvalEval @ ACL 2026 Shared Task](https://evalevalai.com/events/shared-task-every-eval-ever/) — Track 1 (Public Evaluation Data Parsing).
-
-Companion paper: *"Why LLM Leaderboards Are Incomparable: Structural Fragmentation and Missing Evaluation Metadata at Scale."*
 
 ---
 
@@ -13,8 +9,8 @@ Companion paper: *"Why LLM Leaderboards Are Incomparable: Structural Fragmentati
 EEE ingests LLM evaluation results from heterogeneous sources — a set of public
 leaderboards (including HuggingFace model cards and Papers With Code) and an
 arXiv-paper LLM-extraction source — into the standardised EEE JSON schema
-(v0.2.1). The aggregated dataset spans **12 sources** and contains **37,718
-records** covering **6,455 unique models** and **1,289 unique benchmarks**.
+(v0.2.1). The aggregated dataset spans **12 sources** and contains **46,559
+records** covering **7,398 unique models** and **1,954 unique benchmarks**.
 
 The pipeline then runs cross-source collision detection and metadata-coverage
 analysis to quantify:
@@ -26,28 +22,201 @@ analysis to quantify:
 3. **Attribution failure** — cross-source score discrepancies lack the metadata
    needed to explain them.
 
-All of these numbers are recomputed from the raw data by `reproduce_paper.py`
-(see [Reproducing the paper's numbers](#reproducing-the-papers-numbers)).
+## What the paper shows
+
+**Companion paper:** *"Why LLM Leaderboards Are Incomparable: Structural
+Fragmentation and Missing Evaluation Metadata at Scale."*
+
+**The core idea.** A single number like "MMLU = 68" is only comparable across
+models if it was produced the same way. In practice it almost never is: the same
+model × benchmark is scored with different harnesses, n-shot counts, prompt
+formats, temperatures, and scoring modes (log-likelihood vs. generation), and
+those choices move scores by more than the model-to-model gaps a leaderboard
+claims to measure. EEE assembles 46,559 evaluation records from 12 sources into
+one schema to make this measurable, and shows that leaderboards are
+*incomparable* for two structural reasons — and that the information needed to
+fix it is systematically missing.
+
+**The dataset.**
+
+| | Records | Models | Benchmarks |
+|---|---|---|---|
+| **Full dataset (12 sources)** | **46,559** | **7,398** | **1,954** |
+| Leaderboard subset (10 sources) | 28,755 | 5,301 | 174 |
+| ArXiv extraction (100 papers) | 17,228 | 1,726 | 1,806 |
+| Papers With Code | 576 | 383 | 16 |
+
+**Finding 1 — structural fragmentation.** Sources evaluate almost entirely
+non-overlapping model × benchmark cells; the leaderboard ecosystem (dominated by
+Open LLM Leaderboard v2, 26,790 records) is largely an island with near-zero
+model overlap with the other sources. Most "leaderboards" cannot be cross-checked
+because they never measure the same things.
+
+**Finding 2 — missing metadata (the headline).** The configuration fields most
+responsible for score divergence are the least reported, and are *entirely absent*
+from leaderboards:
+
+| Field | Full dataset | Leaderboard subset |
+|---|---|---|
+| n-shot | 80.5% | 98.0% |
+| harness | 63.2% | 93.2% † |
+| chain-of-thought | 50.0% | 77.7% |
+| prompt template | 14.1% | **0.0%** |
+| temperature | 3.1% | **0.0%** |
+
+† Leaderboard harness coverage is pipeline-attached from platform documentation
+(e.g. `lighteval`), not exposed by any leaderboard API. `prompt_template` and
+`temperature` have **zero** coverage across the entire leaderboard subset.
+
+**Finding 3 — divergence is unattributable.** When the same model × benchmark *is*
+reported by multiple sources, the scores frequently disagree (case studies in §5:
+BBH, GSM8K, TruthfulQA, Belebele, HellaSwag), and because the explanatory metadata
+is missing, the gap cannot be attributed to a cause. Several "independent"
+agreements turn out to be the *same* pipeline reported twice (e.g. OLv2 and
+SEA-LION matching to two decimals on Gemma-2-9B BBH).
+
+**Extraction audit (validating the arXiv pipeline against the source papers,
+10 papers, human-verified).**
+
+- **Score extraction:** **97.5%** precision (1,977/2,027 extracted scores match
+  the paper) and **≈81%** recall (the pipeline captures headline tables but skips
+  many secondary ones).
+- **Harness identification:** **87.1%** per-row precision on the with-harness pool
+  (817 rows); **100%** correct abstention on the without-harness pool — the
+  pipeline never hallucinates a harness.
+
+**EvalSpec v0.1** (the proposed remedy): a reporting specification of 9 Required +
+6 Recommended + 3 Full fields, so that the fields driving divergence become a
+recordable absence rather than an invisible gap.
+
+## Experiment outcomes
+
+The dataset shows that documented metadata is missing; five controlled experiments
+(Appendix G of the paper) then measure *how much* each undocumented choice actually
+moves a score. All runs use `lm-evaluation-harness` + vLLM unless noted.
+
+### 1. Factorial Grid (the framing experiment)
+
+**Setup.** 4 instruction-tuned models (Qwen2.5-14B-Instruct, Qwen2.5-7B-Instruct,
+Llama-3.1-8B-Instruct, Mistral-7B-Instruct-v0.3) × 3 benchmarks (BBH, GSM8K, MMLU)
+× 3 prompt formats (`plain` few-shot, `instruct` system-prompt, `cot`
+chain-of-thought) × 2 temperatures (0.0, 0.7) × 2 n-shot counts (0 + 3-shot for
+BBH; 0 + 5-shot for GSM8K/MMLU) × 3 seeds (42, 123, 7). MMLU reduced to temp 0.0 /
+single seed for server constraints. **306 successful runs** (144 BBH + 144 GSM8K +
+18 MMLU); GSM8K/MMLU use a 200-problem subset, BBH the full suite.
+
+**Result — prompt format (one-way ANOVA per benchmark, 5-shot cells).**
+
+| Benchmark | `plain` | `instruct` | `cot` | format effect |
+|---|---|---|---|---|
+| GSM8K (n=24/cell) | 38.75 | 34.19 | 19.25 | **η²≈27.4%**, F=13.0, p=1.6×10⁻⁵ |
+| MMLU (n=3/cell) | 63.60 | 62.45 | 51.98 | η²≈24.5%, F=0.98, p=0.43 (underpowered) |
+
+Prompt format alone explains **27.4%** of GSM8K score variance (plain→cot gap
+19.50 pp); temperature explains only η²≈0.25% (F=0.18, p=0.68). MMLU shows the same
+*ordering* but the reduced design can't confirm it — the magnitude is
+benchmark-specific, the direction is not.
+
+**Result — n-shot (ANOVA, pooled by shot count).** GSM8K η²≈**65.1%** (F=264.6,
+p<10⁻³⁰) but this is *not* a capability gain: every 0-shot cell scores exactly
+**0.00** because instruction-tuned models omit the `####` answer delimiter the
+GSM8K parser requires (a parser–format coupling, not learning). MMLU η²≈**1.0%**
+(F=0.16, p=0.69; 0-shot 61.94 vs 5-shot 59.34) — on a log-likelihood benchmark
+n-shot is nearly inert.
+
+### 2. E1 — GSM8K prompt-format sensitivity
+
+**Setup.** Qwen2.5-14B-Instruct × GSM8K, 5-shot, temp 0.0, seeds 42/123/7
+(deterministic, so identical across seeds), `limit=200`.
+
+| Prompt format | Score |
+|---|---|
+| `plain` (direct-answer few-shot) | **58.5%** |
+| `instruct` (system-prompt) | **57.0%** |
+| `cot` (chain-of-thought few-shot) | **2.5%** |
+
+**Result.** A single prompt-format change collapses a strong score to near zero:
+the CoT free-text output contains no `####` delimiter, so the standard extractor
+returns 0 for nearly every item. The same pattern holds at temp 0.7 (58.67 /
+52.67 / 2.83).
+
+### 3. E2 — MMLU scoring-mode control
+
+**Setup.** 3 models on MMLU, 5-shot, `plain`, temp 0.0, scored both ways —
+log-likelihood (`limit=500`) vs generation (full 14,042); Qwen2.5-14B generation-only.
+
+| Model | log-likelihood | generation | \|Δ\| |
+|---|---|---|---|
+| Mistral-7B-Instruct-v0.3 | 61.92 | 61.64 | 0.28 |
+| Qwen2.5-7B-Instruct | 74.26 | 74.43 | 0.17 |
+| Llama-3.1-8B-Instruct | 68.30 | 68.16 | 0.14 |
+| Qwen2.5-14B-Instruct | — | 79.79 | — |
+
+**Result.** Max gap **0.28 pp** — scoring mode is nearly inert *on MMLU*. This
+rules out a generic scoring-mode effect and shows the ≈35-point BBH gap (case
+study §5.1) is specific to lighteval log-likelihood × BBH's CoT structure, not a
+property of log-likelihood scoring in general.
+
+### 4. E3 — harness-version sensitivity
+
+**Setup.** Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct on the **full** GSM8K test
+set, 5-shot, `hf` backend, `lm-eval` **0.4.3 vs 0.4.11**, seeds 42/123, everything
+else held fixed.
+
+| Model | 0.4.3 (s42/s123) | 0.4.11 (s42/s123) |
+|---|---|---|
+| Qwen2.5-1.5B-Instruct | 32.83 / 33.74 | 33.06 / 33.36 |
+| Qwen2.5-7B-Instruct | 75.06 / 76.35 | 75.51 / — |
+
+**Result.** Largest seed-matched cross-version difference is **0.45 pp** — *below*
+the within-version seed spread (up to 1.29 pp). The effect is real but small; more
+importantly the two versions are **dependency-irreconcilable** (different
+`transformers` stacks), so even "same harness, different version" breaks
+comparability — which is why `harness_version` is an EvalSpec Required field.
+
+### 5. Judge-model sensitivity
+
+**Setup.** 5 contestant models each generate one response to the 80 MT-Bench turn-1
+questions; the **identical** responses are then scored by 4 judges (GPT-4o-mini,
+Gemini-3.5-Flash, Llama-3.1-70B-Instruct, Claude-Haiku-4.5) with the MT-Bench 1–10
+rubric at temp 0. Any variation is attributable to the judge alone.
+
+| Contestant | GPT-4o-mini | Gemini-3.5 | Llama-70B | Claude-Haiku | spread |
+|---|---|---|---|---|---|
+| Gemma-3-4B | 8.24 | 7.96 | 8.31 | 7.26 | 1.04 |
+| Qwen2.5-7B | 7.86 | 8.02 | 7.96 | 6.97 | 1.05 |
+| Llama-3.1-8B | 8.04 | 7.61 | 8.22 | 6.87 | **1.35** |
+| Ministral-8B | 8.44 | 7.54 | 8.62 | 7.51 | 1.11 |
+| Qwen2.5-72B | 8.32 | 8.59 | 8.38 | 7.74 | 0.84 |
+
+**Result.** The judge changes the ranking, not just the offset: Ministral-8B is
+**1st** under GPT-4o-mini and Llama-70B but **last** under Gemini. Judge-induced
+spread averages 1.08 (max 1.35) points, and cross-judge Spearman rank correlation
+spans **+1.00 to −0.30** — an LLM-judge score is uninterpretable without recording
+the judge.
+
+## Dataset
+The aggregated dataset is available on HuggingFace:
+- Dataset: https://huggingface.co/datasets/evaleval/EEE_datastore
 
 ## Repository layout
 
 ```
-eval.schema.json              EEE JSON Schema v0.2.1
-eval_types.py                 Pydantic models for the schema
-instance_level_types.py       Instance-level schema types
+eval.schema.json                       EEE JSON Schema v0.2.1
+src/eee_eval/eval_types.py             Pydantic models for the schema
+src/eee_eval/instance_level_types.py   Instance-level schema types
 
-reproduce_paper.py            Recompute every paper number → analysis_output/paper_numbers.json
-reproduce_case_studies.py     Re-derive the §5 case-study numbers from data/
-generate_evidence_file.py     Build section5_evidence.txt (raw-data provenance)
+scripts/reproduce_paper.py        Recompute every paper number → analysis_output/paper_numbers.json
+scripts/reproduce_case_studies.py Re-derive the §5 case-study numbers from data/
+scripts/generate_evidence_file.py Build section5_evidence.txt (raw-data provenance)
 
-src/
+src/eee_eval/
 ├── extraction/               Ingestion: arXiv LLM extraction + leaderboard/model-card fetchers
-├── analysis/                 Statistical analysis (coverage, collisions, variance, ranking)
+├── analysis/                 aggregate_results (→ all_results.csv) + coverage_audit
 ├── converters/               Framework-log → EEE adapters (lm_eval, inspect, helm, common)
 ├── scrapers/                 Leaderboard-specific scrapers
-├── validation/               Schema validation + preflight checks
-├── utils/                    Shared helpers (I/O, schema validation)
-└── figures/                  Figure generators
+├── validation/               Schema validation + output checks
+└── utils/                    Shared helpers (I/O, schema validation)
 
 data/                         Aggregated EEE records, per source (gitignored)
 experiments/                  Controlled experiments + notebooks
@@ -72,8 +241,8 @@ Copy `.env.example` to `.env` and fill in the keys you need:
 
 | Variable | Required for | Notes |
 |---|---|---|
-| `OPENROUTER_API_KEY` | `src/extraction/extract_paper.py` | LLM extraction of results from arXiv papers |
-| `HF_TOKEN` | `src/extraction/add_leaderboard_records.py`, `hf_model_card_fetcher.py` | HuggingFace access token for the leaderboard / model-card fetchers |
+| `OPENROUTER_API_KEY` | `eee_eval.extraction.extract_paper` | LLM extraction of results from arXiv papers |
+| `HF_TOKEN` | `eee_eval.extraction.add_leaderboard_records`, `hf_model_card_fetcher` | HuggingFace access token for the leaderboard / model-card fetchers |
 | `REQUESTS_CA_BUNDLE` | optional | Custom CA bundle if TLS verification fails in your environment |
 
 Reproducing the paper's numbers does **not** require any keys — the raw data
@@ -86,8 +255,9 @@ quantitative claim from the raw data files and writes them to
 `analysis_output/paper_numbers.json`:
 
 ```bash
-python reproduce_paper.py              # recompute and write paper_numbers.json
-python reproduce_paper.py --no-rebuild # reuse the existing data/aggregated/all_results.csv
+python scripts/reproduce_paper.py              # recompute and write paper_numbers.json
+python scripts/reproduce_paper.py --no-rebuild # reuse the existing data/aggregated/all_results.csv
+# or: make repro
 ```
 
 It covers §3.2 dataset totals and per-source counts, §4.1 score-extraction
@@ -96,8 +266,8 @@ the appendix experiments. For richer raw-data provenance (the underlying JSON
 paths and harness/shot fields behind each case study), run:
 
 ```bash
-python reproduce_case_studies.py       # §5 case-study numbers
-python generate_evidence_file.py       # writes section5_evidence.txt
+python scripts/reproduce_case_studies.py       # §5 case-study numbers
+python scripts/generate_evidence_file.py       # writes section5_evidence.txt
 ```
 
 ## Rebuilding the dataset (optional)
@@ -106,35 +276,34 @@ The aggregated `data/` directory is already provided. To re-fetch from source:
 
 ```bash
 # Leaderboard records (needs HF_TOKEN)
-python src/extraction/add_leaderboard_records.py
+python -m eee_eval.extraction.add_leaderboard_records
 
 # HuggingFace model-card results (needs HF_TOKEN)
-python src/extraction/hf_model_card_fetcher.py
+python -m eee_eval.extraction.hf_model_card_fetcher
 
 # Papers With Code results
-python src/extraction/pwc_fetcher.py
+python -m eee_eval.extraction.pwc_fetcher
 
 # Extract results from arXiv papers (needs OPENROUTER_API_KEY)
-python src/extraction/extract_paper.py --paper-list papers/general_llm_papers.txt
+python -m eee_eval.extraction.extract_paper --paper-list papers/general_llm_papers.txt
 
 # Validate records against the EEE schema
-python src/validation/validate_outputs.py
+python -m eee_eval.validation.validate_outputs
 
-# Aggregate into a single CSV
-python src/analysis/aggregate_results.py
+# Aggregate into a single CSV (data/aggregated/all_results.csv)
+python -m eee_eval.analysis.aggregate_results
 ```
 
 ## Analysis and figures
 
 ```bash
-# Metadata coverage audit
-python src/analysis/coverage_audit.py
+# Metadata coverage audit (→ analysis_output/coverage_stats.csv)
+python -m eee_eval.analysis.coverage_audit
 
-# Comprehensive cross-source analysis
-python src/analysis/run_analysis.py
-
-# Regenerate publication figures
-python src/figures/generate_all_figures.py
+# Regenerate the paper figures
+python LLM_Evaluation_Report/figures/scripts/coverage_bars.py   # Figure 6 (§4.3)
+python LLM_Evaluation_Report/figures/scripts/unified.py         # Figure 5 (§5)
+python LLM_Evaluation_Report/figures/scripts/case1.py           # Figure 4 (§5.1)
 ```
 
 ## Converting evaluation-framework logs
@@ -144,13 +313,13 @@ list (`--output_dir`, `--evaluator_relationship`, etc.):
 
 ```bash
 # lm-evaluation-harness
-python -m src.converters.lm_eval --log_path <results.json>
+python -m eee_eval.converters.lm_eval --log_path <results.json>
 
 # Inspect AI
-python -m src.converters.inspect --log_path <eval.log>
+python -m eee_eval.converters.inspect --log_path <eval.log>
 
 # CRFM HELM
-python -m src.converters.helm --log_path <run_dir/>
+python -m eee_eval.converters.helm --log_path <run_dir/>
 ```
 
 ## Running the tests
@@ -172,36 +341,15 @@ Each evaluation record captures:
 | **evaluation_results** | benchmark name, score, metric, generation config (shots, temperature, prompt template, chain-of-thought) |
 
 Schema definition: [`eval.schema.json`](eval.schema.json) · Pydantic models:
-[`eval_types.py`](eval_types.py).
+[`src/eee_eval/eval_types.py`](src/eee_eval/eval_types.py).
 
 ## Key findings
 
 | Metric | Value |
 |---|---|
-| Total records | 37,718 |
-| Unique models | 6,455 |
-| Unique benchmarks | 1,289 |
+| Total records | 46,559 |
+| Unique models | 7,398 |
+| Unique benchmarks | 1,954 |
 | Data sources | 12 |
 
-(Recompute these with `python reproduce_paper.py`.)
 
-## Citation
-
-```bibtex
-@inproceedings{eee-2026,
-  title     = {Why {LLM} Leaderboards Are Incomparable: Structural Fragmentation
-               and Missing Evaluation Metadata at Scale},
-  author    = {Anonymous},
-  booktitle = {Proceedings of the EvalEval Workshop at ACL 2026},
-  year      = {2026},
-}
-```
-
-## License
-
-See [LICENSE](LICENSE).
-
-## Links
-
-- Dataset: https://huggingface.co/datasets/evaleval/EEE_datastore
-- Shared task: https://evalevalai.com/events/shared-task-every-eval-ever/

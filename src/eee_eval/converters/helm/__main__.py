@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 from argparse import ArgumentParser
 import uuid
 import json
@@ -15,7 +15,7 @@ from eee_eval.eval_types import (
 def parse_args():
     parser = ArgumentParser()
 
-    parser.add_argument('--log_path', type=str, default='tests/data/helm/mmlu:subject=philosophy,method=multiple_choice_joint,model=openai_gpt2', help="Path to directory with single evaluaion or multiple evaluations to convert")
+    parser.add_argument('--log_path', type=str, required=True, help="Path to directory with single evaluation or multiple evaluations to convert")
     parser.add_argument('--output_dir', type=str, default='data')
     parser.add_argument('--source_organization_name', type=str, help='Orgnization which pushed evaluation.')
     parser.add_argument('--evaluator_relationship', type=str, default='other', help='Relationship of evaluation author to the model', choices=['first_party', 'third_party', 'collaborative', 'other'])
@@ -46,7 +46,7 @@ class HELMEvalLogConverter:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def convert_to_unified_schema(self, metadata_args: Dict[str, Any] = None) -> Union[EvaluationLog, List[EvaluationLog]]:
-        return HELMAdapter().transform_from_directory(self.log_path, self.output_dir, metadata_args=metadata_args)
+        return HELMAdapter().transform_from_directory(self.log_path, metadata_args=metadata_args)
 
     def save_to_file(self, unified_eval_log: EvaluationLog, output_filedir: str, output_filepath: str) -> bool:
         try:
@@ -56,7 +56,7 @@ class HELMEvalLogConverter:
             unified_eval_log_dir.mkdir(parents=True, exist_ok=True)
 
             unified_eval_path = f'{unified_eval_log_dir}/{output_filepath}'
-            with open(unified_eval_path, 'w') as json_file:
+            with open(unified_eval_path, 'w', encoding='utf-8') as json_file:
                 json_file.write(json_str)
 
             print(f'Unified eval log was successfully saved to {output_filepath} file.')

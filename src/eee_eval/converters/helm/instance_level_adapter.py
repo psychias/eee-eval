@@ -1,4 +1,4 @@
-﻿import json
+import json
 
 from helm.benchmark.adaptation.scenario_state import (
     RequestState

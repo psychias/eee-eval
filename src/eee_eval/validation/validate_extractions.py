@@ -29,7 +29,7 @@ from bs4 import BeautifulSoup
 log = logging.getLogger("eee_validate")
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
-OUT_DIR = ROOT / "data" / "arxiv_extraction_general"
+OUT_DIR = ROOT / "data" / "archiv_paper_extraction"
 HTML_CACHE_DIR = ROOT / "data" / "html_cache"
 
 

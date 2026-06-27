@@ -1,4 +1,4 @@
-﻿"""
+"""
 BigCodeBench leaderboard scraper.
 
 fetches pass@1 scores from the BigCodeBench leaderboard (bigcode-project)
@@ -43,7 +43,6 @@ from eee_eval.eval_types import (
     ScoreDetails,
     ScoreType,
     SourceDataHf,
-    SourceDataUrl,
     SourceMetadata,
 )
 from eee_eval.scrapers.utils import get_developer
@@ -59,7 +58,8 @@ _TIMEOUT = 30  # seconds
 
 # Publication date of the BigCodeBench paper
 _FALLBACK_DATE = "2024-06-21"
-import calendar as _cal, datetime as _dt
+import calendar as _cal
+import datetime as _dt
 _FALLBACK_TS = str(_cal.timegm(_dt.date(2024, 6, 21).timetuple()))
 del _cal, _dt
 

@@ -6,16 +6,15 @@ For each extracted record, the annotator classifies:
   2 = Incorrect
   3 = No detail provided (paper doesn't give enough info to verify)
 
-Output: data/arxiv_extraction_general/samples/human_annotation_sheet.csv
+Output: data/archiv_paper_extraction/samples/human_annotation_sheet.csv
 """
 
 import csv
 import json
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-SAMPLES_DIR = ROOT / "data" / "arxiv_extraction_general" / "samples"
+SAMPLES_DIR = ROOT / "data" / "archiv_paper_extraction" / "samples"
 OUTPUT_CSV = SAMPLES_DIR / "human_annotation_sheet.csv"
 
 COLUMNS = [
@@ -144,10 +143,10 @@ def main():
     for k, v in sorted(counts.items()):
         print(f"  {k}: {v} entries")
 
-    print(f"\nAnnotation codes:")
-    print(f"  1 = Correct")
-    print(f"  2 = Incorrect")
-    print(f"  3 = No detail provided")
+    print("\nAnnotation codes:")
+    print("  1 = Correct")
+    print("  2 = Incorrect")
+    print("  3 = No detail provided")
 
 
 if __name__ == "__main__":

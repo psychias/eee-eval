@@ -30,9 +30,10 @@ openai==2.41.1
 # python-dotenv: loads .env automatically. The fetchers fall back to a manual
 #   .env parser if it is absent, so it is optional. Uncomment to enable.
 # python-dotenv
-# dacite: only required for the optional CRFM HELM log converter
-#   (src/converters/helm/). Not needed to reproduce the paper. Uncomment if used.
-# dacite
+# dacite: only for the optional CRFM HELM log converter
+#   (src/eee_eval/converters/helm/). Not needed to reproduce the paper.
+#   Install via:  pip install -e ".[helm]"   (or uncomment the line below)
+# dacite==1.9.2
 
 # --- Tests (dev only) ---
 # Run the test suite with: pip install pytest && pytest

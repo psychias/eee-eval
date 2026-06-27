@@ -1,4 +1,4 @@
-﻿"""
+"""
 Track 2 reference implementation: proprietary evaluation data converter.
 
 This module is a *concrete, runnable* example of how to subclass
@@ -63,10 +63,8 @@ import hashlib
 import importlib.metadata
 import json
 import sys
-import time
 import uuid
 from pathlib import Path
-from typing import Any
 
 _ROOT = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(_ROOT))

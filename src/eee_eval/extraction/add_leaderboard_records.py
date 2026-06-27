@@ -1290,7 +1290,6 @@ class WildBenchFetcher(LiveLeaderboardFetcher):
             for model, info in data.items():
                 raw_score = info.get("score")      # on ~1-10 scale
                 adj_score = info.get("adjusted_score")  # centered around 0
-                task_score = info.get("task_macro_score")
                 if raw_score is None:
                     continue
                 fr = FetchedRow(model_name=str(model).split("/")[-1],

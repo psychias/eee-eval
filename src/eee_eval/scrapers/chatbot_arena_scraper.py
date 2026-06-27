@@ -1,4 +1,4 @@
-﻿"""
+"""
 LMSYS Chatbot Arena scraper.
 
 fetches Elo ratings from the LMSYS Chatbot Arena leaderboard and converts
@@ -51,7 +51,8 @@ _TIMEOUT = 30  # seconds
 # _FALLBACK_LEADERBOARD whenever the live sources are refreshed.
 _FALLBACK_DATE = "2026-02-01"
 # unix timestamp for 2026-02-01T00:00:00Z
-import calendar as _calendar, datetime as _dt
+import calendar as _calendar
+import datetime as _dt
 _FALLBACK_RETRIEVED_TS = str(
     _calendar.timegm(_dt.date(2026, 2, 1).timetuple())
 )
@@ -254,7 +255,8 @@ class ChatbotArenaScraper(BaseLeaderboardScraper):
 
 def _try_fetch_csv(url: str) -> list[dict]:
     """try to fetch and parse a leaderboard CSV from *url*."""
-    import csv, io
+    import csv
+    import io
 
     try:
         resp = requests.get(url, timeout=_TIMEOUT)

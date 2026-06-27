@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 import tempfile
 
 import pytest
@@ -18,7 +18,8 @@ def _load_eval(adapter, filepath, metadata_args):
     eval_dirpath = Path(filepath)
     
     with tempfile.TemporaryDirectory() as tmpdir:
-        converted_eval = adapter.transform_from_directory(eval_dirpath, output_path=str(Path(tmpdir) / 'helm_output'), metadata_args=metadata_args)
+        metadata_args['parent_eval_output_dir'] = tmpdir
+        converted_eval = adapter.transform_from_directory(eval_dirpath, metadata_args=metadata_args)
 
     converted_eval = converted_eval[0]
     assert isinstance(converted_eval, EvaluationLog)

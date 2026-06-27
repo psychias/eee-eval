@@ -1,4 +1,4 @@
-﻿"""
+"""
 AlpacaEval 2.0 leaderboard scraper.
 
 fetches the length-controlled win-rate leaderboard from the tatsu-lab/alpaca_eval
@@ -78,7 +78,8 @@ _LEADERBOARD_JSON_URL = (
 
 # date of hardcoded fallback snapshot
 _FALLBACK_DATE = "2026-01-15"
-import calendar as _calendar, datetime as _dt
+import calendar as _calendar
+import datetime as _dt
 _FALLBACK_TS = str(_calendar.timegm(_dt.date(2026, 1, 15).timetuple()))
 del _calendar, _dt
 

@@ -103,7 +103,7 @@ def main():
             print(f"  Error migrating {filepath}: {e}")
             errors += 1
 
-    print(f"\nMigration complete:")
+    print("\nMigration complete:")
     print(f"  Migrated: {migrated}")
     print(f"  Skipped (already v0.2.0): {skipped}")
     print(f"  Errors: {errors}")

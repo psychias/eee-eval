@@ -1,4 +1,4 @@
-﻿"""Adapter for converting lm-evaluation-harness output to every_eval_ever format."""
+"""Adapter for converting lm-evaluation-harness output to every_eval_ever format."""
 
 import json
 from pathlib import Path

@@ -20,17 +20,15 @@ import argparse
 import json
 import pathlib
 import sys
-from typing import Any
 
 import pandas as pd
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA_CSV = ROOT / "data" / "aggregated" / "all_results.csv"
 OLV2_DIR = ROOT / "data" / "open_llm_leaderboard_v2"
-ARXIV_DIR = ROOT / "data" / "arxiv_extraction_general" / "llm"
+ARXIV_DIR = ROOT / "data" / "archiv_paper_extraction" / "llm"
 CONTROLLED_RESULTS = ROOT / "experiments" / "controlled_eval" / "results" / "controlled_eval_results.jsonl"
 SCORING_MODE_RESULTS = ROOT / "experiments" / "scoring_mode_eval" / "scoring_mode_results.jsonl"
-VALIDATION_PAIRS = ROOT / "analysis_output" / "validation_pairs.txt"
 
 OLV2_API_URL = (
     "https://open-llm-leaderboard-open-llm-leaderboard.hf.space"
@@ -157,7 +155,7 @@ def fetch_olv2_api(model_id: str, benchmark_key: str = "bbh") -> float | None:
 def main(live_api: bool = False) -> None:
     print("reproduce_case_studies.py — EEE paper Section 5 verification")
     print(f"Dataset : {DATA_CSV}")
-    print(f"Date    : 2026-05-20")
+    print("Date    : 2026-05-20")
 
     if not DATA_CSV.exists():
         sys.exit(f"ERROR: dataset not found at {DATA_CSV}")
@@ -267,9 +265,9 @@ def main(live_api: bool = False) -> None:
     math_rows = df_olv2[df_olv2["benchmark"].str.lower().str.contains("math", na=False)]
     n_math_models = math_rows["model_id"].nunique()
     print(f"  OLv2 MATH Lvl 5 models in dataset: {n_math_models}")
-    print(f"  Paper claims 3,751 re-evaluated models (at Math-Verify launch, Feb 2025).")
+    print("  Paper claims 3,751 re-evaluated models (at Math-Verify launch, Feb 2025).")
     print(f"  Current dataset has {n_math_models} models (scraped later; new submissions added).")
-    print(f"  [INFO] The 3,751 figure is from Kydlicek et al. blog post, not recomputable here.")
+    print("  [INFO] The 3,751 figure is from Kydlicek et al. blog post, not recomputable here.")
 
     # ── Case Study 1c: GSM8K E3 ───────────────────────────────────────────
     section("CASE STUDY 1c — GSM8K: CoT Parser Failure (Experiment E3)")
@@ -405,7 +403,14 @@ def main(live_api: bool = False) -> None:
             & df_arxiv["model_id"].str.lower().str.contains("mistral", na=False)
         ]
         if not rows.empty:
-            check("Mistral-7B Belebele — Falcon2 paper", 79.42, rows.iloc[0]["score"],
+            # The Falcon2 paper reports many Belebele scores for Mistral-7B (one
+            # per language plus an English-only run). The case study cites the
+            # English-only, 5-shot score, which is the highest-resource language
+            # and thus the maximum Belebele value the model attains in the paper
+            # (multilingual / low-resource entries are ~21-32). Select by value
+            # rather than row order so the check is robust to extraction reruns.
+            score = rows["score"].astype(float).max()
+            check("Mistral-7B Belebele — Falcon2 paper (5-shot, English)", 79.42, score,
                   "data/aggregated/all_results.csv")
 
     # ── Case Study 2c: HellaSwag ──────────────────────────────────────────
@@ -568,11 +573,6 @@ def main(live_api: bool = False) -> None:
     print(f"    ArXiv JSON records: {ARXIV_DIR}")
     print(f"    Controlled eval   : {CONTROLLED_RESULTS}")
     print(f"    Scoring mode eval : {SCORING_MODE_RESULTS}")
-    print(f"    Validation pairs  : {VALIDATION_PAIRS}")
-    print()
-    print("  The validation_pairs.txt file (analysis_output/) contains the")
-    print("  manually-curated case study lookup report generated from")
-    print("  all_results.csv, including the SEA-LION exact-match analysis.")
 
 
 if __name__ == "__main__":

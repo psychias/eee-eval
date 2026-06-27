@@ -1,4 +1,4 @@
-﻿import json
+import json
 import tempfile
 from pathlib import Path
 
@@ -15,7 +15,6 @@ def _load_instance_level_data(adapter, filepath, metadata_args):
     eval_dirpath = Path(filepath)
     converted_eval_list = adapter.transform_from_directory(
         eval_dirpath,
-        output_path=str(Path(metadata_args['parent_eval_output_dir']) / 'helm_output'),
         metadata_args=metadata_args
     )
     

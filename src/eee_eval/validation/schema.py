@@ -17,7 +17,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validator_for
 
 _ROOT = Path(__file__).resolve().parent.parent.parent.parent

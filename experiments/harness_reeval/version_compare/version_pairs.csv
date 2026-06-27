@@ -1,3 +1,4 @@
-model_id,benchmark,n_shot,limit,seed,score_a,metric_a,score_b,metric_b,delta,abs_delta
-Qwen/Qwen2.5-7B-Instruct,gsm8k,5,200,42,75.5,"exact_match,strict-match",77.0,"exact_match,strict-match",1.5,1.5
-Qwen/Qwen2.5-1.5B-Instruct,gsm8k,5,200,42,29.5,"exact_match,strict-match",30.0,"exact_match,strict-match",0.5,0.5
+model_id,benchmark,n_shot,limit,seed,score_a,score_b,metric_a,metric_b,delta,abs_delta
+Qwen/Qwen2.5-1.5B-Instruct,gsm8k,5,0,42,32.8279,33.0553,"exact_match,strict-match","exact_match,strict-match",0.2274,0.2274
+Qwen/Qwen2.5-1.5B-Instruct,gsm8k,5,0,123,33.7377,33.3586,"exact_match,strict-match","exact_match,strict-match",-0.3791,0.3791
+Qwen/Qwen2.5-7B-Instruct,gsm8k,5,0,42,75.0569,75.5118,"exact_match,strict-match","exact_match,strict-match",0.4549,0.4549

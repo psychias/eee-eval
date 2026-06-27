@@ -30,7 +30,6 @@ Requirements
 from __future__ import annotations
 
 import csv
-import io
 import json
 import os
 import pathlib
@@ -38,7 +37,7 @@ import re
 import sys
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import requests
@@ -906,11 +905,11 @@ def main() -> None:
         bench_counts = Counter(r.benchmark for r in results)
         unique_papers = len(set(r.arxiv_id for r in results))
         unique_models = len(set(r.model_name for r in results))
-        print(f"\n  DRY RUN — would write records for:")
+        print("\n  DRY RUN — would write records for:")
         print(f"    {len(results)} results")
         print(f"    {unique_papers} unique papers")
         print(f"    {unique_models} unique models")
-        print(f"    Benchmarks:")
+        print("    Benchmarks:")
         for bench, cnt in sorted(bench_counts.items(), key=lambda x: -x[1]):
             print(f"      {cnt:5d}  {bench}")
         return

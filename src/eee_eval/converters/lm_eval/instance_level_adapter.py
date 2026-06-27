@@ -1,4 +1,4 @@
-﻿"""Instance-level adapter for converting lm-eval per-sample logs."""
+"""Instance-level adapter for converting lm-eval per-sample logs."""
 
 import hashlib
 import json

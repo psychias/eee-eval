@@ -34,7 +34,7 @@ def audit_source(source_dir: Path) -> dict:
     has_chain_of_thought = 0
 
     for fpath in source_dir.rglob("*.json"):
-        # Canonical ArXiv source is data/arxiv_extraction_general/llm/ only;
+        # Canonical ArXiv source is data/archiv_paper_extraction/llm/ only;
         # skip audit-sample copies (samples/) and the naive extraction (naive/).
         if "samples" in fpath.parts or "naive" in fpath.parts:
             continue

@@ -33,7 +33,6 @@ from typing import Any
 _ROOT = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
-from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validator_for
 
 # ---------------------------------------------------------------------------

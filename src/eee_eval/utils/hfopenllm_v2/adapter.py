@@ -28,7 +28,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from helpers import (
     fetch_json,
-    get_developer,
     make_model_info,
     make_source_metadata,
     save_evaluation_log,

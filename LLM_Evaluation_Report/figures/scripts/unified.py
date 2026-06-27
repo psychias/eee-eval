@@ -14,7 +14,7 @@ Sign convention: Δ = bottom_score − top_score
   GSM8K:     2.5  − 58.5  = −56.0 pp
   HellaSwag: 81.20 − 49.80 = +31.4 pp
   Belebele:  79.42 − 32.80 = +46.6 pp
-  BBH:       68.73 − 34.10 = +34.6 pp
+  BBH:       68.87 − 34.10 = +34.8 pp
 """
 
 import os
@@ -204,11 +204,11 @@ COLS = {
             "SEA-LION = 34.10  ┘ → shared pipeline origin"
         ),
         top_hi    = "OLv2     = 34.10  ┐ exact 2-decimal match",
-        bot_hdr   = "OLMoE / SmolLM2 / RecurrentGemma · 0-shot CoT",
-        bot_score = 68.73,
+        bot_hdr   = "Gemma 2 / Gemma 3 reports · CoT generation",
+        bot_score = 68.87,
         bot_unit  = "",
         bot_text  = (
-            "# 0-shot CoT protocol (Suzgun et al. 2023)\n"
+            "# CoT generation protocol (Suzgun et al. 2023)\n"
             "Q: Which statement is logically false? …\n"
             "Let's think step by step.\n"
             "All mammals breathe air; whales are mammals\n"
@@ -216,20 +216,20 @@ COLS = {
             "Whales are not reptiles — that is false.\n"
             "The answer is (C).\n"
             "──────────────────────────────────────\n"
-            "OLMoE = 68.20  SmolLM2 = 69.00\n"
-            "RecurrentGemma = 69.00  (independent)"
+            "Gemma 2 = 68.20  Gemma 3 = 69.00\n"
+            "Gemma 3 = 69.40  (independent)"
         ),
-        bot_hi    = "OLMoE = 68.20  SmolLM2 = 69.00",
+        bot_hi    = "Gemma 2 = 68.20  Gemma 3 = 69.00",
         mech      = (
             "Two score clusters — two protocols.\n"
             "OLv2 & SEA-LION: exact 2-decimal match;\n"
             "shared pipeline, not independent evidence.\n"
-            "OLMoE/SmolLM2/RecurrentGemma: 0-shot CoT."
+            "Gemma 2/Gemma 3 reports: CoT generation."
         ),
         source    = (
-            "Scores: analysis_output/validation_pairs.txt\n"
+            "Scores: data/aggregated/all_results.csv\n"
             "        arXiv:2504.05747 (SEA-LION, Table 3)\n"
-            "BBH cluster 2 mean: (68.20+69.00+69.00)/3 = 68.73"
+            "BBH cluster 2 mean: (68.20+69.00+69.40)/3 = 68.87"
         ),
     ),
 }
@@ -239,7 +239,7 @@ _CHECKS = [
     ("gsm8k",     COLS["gsm8k"]["bot_score"]     - COLS["gsm8k"]["top_score"],     -56.0),
     ("hellaswag", COLS["hellaswag"]["bot_score"]  - COLS["hellaswag"]["top_score"],  +31.4),
     ("belebele",  COLS["belebele"]["bot_score"]   - COLS["belebele"]["top_score"],   +46.6),
-    ("bbh",       COLS["bbh"]["bot_score"]        - COLS["bbh"]["top_score"],        +34.6),
+    ("bbh",       COLS["bbh"]["bot_score"]        - COLS["bbh"]["top_score"],        +34.8),
 ]
 for _name, _got, _exp in _CHECKS:
     assert abs(_got - _exp) < 0.15, f"Delta FAILED {_name}: got {_got:.2f} expected {_exp}"

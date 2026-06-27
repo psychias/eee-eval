@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 from argparse import ArgumentParser
 import json
 import uuid
@@ -16,7 +16,7 @@ from eee_eval.instance_level_types import InstanceLevelEvaluationLog
 def parse_args():
     parser = ArgumentParser()
 
-    parser.add_argument('--log_path', type=str, default='tests/data/inspect/data.json', help='Inspect evalaution log file with extension eval or json.')
+    parser.add_argument('--log_path', type=str, required=True, help='Inspect evaluation log file with extension eval or json.')
     parser.add_argument('--output_dir', type=str, default='data')
     parser.add_argument('--source_organization_name', type=str, default='unknown', help='Orgnization which pushed evaluation to the every-eval-ever.')
     parser.add_argument('--evaluator_relationship', type=str, default='third_party', help='Relationship of evaluation author to the model', choices=['first_party', 'third_party', 'collaborative', 'other'])

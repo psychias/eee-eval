@@ -25,9 +25,8 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import math
 import sys
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -128,7 +127,7 @@ def coverage_numbers(rows: list[dict]) -> dict:
 def arxiv_score_presence() -> dict:
     """§4.1 structural-presence check over the canonical ArXiv extraction."""
     n = nn = 0
-    for f in (DATA / "arxiv_extraction_general" / "llm").rglob("*.json"):
+    for f in (DATA / "archiv_paper_extraction" / "llm").rglob("*.json"):
         if f.name in ("summary.json", "metric_configs_from_llm.json", "extraction_results.json"):
             continue
         try:
@@ -163,21 +162,36 @@ def _truthy(v) -> bool:
 
 
 def score_audit() -> dict:
-    rows = _read_csv_rows(DATA / "arxiv_extraction_general" / "samples" / "annotation_score_verification.csv")
-    correct = sum(1 for r in rows if _truthy(r.get("correct")))
-    return {"entries": len(rows), "correct": correct,
-            "agreement_pct": round(100 * correct / len(rows), 1) if rows else 0.0}
+    rows = _read_csv_rows(DATA / "archiv_paper_extraction" / "samples" / "annotation_score_verification.csv")
+    # §4.1 score-verification audit. The verdict_type column separates the two
+    # axes: 'score' rows are the pipeline's extractions (the precision basis);
+    # 'recall' rows are paper-reported scores the pipeline missed (appended as
+    # correct=FALSE during the senior-annotator re-audit). agreement_pct is
+    # precision over the 'score' rows; recall is captured / reported.
+    score_rows = [r for r in rows if (r.get("verdict_type") or "score") == "score"]
+    missed = sum(1 for r in rows if r.get("verdict_type") == "recall")
+    correct = sum(1 for r in score_rows if _truthy(r.get("correct")))
+    captured = len(score_rows)
+    reported = captured + missed
+    return {"entries": captured, "correct": correct,
+            "agreement_pct": round(100 * correct / captured, 1) if captured else 0.0,
+            "missed": missed,
+            "recall_pct": round(100 * captured / reported, 1) if reported else 0.0}
 
 
 def harness_audit() -> dict:
-    def precision(path):
-        rows = _read_csv_rows(path)
+    # Precision is computed over the verdict_type rows that 'correct' actually
+    # judges: 'harness' rows for the with-harness pool, 'abstention' rows for the
+    # without-harness pool. ('score'/'recall' rows carry value/coverage defects
+    # surfaced in the re-audit and are excluded from the harness-call precision.)
+    def precision(path, vtype):
+        rows = [r for r in _read_csv_rows(path) if (r.get("verdict_type") or vtype) == vtype]
         ok = sum(1 for r in rows if _truthy(r.get("correct")))
         return {"rows": len(rows), "correct": ok,
                 "pct": round(100 * ok / len(rows), 1) if rows else 0.0}
-    base = DATA / "arxiv_extraction_general" / "samples"
-    return {"with_harness": precision(base / "annotation_eval_harness_WITH_v2.csv"),
-            "without_harness": precision(base / "annotation_eval_harness_WITHOUT_v2.csv")}
+    base = DATA / "archiv_paper_extraction" / "samples"
+    return {"with_harness": precision(base / "annotation_eval_harness_WITH.csv", "harness"),
+            "without_harness": precision(base / "annotation_eval_harness_WITHOUT.csv", "abstention")}
 
 
 # --------------------------------------------------------------------------- #
@@ -186,7 +200,7 @@ def harness_audit() -> dict:
 def _read_jsonl(path: Path) -> list[dict]:
     if not path.exists():
         return []
-    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
+    return [json.loads(ln) for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
 
 
 def _eta_and_f(groups: list[list[float]]):
@@ -303,16 +317,17 @@ def main():
           f"benchmarks: {d['total_benchmarks']:,}")
     print(f"Leaderboard subtotal: {d['leaderboard_subtotal']['records']:,} | "
           f"ArXiv: {d['arxiv']['records']:,}")
-    print(f"Coverage full   (shots/harness/CoT/prompt/temp): "
+    print("Coverage full   (shots/harness/CoT/prompt/temp): "
           + "/".join(str(cov['full_dataset'][k]) for k in
                      ['shots', 'harness', 'chain_of_thought', 'prompt_template', 'temperature']))
-    print(f"Coverage subset (shots/harness/CoT/prompt/temp): "
+    print("Coverage subset (shots/harness/CoT/prompt/temp): "
           + "/".join(str(cov['leaderboard_subset'][k]) for k in
                      ['shots', 'harness', 'chain_of_thought', 'prompt_template', 'temperature']))
     ap41 = numbers["arxiv_score_presence_4_1"]
     print(f"§4.1 ArXiv non-null: {ap41['non_null_score']:,}/{ap41['arxiv_records']:,} = {ap41['pct']}%")
     sa = numbers["score_audit_4_1"]
-    print(f"§4.1 score audit: {sa['correct']}/{sa['entries']} = {sa['agreement_pct']}%")
+    print(f"§4.1 score audit: precision {sa['correct']}/{sa['entries']} = {sa['agreement_pct']}% | "
+          f"recall {sa['entries']}/{sa['entries'] + sa['missed']} = {sa['recall_pct']}%")
     ha = numbers["harness_audit_4_2"]
     print(f"§4.2 harness with: {ha['with_harness']['correct']}/{ha['with_harness']['rows']} = "
           f"{ha['with_harness']['pct']}% | without abstention: "

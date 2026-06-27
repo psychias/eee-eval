@@ -28,12 +28,29 @@ except ImportError:
 SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(SCRIPT_DIR, "..", "results")
 JSONL_PATH  = os.path.join(RESULTS_DIR, "controlled_eval_results.jsonl")
+# GPQA was run separately (single seed/temp, lm-eval 0.4.11) and normalised into
+# the same schema; it is loaded as an additional benchmark for the format and
+# n-shot variance analysis. Absent -> silently skipped.
+GPQA_PATH   = os.path.join(RESULTS_DIR, "gpqa_results.jsonl")
 OUT_PATH    = os.path.join(RESULTS_DIR, "anova_per_benchmark.json")
+
+# Benchmarks analysed for the per-format ANOVA (5-shot) and the n_shot factor.
+BENCHMARKS  = ("gsm8k", "mmlu", "gpqa")
 
 
 def load_rows(path):
     with open(path, "r", encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
+
+
+def load_all_rows():
+    """Factorial-grid rows plus the separately-run GPQA cells (if present)."""
+    rows = load_rows(JSONL_PATH)
+    if os.path.exists(GPQA_PATH):
+        gpqa = load_rows(GPQA_PATH)
+        rows.extend(gpqa)
+        print(f"Loaded {len(gpqa)} GPQA rows from {GPQA_PATH}")
+    return rows
 
 
 def eta_squared(groups):
@@ -166,12 +183,12 @@ def fmt_pct(v): return "n/a" if math.isnan(v) else f"{100*v:.2f}%"
 
 
 def main():
-    rows = load_rows(JSONL_PATH)
-    print(f"Loaded {len(rows)} rows from {JSONL_PATH}")
+    rows = load_all_rows()
+    print(f"Loaded {len(rows)} rows total")
     print()
 
     results = {}
-    for benchmark in ("gsm8k", "mmlu"):
+    for benchmark in BENCHMARKS:
         n_shot = 5
         block  = compute_for_benchmark(rows, benchmark, n_shot)
         results[benchmark] = block
@@ -196,7 +213,7 @@ def main():
 
     # n_shot factor: pooled across formats, and within plain format only
     nshot_results = {}
-    for benchmark in ("gsm8k", "mmlu"):
+    for benchmark in BENCHMARKS:
         block = compute_nshot_for_benchmark(rows, benchmark)
         nshot_results[benchmark] = block
         print(f"=== {benchmark.upper()} — n_shot factor ===")

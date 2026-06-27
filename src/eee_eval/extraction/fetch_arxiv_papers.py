@@ -182,10 +182,10 @@ def main():
         f.write("% Copy these entries into custom.bib\n\n")
         f.write('\n'.join(output_bibtex))
 
-    print(f"Saved to:")
+    print("Saved to:")
     print(f"  - arxiv_papers_{timestamp}.txt (URLs)")
     print(f"  - arxiv_papers_{timestamp}.bib (BibTeX entries)")
-    print(f"\nCopy the BibTeX entries to custom.bib and cite in your paper.")
+    print("\nCopy the BibTeX entries to custom.bib and cite in your paper.")
 
 if __name__ == "__main__":
     main()

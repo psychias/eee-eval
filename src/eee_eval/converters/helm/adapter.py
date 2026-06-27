@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import datetime
 from typing import Any, Dict, List, Tuple
@@ -44,7 +44,17 @@ from eee_eval.converters.helm.instance_level_adapter import (
 )
 from eee_eval.converters import SCHEMA_VERSION
 
-register_builtin_configs_from_helm_package()
+# HELM's bundled-config loader reads its YAML configs with the platform default
+# encoding, which raises UnicodeDecodeError on Windows (cp1252). Register
+# defensively so importing this module never fails for that reason — the
+# built-in configs are only needed when actually converting HELM run logs.
+try:
+    register_builtin_configs_from_helm_package()
+except Exception as _exc:  # pragma: no cover - environment-dependent (e.g. Windows cp1252)
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "register_builtin_configs_from_helm_package() failed (%s); "
+        "HELM built-in configs not registered until conversion is run.", _exc)
 
 
 class HELMAdapter(BaseEvaluationAdapter):
@@ -108,7 +118,7 @@ class HELMAdapter(BaseEvaluationAdapter):
         scenario_dict = self._load_file_if_exists(dir_path, self.SCENARIO_FILE)
         stats = self._load_file_if_exists(dir_path, self.STATS_FILE)
 		
-        with open(f'{dir_path}/{self.PER_INSTANCE_STATS_FILE}', "r") as f:
+        with open(f'{dir_path}/{self.PER_INSTANCE_STATS_FILE}', "r", encoding="utf-8") as f:
             per_instance_stats = from_json(f.read(), List[PerInstanceStats])
             
         return {

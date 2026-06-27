@@ -1,11 +1,11 @@
-﻿import json
+import json
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from huggingface_hub import model_info
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Union
 
 from eee_eval.converters.common.error import AdapterError, TransformationError
 from eee_eval.eval_types import EvaluationLog

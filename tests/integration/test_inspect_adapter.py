@@ -1,4 +1,4 @@
-﻿import contextlib
+import contextlib
 from pathlib import Path
 import tempfile
 
@@ -191,7 +191,7 @@ def test_humaneval_eval():
         'evaluator_relationship': EvaluatorRelationship.first_party,
     }
 
-    converted_eval = _load_eval(adapter, 'tests/data/inspect/2026-02-24T11-23-20+00-00_humaneval_ENiBTeoXr2dbbNcDtpbVvq.json', metadata_args)
+    _load_eval(adapter, 'tests/data/inspect/2026-02-24T11-23-20+00-00_humaneval_ENiBTeoXr2dbbNcDtpbVvq.json', metadata_args)
 
 def test_convert_model_path_to_standarized_model_ids():
     model_path_to_standarized_id_map = {

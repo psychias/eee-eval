@@ -104,7 +104,7 @@ def main() -> None:
     for f in (ROOT / "data").rglob("*.json"):
         if "aggregated" in str(f):
             continue
-        # Canonical ArXiv source is data/arxiv_extraction_general/llm/ only.
+        # Canonical ArXiv source is data/archiv_paper_extraction/llm/ only.
         # Exclude the audit-sample copies (samples/) and the superseded naive
         # extraction (naive/) so they do not inflate the aggregate.
         if "samples" in f.parts or "naive" in f.parts:
@@ -233,7 +233,7 @@ def main() -> None:
             latest = json.loads(native_reports[-1].read_text(encoding="utf-8"))
             with open(OUT_DIR / "pipeline_coverage_report.json", "w", encoding="utf-8") as fh:
                 json.dump(latest, fh, indent=2)
-            print(f"  pipeline coverage report -> data/aggregated/pipeline_coverage_report.json")
+            print("  pipeline coverage report -> data/aggregated/pipeline_coverage_report.json")
 
         models      = len({r["model"]     for r in rows})
         benchmarks  = len({r["benchmark"] for r in rows})

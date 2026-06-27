@@ -41,7 +41,6 @@ from extract_paper import (
     _normalise_benchmark_key,
     _lookup_protocol,
     ResultsTableParser,
-    EvalProtocolExtractor,
 )
 
 

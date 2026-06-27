@@ -20,7 +20,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT  = ROOT / "section5_evidence.txt"
 
 OLV2_DIR   = ROOT / "data" / "open_llm_leaderboard_v2"
-ARXIV_DIR  = ROOT / "data" / "arxiv_extraction_general" / "llm"
+ARXIV_DIR  = ROOT / "data" / "archiv_paper_extraction" / "llm"
 CE_DIR     = ROOT / "experiments" / "controlled_eval" / "5-shot-GSM8K"
 OLV2_API   = ("https://open-llm-leaderboard-open-llm-leaderboard.hf.space"
                "/api/leaderboard/formatted")
@@ -168,7 +168,7 @@ def main() -> None:
         "single source artefact.",
         "",
         "API provenance:",
-        f"  OLv2 scores were fetched via the HuggingFace Space API at:",
+        "  OLv2 scores were fetched via the HuggingFace Space API at:",
         f"  {OLV2_API}",
         "  Responses were converted to EEE schema and stored as JSON under",
         "  data/open_llm_leaderboard_v2/.",
@@ -176,7 +176,7 @@ def main() -> None:
         "Paper-extraction provenance:",
         "  ArXiv HTML papers were parsed by src/extraction/extract_paper.py.",
         "  Each extracted (model, benchmark, score) triple is stored as an",
-        "  EEE JSON file under data/arxiv_extraction_general/llm/.",
+        "  EEE JSON file under data/archiv_paper_extraction/llm/.",
     ]
 
     # =========================================================================
@@ -361,16 +361,16 @@ def main() -> None:
             else:
                 prompt_raw = str(args)
 
-            ev.note(f"Question:")
+            ev.note("Question:")
             ev.code(str(doc.get("question", ""))[:200])
             ev.blank()
-            ev.note(f"Prompt sent to model (last 400 chars of context):")
+            ev.note("Prompt sent to model (last 400 chars of context):")
             ev.code(prompt_raw[-400:] if len(prompt_raw) > 400 else prompt_raw)
             ev.blank()
-            ev.note(f"Model response (first 500 chars):")
+            ev.note("Model response (first 500 chars):")
             ev.code(str(resp)[:500])
             ev.blank()
-            ev.note(f"Expected answer (GSM8K #### delimiter):")
+            ev.note("Expected answer (GSM8K #### delimiter):")
             answer = str(doc.get("answer", ""))
             ev.code(answer[-80:] if len(answer) > 80 else answer)
             ev.kv("exact_match", rec_to_show.get("exact_match", "?"))

@@ -1,4 +1,4 @@
-﻿"""
+"""
 MT-Bench leaderboard scraper.
 
 fetches GPT-4-judged MT-Bench scores from the LMSYS FastChat GitHub
@@ -60,7 +60,8 @@ _TIMEOUT = 30  # seconds
 
 # Publication date of the MT-Bench paper (used to timestamp fallback data)
 _FALLBACK_DATE = "2023-06-09"
-import calendar as _cal, datetime as _dt
+import calendar as _cal
+import datetime as _dt
 _FALLBACK_TS = str(_cal.timegm(_dt.date(2023, 6, 9).timetuple()))
 del _cal, _dt
 
@@ -250,7 +251,6 @@ def _try_fetch_jsonl(url: str) -> list[dict]:
 
 def _try_parse_readme(url: str) -> list[dict]:
     """try to extract the leaderboard table embedded in the FastChat README."""
-    import re
 
     try:
         resp = requests.get(url, timeout=_TIMEOUT)

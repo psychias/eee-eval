@@ -1,4 +1,4 @@
-﻿"""
+"""
 HuggingFace Open LLM Leaderboard v2 scraper.
 
 fetches results from the official HF Space API and converts them to the

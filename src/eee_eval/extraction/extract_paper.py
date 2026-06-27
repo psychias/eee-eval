@@ -6,8 +6,8 @@ Mitigations applied:
   3. Chunked extraction for long papers: split into chunks, extract from each, merge
   4. Title validation: check fetched paper title matches expected model name
 
-Output: data/arxiv_extraction_general/{naive,llm}/<paper>/<model>/<benchmark>/<uuid>.json
-        data/arxiv_extraction_general/summary.{json,csv}
+Output: data/archiv_paper_extraction/{naive,llm}/<paper>/<model>/<benchmark>/<uuid>.json
+        data/archiv_paper_extraction/summary.{json,csv}
 
 Usage:
     python scripts/extract_arxiv_metadata_general.py [--clean] [--yes] [--verbose]
@@ -49,11 +49,42 @@ PAPER_DELAY: float = 0.5
 # ── Paths ──────────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 PAPER_LIST = ROOT / "general_llm_papers.txt"
-OUT_DIR = ROOT / "data" / "arxiv_extraction_general"
+OUT_DIR = ROOT / "data" / "archiv_paper_extraction"
 
 # ── OpenRouter config ──────────────────────────────────────────────────
 # API key must be set via OPENROUTER_API_KEY env var (or in .env).
 # To override the CA bundle, set REQUESTS_CA_BUNDLE=/path/to/cert.pem
+def _load_dotenv() -> None:
+    """Load .env into os.environ if OPENROUTER_API_KEY is not already set."""
+    if os.environ.get("OPENROUTER_API_KEY"):
+        return
+    env_path = ROOT / ".env"
+    if not env_path.exists():
+        return
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path=str(env_path), override=False)
+        if os.environ.get("OPENROUTER_API_KEY"):
+            return
+    except ImportError:
+        pass  # fall through to manual parse
+    # Manual .env parser — KEY=value / KEY="value", skips blanks and # comments.
+    try:
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, raw_val = line.partition("=")
+            key, raw_val = key.strip(), raw_val.strip()
+            if len(raw_val) >= 2 and raw_val[0] in ('"', "'") and raw_val[0] == raw_val[-1]:
+                raw_val = raw_val[1:-1]
+            if key and key not in os.environ:
+                os.environ[key] = raw_val
+    except Exception as exc:
+        log.warning("could not parse %s: %s", env_path, exc)
+
+
+_load_dotenv()
 OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 if not OPENROUTER_KEY:
     raise RuntimeError(
@@ -415,9 +446,12 @@ def naive_extract(text: str) -> dict:
     if shots:
         values = set()
         for m in shots:
-            if m[0]: values.add(int(m[0]))
-            elif m[1]: values.add(int(m[1]))
-        if "zero" in text.lower(): values.add(0)
+            if m[0]:
+                values.add(int(m[0]))
+            elif m[1]:
+                values.add(int(m[1]))
+        if "zero" in text.lower():
+            values.add(0)
         result["n_shot"] = sorted(values) if values else None
     temps = TEMP_PAT.findall(text)
     if temps:

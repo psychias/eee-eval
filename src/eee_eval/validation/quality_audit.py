@@ -15,7 +15,7 @@ import json
 import sys
 from abc import ABC, abstractmethod
 from collections import Counter, defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -499,7 +499,7 @@ class Reporter:
         print(f"\nTotal files:              {total}")
         print(f"Parse errors:             {parse_errors}")
         print(f"Total evaluation records: {total_evals}")
-        print(f"\nPer-source:")
+        print("\nPer-source:")
         for src in sorted(source_counts):
             print(f"  {src:30s} {source_counts[src]:5d} files  {source_evals[src]:5d} eval records")
 

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Unified CLI for converting evaluation framework logs into the EEE schema.
 
 Wraps the adapters in eval_converters/ (lm-evaluation-harness, Inspect AI,
@@ -25,7 +25,7 @@ from typing import Any
 _ROOT = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
-from eee_eval.converters.common.adapter import BaseEvaluationAdapter, SupportedLibrary
+from eee_eval.converters.common.adapter import BaseEvaluationAdapter
 from eee_eval.converters.lm_eval.adapter import LMEvalAdapter
 try:
     from eee_eval.converters.inspect.adapter import InspectAIAdapter

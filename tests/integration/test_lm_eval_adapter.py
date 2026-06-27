@@ -1,4 +1,4 @@
-﻿import tempfile
+import tempfile
 from pathlib import Path
 
 from eee_eval.converters.lm_eval.adapter import LMEvalAdapter

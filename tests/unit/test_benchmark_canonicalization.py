@@ -6,8 +6,6 @@ This catches both over-collapse (two different benchmarks → one name) and
 under-collapse (one benchmark → two different names).
 """
 import pytest
-import json
-import os
 from pathlib import Path
 
 # ---------------------------------------------------------------------------

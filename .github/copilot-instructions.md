@@ -55,9 +55,11 @@ Read the metadata documentation rates printed at the end.
 
 ### Stage 4 — Generate figures
 ```powershell
-python src/figures/generate_all_figures.py
+python LLM_Evaluation_Report/figures/scripts/coverage_bars.py   # Figure 6 (§4.3)
+python LLM_Evaluation_Report/figures/scripts/unified.py         # Figure 5 (§5)
+python LLM_Evaluation_Report/figures/scripts/case1.py           # Figure 4 (§5.1)
 ```
-Produces 5 figures in `data/figures/`.
+Produces the paper figures in `LLM_Evaluation_Report/figures/`.
 
 ---
 

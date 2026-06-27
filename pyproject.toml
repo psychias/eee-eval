@@ -9,6 +9,7 @@ dependencies = [
     # Core extraction
     "requests>=2.31,<3",
     "beautifulsoup4>=4.12,<5",
+    "PyYAML>=6.0",          # HF model-card YAML + AlpacaEval scraper
     "tenacity>=8.2,<10",
     "pydantic>=2.5,<3",
     # Analysis & figures
@@ -24,6 +25,17 @@ dependencies = [
     "huggingface_hub>=0.20",
     # LLM extraction
     "openai>=1.0",
+]
+
+[project.optional-dependencies]
+# Dev tooling for `make test` / `make lint` / `make format`.
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+# Optional CRFM HELM log converter (eee_eval.converters.helm) only —
+# not needed for the core extraction/analysis or to reproduce the paper.
+helm = [
     "dacite>=1.8",
 ]
 
@@ -36,3 +48,10 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff.lint]
+# E402 (module-import-not-at-top): intentional in entry-point scripts that must
+# configure sys.path / load .env before importing the package.
+# F821 here is a forward-reference string annotation ("pd.DataFrame") with a lazy
+# pandas import — not a runtime error.
+ignore = ["E402", "F821"]

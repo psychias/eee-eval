@@ -1,4 +1,4 @@
-﻿"""
+"""
 WildBench leaderboard scraper.
 
 fetches WB-Score results from the WildBench-v2.0 leaderboard
@@ -38,8 +38,6 @@ from eee_eval.eval_types import (
     EvaluationLog,
     EvaluationResult,
     EvaluatorRelationship,
-    GenerationConfig,
-    GenerationArgs,
     JudgeConfig,
     LlmScoring,
     MetricConfig,
@@ -62,7 +60,8 @@ _TIMEOUT = 30  # seconds
 
 # Publication date of the WildBench v2.0 paper
 _FALLBACK_DATE = "2024-06-06"
-import calendar as _cal, datetime as _dt
+import calendar as _cal
+import datetime as _dt
 _FALLBACK_TS = str(_cal.timegm(_dt.date(2024, 6, 6).timetuple()))
 del _cal, _dt
 

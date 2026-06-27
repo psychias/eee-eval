@@ -6,17 +6,15 @@ Tests:
   - fix_data_quality.py: ParameterLeakFix, BenchmarkCanonFix
 """
 import json
-import tempfile
 from pathlib import Path
 
 import pytest
 
 from eee_eval.validation.schema import SchemaValidator, AutoFixer, FileValidator
 from eee_eval.validation.quality_audit import (
-    Record, Issue, RecordLoader,
-    SchemaCheck, ShotsCheck, HarnessCheck, ScoreCheck,
+    Record, ShotsCheck, ScoreCheck,
     DuplicateCheck, RequiredFieldsCheck, BenchmarkNamingCheck,
-    ModelIdentityCheck, MetadataCoverageCheck, AuditRunner,
+    ModelIdentityCheck, AuditRunner,
 )
 from eee_eval.validation.fix_data_quality import (
     ParameterLeakFix, BenchmarkCanonFix, FixStats,

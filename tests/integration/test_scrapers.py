@@ -1,4 +1,4 @@
-﻿"""Unit tests for leaderboard scrapers.
+"""Unit tests for leaderboard scrapers.
 
 All HTTP calls are mocked — no network access is required.  Each test
 validates that:
