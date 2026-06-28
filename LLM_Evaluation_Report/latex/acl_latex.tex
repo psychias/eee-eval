@@ -441,6 +441,8 @@ what platforms expose machine-readably, while ArXiv serves the case studies
 \begin{table}[t]
 \centering
 \small
+\setlength{\tabcolsep}{4pt}%
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lrrr}
 \toprule
 Source & Records & Models & Benchmarks \\
@@ -463,7 +465,8 @@ Papers With Code & 576 & 383 & 16 \\
 \midrule
 \textbf{Total (12 sources)} & \textbf{46{,}559} & \textbf{7{,}398} & \textbf{1{,}954} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{Per-source record, model, and benchmark counts. The leaderboard
 subtotal defines the 10-source subset used for metadata coverage analysis;
 the ArXiv extraction source provides the cross-source comparison point for
