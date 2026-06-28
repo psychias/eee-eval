@@ -109,24 +109,22 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-Leaderboard scores for the same model on the same benchmark routinely disagree
-by tens of points, yet the public record rarely says why. We assemble 46{,}559
-evaluation records from 12 public sources (7{,}398 models on 1{,}954
-benchmarks) into a single schema and audit what configuration information
-survives the path from an evaluation run to a comparison table. In the
+Leaderboard scores for the same model on the same benchmark routinely disagree by
+tens of points, yet the public record rarely says why. We assemble 46{,}559
+evaluation records from 12 public sources (7{,}398 models, 1{,}954 benchmarks) into
+one schema and audit what configuration information survives. In the
 28{,}755-record, 10-source leaderboard subset, the fields that would explain
-score divergence are absent: prompt template and temperature have zero valid
-coverage, and none of the leaderboard APIs we examined expose the evaluation
-harness. Three case studies trace how this missing metadata makes specific
-cross-source gaps uninterpretable, isolating three distinct mechanisms: a
-benchmark specification implemented differently by different harnesses (scoring
-mode, answer parsing); multiple legitimate measurements coexisting under one
-benchmark name (n-shot, language scope, judge model); and apparent independent
-agreement that is in fact one pipeline reported twice. A controlled factorial
-experiment quantifies the underlying effects: prompt format alone drives 27\%
-of GSM8K score variance, while temperature drives under 1\%. We propose EvalSpec
-v0.1, a machine-readable reporting specification whose required fields are
-grounded in the audit, and release the dataset, schema, and pipeline.
+divergence are absent: prompt template and temperature have zero valid coverage,
+and no leaderboard API we examined exposes the harness. Three case studies trace
+how this missing metadata makes cross-source gaps uninterpretable, isolating three
+mechanisms: a benchmark implemented differently by different harnesses (scoring
+mode, parsing); multiple legitimate measurements under one name (n-shot, language
+scope, judge); and apparent independent agreement that is one pipeline reported
+twice. A controlled factorial experiment quantifies the effects: prompt format
+alone drives 27\% of GSM8K variance, temperature under 1\%. We adapt the open EEE
+schema into EvalSpec, requiring the fields whose absence breaks comparison, and
+release it with the dataset so future evaluations report extractable, comparable
+configurations.
 \end{abstract}
 
 \section{Introduction}
@@ -168,7 +166,7 @@ grounded in the audit, and release the dataset, schema, and pipeline.
 %   \item Three case studies of cross-source score divergence, each
 %   diagnosed in terms of the missing information that would have made
 %   the gap interpretable.
-%   \item EvalSpec v0.1, a proposed machine-readable reporting
+%   \item EvalSpec, a proposed machine-readable reporting
 %   specification whose required fields are grounded in the audit.
 %   \item Public release of the dataset, ingestion pipeline, schema, and
 %   analysis code under CC-BY-4.0.
@@ -183,63 +181,49 @@ grounded in the audit, and release the dataset, schema, and pipeline.
 % and presents EvalSpec; Section~\ref{sec:conclusions} concludes.
 %% END DRAFT ----------------------------------------------------------
 
-Open LLM Leaderboard v2 (OLv2) reports Gemma-7B's score on Big-Bench
-Hard (BBH) as 21.12. A collection of ArXiv papers, the Jamba, RecurrentGemma,
-and MAmmoTH2 papers, among others reports BBH scores for the same model
-between 55 and 60. The gap exceeds 35 percentage points. Neither side is
-fabricating a result: each reports the score that its pipeline produced.
-What is missing is the procedure. OLv2 runs BBH with lighteval using
-log-likelihood scoring over answer choices, whereas the papers follow the original
-BBH protocol of 3-shot chain-of-thought generation. Those are not the same measurement, and a benchmark name is not sufficient
-to make them so. The same pattern recurs for the closely related Gemma-2-9B,
-whose BBH score we trace in detail in \S\ref{sec:sealion}: there, the metadata
-that would distinguish the two protocols has been stripped from every record
-before the scores meet on a comparison table.
+Open LLM Leaderboard v2 (OLv2) reports Gemma-7B's Big-Bench Hard (BBH) score as
+21.12; the Jamba, RecurrentGemma, and MAmmoTH2 papers, among others, report BBH
+between 55 and 60 for the same model, a gap over 35 points. Neither side
+fabricates: each reports the score its pipeline produced. What is missing is the
+procedure: OLv2 runs BBH with lighteval log-likelihood scoring, whereas the papers
+use the original 3-shot chain-of-thought protocol. These are not the same
+measurement, and a benchmark name does not make them so. The same pattern recurs
+for Gemma-2-9B (\S\ref{sec:sealion}), where the metadata that would distinguish
+the two protocols is stripped from every record before the scores meet.
 
-This example is the rule, not the exception. Evaluation results travel
-through a chain of hands before a reader encounters them: a model author runs
-an internal sweep, a leaderboard re-evaluates the checkpoint, an aggregator
-scrapes the leaderboard, and a downstream paper cites the aggregator. At
-each stage, information about how the score was produced is lost, dropped,
-or quietly reinterpreted. By the time two scores meet on a comparison table,
-the procedures behind them may share nothing more than a benchmark name.
-For that reason we assemble a dataset of 46{,}559 evaluation records from
-12 sources covering 7{,}398 models and 1{,}954 benchmarks, and for a
-10-source leaderboard subset of 28{,}755 records ask what configuration
-information survives. The fields that most determine how a score is
-produced---the evaluation harness, the scoring mode, the prompt template, and
-the n-shot count---are the ones the leaderboard subset records least: prompt
-template has zero valid coverage, and none of the leaderboard APIs we examined
-expose the evaluation harness (where harness identity appears it is attached by
-our pipeline from platform documentation, not returned by the source).
-Temperature is also absent (zero coverage), but a controlled factorial
-experiment (\S\ref{sec:cases}) shows that temperature drives under 1\% of score
-variance, so its absence costs comparability far less than its zero coverage
-might suggest. It is the high-impact fields above whose absence does the
-damage. We then work through cases where the
-same model received sharply different scores on the same benchmark and
-diagnose the mechanism that produced each gap.
+This example is the rule, not the exception: evaluation results pass through a
+chain of hands, a model author runs an internal sweep, a leaderboard
+re-evaluates the checkpoint, an aggregator scrapes the leaderboard, a downstream
+paper cites the aggregator, and at each stage information about how the score was
+produced is lost or quietly reinterpreted, until two scores meeting on a
+comparison table share nothing but a benchmark name. We therefore assemble
+46{,}559 records from 12 sources (7{,}398 models, 1{,}954 benchmarks) and, for the
+10-source 28{,}755-record leaderboard subset, ask what configuration survives. The
+fields that most determine how a score is produced (harness, scoring mode, prompt
+template, n-shot) are the ones the subset records least: prompt template has zero
+coverage, and none of the leaderboard APIs we examined expose the harness.
+Temperature is also absent, but a factorial experiment (\S\ref{sec:cases}) shows
+it drives under 1\% of variance, so its zero coverage costs comparability little;
+the high-impact fields above do the damage. We then diagnose cases where the same
+model received sharply different scores on the same benchmark.
 
-The case studies are the contribution; our extraction pipeline is the
-instrument that found them. Each identifies a specific class of mechanism
-through which benchmark scores become incomparable across sources without
-either source committing an error: implementation choices left
-underspecified by the benchmark, multiple legitimate measurements coexisting
-under one name, and apparent ``independent'' evidence that shares a single
-pipeline origin. This is an audit-grounded position paper: the dataset is the
-instrument, the three mechanisms are the evidence, and EvalSpec is the remedy
-the evidence motivates.
+The case studies are the contribution; the extraction pipeline is the instrument
+that found them. Each isolates a mechanism by which scores become incomparable
+without either source erring: implementation choices the benchmark leaves
+underspecified, multiple legitimate measurements under one name, and apparent
+independent evidence sharing a single pipeline. This is an audit-grounded position
+paper, dataset as instrument, mechanisms as evidence, EvalSpec as remedy.
 
 \textbf{Contributions.}
 \begin{itemize}
     \item A cross-source audit of metadata coverage in the public evaluation ecosystem.
     \item Three case studies of cross-source score divergence, diagnosed end-to-end.
-    \item EvalSpec v0.1, a proposed reporting specification grounded in the audit.
-    \item Public release of the full dataset (46{,}559 records) and the
-      EvalSpec v0.1 vocabulary under CC-BY-4.0, contributed back to the EvalEval shared task
-      \citep{evaleval2026everyevalever} as a worked example of the EEE schema
-      in cross-source use; the dataset and EvalSpec are designed to be
-      extended by the community.
+    \item EvalSpec, an adaptation of the EEE schema requiring the fields whose
+      absence the audit shows to break comparison.
+    \item Public release of the dataset (46{,}559 records) and the EvalSpec schema
+      under CC-BY-4.0, built on the EvalEval EEE schema
+      \citep{evaleval2026everyevalever} so future evaluation papers report
+      extractable scores and the community can adopt and extend it.
 \end{itemize}
 
 \section{Related Work}
@@ -274,42 +258,36 @@ the evidence motivates.
 %% END DRAFT ----------------------------------------------------------
 
 
-Several recent studies have shown that benchmark scores are sensitive to
-implementation choices that the public record rarely exposes.
-\citet{alzahrani2024} report score gaps of up to fifteen percentage points on
-MMLU attributable to harness choice alone, holding the model and benchmark
-fixed. \citet{biderman2024} extend this idea to prompt format, tokenisation,
-and generation configuration, and recommend that these choices be reported as
-part of any evaluation result. A complementary line of work examines the
-platforms that host evaluations: \citet{singh2025} audit Chatbot Arena and
-document score instability for the same checkpoint under different aliases,
-along with access asymmetries between providers. Data contamination
-\citep{sainz2023} is a parallel reproducibility threat whose detection likewise depends on richer per-run records.
+Several studies show benchmark scores are sensitive to implementation choices the
+public record rarely exposes: \citet{alzahrani2024} report MMLU gaps up to fifteen
+points from harness choice alone; \citet{biderman2024} extend this to prompt
+format, tokenisation, and generation configuration; \citet{singh2025} document
+score instability on Chatbot Arena under different aliases; and data contamination
+\citep{sainz2023} is a parallel threat whose detection also needs richer per-run
+records. These establish \emph{that} scores vary with protocol; we trace the
+concrete mechanisms by which that variation enters the cross-source record, and
+which specific absences produce which gaps.
 
-These studies establish that scores vary with protocol choices. This paper
-traces the concrete mechanisms through which that variation enters the public
-record: not which harness choice matters in the abstract, but which specific
-decisions produce which specific gaps in our cross-source dataset. The missing
-fields are not exotic: they are quantities known at evaluation time that are
-simply not exposed downstream.
-
-A separate body of work proposes structured documentation for evaluation
-artefacts. Model Cards \citep{mitchell2019} and Datasheets for Datasets
-\citep{gebru2021} established the norm of structured descriptions for models
-and data. Three concurrent 2025 proposals extend this to evaluation pipelines:
-BenchmarkCards \citep{sokol2025}, EvalCards \citep{dhar2025}, and Eval
-Factsheets \citep{bordes2025}. Each proposes fields that overlap substantially
-with those identified as absent in our audit. The key difference is that these
-frameworks are prescriptive: they specify what should be recorded. Our work is
-empirical first: we establish what the public ecosystem currently records,
-identify which absences produce uninterpretable divergences, and use that
-evidence to ground the field selection in EvalSpec~v0.1 (Section~\ref{sec:evalspec}).
-EvalSpec differs from these proposals on the two axes that determine whether a
-specification changes practice: it is \emph{machine-validated}---records are
-checked against the spec by SHACL shape constraints rather than read against
-prose guidelines---and its required fields are \emph{audit-grounded}, selected
-because their absence is shown to break specific cross-source comparisons
-(\S\ref{sec:cases}) rather than by a~priori judgement.
+A separate line proposes structured documentation. Model Cards \citep{mitchell2019}
+and Datasheets \citep{gebru2021} set the norm for models and data; three concurrent
+2025 proposals, BenchmarkCards \citep{sokol2025}, EvalCards \citep{dhar2025}, and
+Eval Factsheets \citep{bordes2025}, extend it to evaluation. These are
+prescriptive and narrative; EvalSpec (\S\ref{sec:evalspec}) differs on the two axes
+that decide whether a specification changes practice: it is \emph{machine-validated}
+(records checked by SHACL shape constraints, not prose) and \emph{audit-grounded}
+(fields chosen because their absence demonstrably breaks comparisons,
+\S\ref{sec:cases}). Holistic harnesses like HELM \citep{liang2023helm} record rich
+metadata, but only for their own runs; EvalSpec instead targets cross-source
+interchange. General reproducibility checklists
+\citep{pineau2021reproducibility} are hand-filled prose; EvalSpec makes conformance
+a property of the record, e.g.\ a SHACL shape requiring \texttt{judge\_model}
+whenever \texttt{scoring\_mode} is \texttt{preference} mechanically rejects an
+LLM-judge score that omits the judge (\S\ref{sec:truthfulqa},
+Appendix~\ref{app:exp-judge}). EvalSpec is designed to sit on existing
+reproducibility infrastructure rather than replace it: it adopts EEE as its
+cross-source interchange substrate and Croissant-style dataset/task versioning
+(commit hashes, checksums) for benchmark snapshots, aligning evaluation records
+with emerging dataset-metadata standards rather than introducing a parallel one.
 
 
 \subsection{The EEE Schema}
@@ -335,31 +313,24 @@ because their absence is shown to break specific cross-source comparisons
 % rather than silently inferred away.
 %% END DRAFT ----------------------------------------------------------
 
-Our analysis builds on the Every Eval Ever (EEE) schema, introduced by the
-EvalEval Coalition \citep{evaleval2026everyevalever}, which articulates the
+This paper is built on, and extends, the open Every Eval Ever (EEE) schema
+released by the EvalEval Coalition
+\citep{evaleval2026everyevalever}, which articulates the
 cross-framework score-comparability problem this paper investigates (citing the
 gap between HELM~\citep{liang2023helm} and EleutherAI's
 lm-evaluation-harness~\citep{gao2024lmevalharness} on LLaMA~65B MMLU, 0.637
 vs.\ 0.488); our case studies trace the specific mechanisms behind such gaps in
 the public record.
-EEE is a unified JSON format for storing evaluation records from heterogeneous
-sources. Each record captures one model's result on one benchmark from one
-source, organised around four main objects. \texttt{model\_info} records the
-model name and unique identifier, with an optional \texttt{developer} field.
-\texttt{eval\_library} records the harness name and version.
-\texttt{source\_metadata} records the source organisation, source type
-(\texttt{documentation} or \texttt{evaluation\_run}), and the evaluator's
-relationship to the model (\texttt{first\_party}, \texttt{third\_party},
-\texttt{collaborative}, or \texttt{other}).
-\texttt{evaluation\_results} is an array of result objects, each containing a
-\texttt{metric\_config} block (metric name and scoring details) and a
-\texttt{score\_details} block (score value and uncertainty); a
-\texttt{generation\_config} block (generation arguments such as temperature and
-prompt template) is optional.
-A unified schema is the right abstraction for cross-source comparison because
-the alternative requires implicit alignment that is never written down and never verified. The schema makes alignment explicit and transforms missing information from an invisible gap into a recordable absence: a field that no source populates appears as empty in every record, rather than being silently inferred.
-It is precisely the fields that are visibly empty across all records that
-motivate this paper. The dataset is released under CC-BY-4.0.
+EEE is a unified JSON format storing one model's result on one benchmark from one
+source, with four objects: \texttt{model\_info} (model name, id, developer),
+\texttt{eval\_library} (harness name and version), \texttt{source\_metadata}
+(source, type, evaluator relationship), and \texttt{evaluation\_results} (metric
+and score, with an optional \texttt{generation\_config} for temperature and prompt
+template). A unified schema turns missing information from an invisible gap into a
+recordable absence, a field no source populates is empty in every record rather
+than silently inferred, and those visibly-empty fields motivate this paper. We
+adapt EvalSpec (\S\ref{sec:evalspec}) from EEE and release the dataset and schema
+under CC-BY-4.0 for the community to extend.
 
 \section{Materials}
 \label{sec:materials}
@@ -415,23 +386,16 @@ motivate this paper. The dataset is released under CC-BY-4.0.
 % the audit's value depends on reporting what the public ecosystem
 % actually contains, not what it would contain after curation.
 %% END DRAFT ----------------------------------------------------------
-The dataset is assembled from three structurally different classes of
-source. Leaderboards are taken as authoritative: each leaderboard fetcher
-downloads its data at runtime and emits a schema-conformant record per
-model$\times$benchmark cell, with the n-shot count and chain-of-thought
-flag attached from the leaderboard's fixed protocol. OLv2 dominates and
-exposes only model identifiers, scores, and a submission date; its
-\texttt{eval\_library.name} is left as \texttt{unknown}, and no field for
-evaluation harness, prompt template, scoring mode, or temperature is
-returned by the API. HuggingFace Model Cards are parsed for the YAML
-\texttt{model-index} block, capturing first-party results that model authors
-chose to document. The third source is ArXiv paper extraction: for 100
-papers, the HTML rendering is fetched and an LLM (Claude Haiku via
-OpenRouter) reads paper prose into the EEE schema, returning per-benchmark
-metadata that may include n-shot count, temperature, prompt template,
-chain-of-thought flag, and harness name when explicitly stated. The LLM may
-hallucinate or misattribute values, so we treat these metadata fields as
-unverified at scale.
+The dataset is assembled from three source classes. Leaderboards are taken as
+authoritative: each fetcher downloads at runtime and emits a schema-conformant
+record per model$\times$benchmark cell, with n-shot and chain-of-thought from the
+fixed protocol; OLv2 exposes only model ids, scores, and a submission date, no
+harness, prompt template, scoring mode, or temperature. HuggingFace Model Cards
+are parsed from the YAML \texttt{model-index}. The third source is ArXiv
+extraction: an LLM (Claude Haiku via OpenRouter) reads paper prose into the EEE
+schema for 100 papers, returning per-benchmark metadata (n-shot, temperature,
+prompt template, chain-of-thought, harness) when explicitly stated; it may
+hallucinate, so we treat these fields as unverified at scale.
 
 
 \subsection{What We Gathered}
@@ -462,39 +426,17 @@ unverified at scale.
 %% END DRAFT ----------------------------------------------------------
 
 
-The full dataset contains 46{,}559 evaluation records covering
-7{,}398 unique models and 1{,}954 unique benchmarks across 12 sources.
-Table~\ref{tab:sources} reports per-source counts.
-
-The 10 leaderboard sources contribute 28{,}755 records across 5{,}301 models
-and 174 benchmarks. Open LLM Leaderboard v2 (OLv2) dominates, contributing
-26{,}790 records (93.2\%) across 4{,}465 models on 6 benchmarks.
-HuggingFace Model Cards present the opposite shape: 207 records from only
-11 unique models but spanning 156 distinct benchmarks, a handful of model
-authors documenting many benchmarks each. Chatbot Arena, SWE-Bench, and
-MT-Bench each report one record per model, reflecting their pairwise or
-task-specific evaluation structure. The remaining leaderboard sources
-(AlpacaEval 2, BFCL, BigCodeBench, EvalPlus, WildBench) contribute
-benchmark-specific coverage within their respective domains.
-
-The ArXiv extraction source contributes a further 17{,}228 records from
-100 papers (counting only the canonical per-benchmark LLM extraction; audit
-re-extractions are not double-counted). Because each paper typically reports a
-large baseline table---many comparison models across many benchmarks in addition
-to the model it introduces---these 100 papers yield 1{,}726 distinct models and
-1{,}806 distinct benchmarks (Table~\ref{tab:sources}). Papers With Code contributes a further
-576 records but is excluded from all statistical analyses due to systematic
-scraping artefacts (parameter counts parsed as scores). The ArXiv source is
-excluded from the headline leaderboard-subset
-metadata coverage analysis (Figure~\ref{fig:coverage}) because its metadata
-fields were LLM-populated rather than read from a structured API; coverage
-figures would otherwise be inflated by unverified values. The 10-source
-leaderboard subset measures what platforms expose in machine-readable form,
-which is the relevant measure of documentation practice. The ArXiv source
-instead serves the case studies in Section~\ref{sec:cases}, where it
-provides the cross-source comparison point: a score reported by a
-leaderboard is compared against the same model$\times$benchmark cell as
-reported in the original paper.
+The full dataset has 46{,}559 records over 7{,}398 models and 1{,}954 benchmarks
+across 12 sources (Table~\ref{tab:sources}). The 10 leaderboard sources contribute
+28{,}755 records, dominated by OLv2 (26{,}790; 93.2\%); the rest are small and
+domain-specific (HuggingFace Model Cards invert the shape, 207 records, 11
+models, 156 benchmarks). ArXiv extraction adds 17{,}228 records from 100 papers
+(1{,}726 models, 1{,}806 benchmarks, via large baseline tables). Papers With Code
+(576) is excluded from all analyses (parameter counts parsed as scores). We
+exclude ArXiv from the headline coverage analysis (Figure~\ref{fig:coverage})
+because its metadata is LLM-populated, not API-read; the 10-source subset measures
+what platforms expose machine-readably, while ArXiv serves the case studies
+(\S\ref{sec:cases}) as the cross-source comparison point.
 
 \begin{table}[t]
 \centering
@@ -537,90 +479,49 @@ in multiple sources.}
 \label{sec:score-ann}
 
 \paragraph{Score extraction precision and recall.}
-We audited score extraction against the source papers across 10 ArXiv papers
-(Gemma~2, Instella, Kimi-Audio, Llama-Embed-Nemotron-8B, Mistral~7B, Phi-3,
-Phi-4-reasoning-vision, Sailor, SOLAR~10.7B, and TinyLlama), covering 2{,}027
-extracted (model, benchmark, score) entries, and report two complementary
-metrics. \emph{Precision}, the fraction of extracted scores that match the
-paper, is \textbf{97.5\%} (1{,}977/2{,}027). The 50 residual
-errors concentrate in five systematic artefacts: base/chat model-variant
-duplication, where values reported under a model's instruction-tuned name are
-copied onto its base name (Kimi-Audio, 33); a spurious leading ``0'' read from a
-``0~X.XX'' HumanEval column (TinyLlama, 8); a model-size mislabel of Qwen1.5-32B
-as ``34B'' (Gemma~2, 5); duplicate Chatbot-Arena Elo attribution onto base or
-non-verbatim model names (Gemma~2, 3); and a single wrong pass@k variant
-(Instella, 1).
-\emph{Recall}, the fraction of reported scores the pipeline captured (assessed
-by reading each paper's result tables), is approximately
-\textbf{81\%} and far more variable (52--100\% per paper): the extraction
-reliably captures a paper's headline model$\times$benchmark tables but skips
-secondary ones (per-category breakdowns, safety/responsibility suites,
-architecture ablations, long-context sub-scores) and, in table-heavy papers,
-sometimes omits whole comparison models, an effect that worsens with
-paper length and table count. Per-paper counts are in
-Table~\ref{tab:score-ann-app} (Appendix~\ref{app:audit}). Together these show
-that when the pipeline places a value in the score field it usually matches the
-paper (high precision), but that it does not exhaustively transcribe every
-reported score (moderate recall); neither check verifies the surrounding
-metadata (harness, n-shot, metric variant), a harder problem.
-
-\paragraph{Structural presence check.}
-Across the 17{,}228 LLM-extracted ArXiv records,
-16{,}374 (95.0\%) carry a non-null score value. This is a JSON-level
-structural check, which confirms that the extraction pipeline placed a value
-in the score field and is not a verification that the value is semantically
-correct. 
+We audited 2{,}027 extracted (model, benchmark, score) entries against the source
+papers across 10 ArXiv papers (listed in Table~\ref{tab:score-ann-app},
+Appendix~\ref{app:audit}). \emph{Precision}, extracted scores that match the
+paper, is \textbf{97.5\%} (1{,}977/2{,}027); the 50 errors are systematic
+artefacts (base/chat variant duplication, 33; a spurious HumanEval leading ``0'',
+8; a Qwen1.5-32B-as-34B mislabel, 5; duplicate Elo attribution, 3; one wrong
+pass@k, 1). \emph{Recall}, reported scores the pipeline captured, is
+approximately \textbf{81\%} but variable (52--100\% per paper): it captures
+headline tables but skips secondary ones and, in table-heavy papers, whole
+comparison models. Neither check verifies the surrounding metadata. Separately,
+16{,}374/17{,}228 (95.0\%) LLM-extracted ArXiv records carry a non-null
+score, a structural presence check, not a correctness one.
 
 \subsection{Human Annotation of Automatic Harness Identification}
 \label{sec:harness-ann}
-We assembled two balanced samples from the ArXiv extraction source: five
-papers that name an evaluation harness (\emph{with-harness}: BLOOM, Llemma,
-Sheared LLaMA, Aya 23, Nemotron-4 15B) and five that do not (\emph{without-harness}:
-Code Llama, Mamba, Reka, Jamba, and a Llama-2-related survey paper),
-covering 817 with-harness and 869 without-harness harness-call rows. For each paper, the
-ArXiv HTML was retrieved and the pipeline's per-row harness assignment was
-verified against the source text under a strict rubric: the pipeline's
-\texttt{eval\_library.name} value for a row is \textsc{true} only if it
-correctly names the tool the paper says was used to produce that specific
-score (with canonical equivalents like ``eval-harness'' and ``Language
-Model Evaluation Harness'' accepted as the same library, but a paper's
-distinctly-named fork required as a verbatim match). Methodology is in
-Appendix~\ref{app:harness}.
+We assembled two balanced samples from the ArXiv source: five papers that name a
+harness (\emph{with-harness}: BLOOM, Llemma, Sheared LLaMA, Aya 23, Nemotron-4
+15B) and five that do not (\emph{without-harness}: Code Llama, Mamba, Reka, Jamba,
+a Llama-2 survey), covering 817 and 869 harness-call rows. Each row's
+\texttt{eval\_library.name} was verified against the source text under a strict
+rubric (canonical equivalents accepted, a paper's distinctly-named fork required
+verbatim; Appendix~\ref{app:harness}).
 
-On the with-harness sample, per-row harness-ID precision was 712/817 = 87.1\%.
-Three of five papers were at 100\% precision (BLOOM 436/436, with the
-\emph{Prompted Language Model Evaluation Harness} fork name correctly
-extracted; Sheared LLaMA 138/138; Aya 23 58/58).
-Two papers exposed a real pipeline failure mode: when a paper attributes
-a named harness to a broad group via a phrase like ``across all
-aforementioned tasks'' (Nemotron-4 15B) or ``for open access
-models'' (Llemma), the LLM under-extracts and applies the
-attribution to only the benchmarks explicitly listed in the same
-sentence, missing the broader group. Nemotron-4 15B precision was 6/96 = 6.2\%
-(only the commonsense-reasoning rows tagged, the remaining
-math/code/multilingual rows in the same \emph{aforementioned} group left
-as \texttt{unknown}); Llemma was 74/89 = 83.1\%.
-
-On the without-harness sample, abstention quality was 869/869 = 100\%.
-The pipeline returned \texttt{unknown} for every harness call across all five
-papers, and exhaustive text search confirmed that none of the five names a
-public harness for its own evaluations: one (a survey that reports only
-other models' published numbers) runs no evaluations of its own, while the
-remaining four (Code Llama, Mamba, Jamba, Reka) describe their evaluation
-setups without naming the tool used.
+Per-row precision on the with-harness sample is 712/817 = 87.1\%: three papers
+reach 100\% (BLOOM 436/436, with the \emph{Prompted Language Model Evaluation
+Harness} fork correctly extracted, plus Sheared LLaMA and Aya 23), while two
+expose a failure mode, when a harness is attributed to a broad group (``across
+all aforementioned tasks'', Nemotron-4 15B, 6/96; ``for open access models'',
+Llemma, 74/89), the LLM tags only the benchmarks named in the same sentence.
+Abstention on the without-harness sample is 869/869 = 100\%: \texttt{unknown} for
+every row, and text search confirms none names a public harness for its own
+evaluations.
 
 
 \subsection{Results and Discrepancies}
 \label{sec:discrepancies}
 
 \paragraph{Metadata coverage.}
-Figure~\ref{fig:coverage} reports coverage for five configuration fields
-across both the full 46{,}559-record dataset and the 10-source
-28{,}755-record leaderboard subset. Coverage counts a field as populated
-whenever the EEE record carries a non-``unknown'' value, irrespective of
-whether that value was returned by the source API, attached by the
-pipeline from platform documentation, or extracted from paper prose by
-the LLM extractor.
+Figure~\ref{fig:coverage} reports coverage for five configuration fields over the
+full 46{,}559-record dataset and the 10-source 28{,}755-record leaderboard subset,
+counting a field as populated whenever the record carries a non-``unknown''
+value, from the source API, pipeline-attached from documentation, or
+LLM-extracted.
 
 \begin{figure}[t]
 \centering
@@ -638,409 +539,190 @@ the LLM extractor.
 \end{figure}
 
 
-The headline pattern is that the fields most responsible for score
-divergence are either absent from the leaderboard subset
-(\texttt{prompt\_template} and \texttt{temperature} at 0\%) or, in the
-case of harness identity, populated only because the pipeline attaches
-\texttt{lm\_eval} to every Open-LLM-Leaderboard~v2 record from platform
-documentation (\S\ref{sec:pipeline}). No leaderboard source we examined
-returns the harness identity via its API; the 93\% leaderboard-subset
-harness coverage in Figure~\ref{fig:coverage} is the pipeline's auto-attachment, not source-recorded
-data. As Section~\ref{sec:bbh} documents, OLv2 actually runs
-\emph{lighteval}, and the discrepancy between the pipeline-attached
-\texttt{lm\_eval} label and the actual \emph{lighteval} runtime is itself
-an instance of the same problem: the API exposes nothing, so any
-attribution downstream is inferred.
+The headline is that the fields most responsible for divergence are either absent
+from the subset (\texttt{prompt\_template} and \texttt{temperature} at 0\%) or
+present only because the pipeline attaches \texttt{lm\_eval} to every OLv2 record
+from documentation (\S\ref{sec:pipeline}): no leaderboard we examined returns
+harness identity via its API, so the 93\% subset harness coverage is
+auto-attachment, not source data. As \S\ref{sec:bbh} shows, OLv2 actually runs
+\emph{lighteval}, so even the pipeline-attached \texttt{lm\_eval} label is itself
+inferred.
 
-\paragraph{The subset is one platform plus a sparse tail.}
-These coverage figures should be read with a dominant-source caveat: OLv2 supplies
-26{,}790 of the 28{,}755 leaderboard records (93.2\%) over six benchmarks, so the
-subset numbers are, in large part, a measurement of a single platform's API. The
-remaining nine sources add benchmark diversity but too little model overlap to
-offset OLv2's weight (\S\ref{sec:dataset}). The finding is therefore not the weak
-claim that many leaderboards each happen to drop these fields, but the sharper one
-that the dominant API exposes none of them and the tail is too thin to compensate;
-coverage recomputed with OLv2 ablated would isolate the tail's contribution, and
-we leave that breakdown to the released analysis code.
+\paragraph{One platform plus a sparse tail.}
+OLv2 supplies 26{,}790 of the 28{,}755 leaderboard records (93.2\%), so the subset
+figures largely measure one platform's API. Ablating it sharpens the finding
+rather than weakening it (Table~\ref{tab:coverage-app}, final column): across the
+remaining nine sources (1{,}965 records) n-shot coverage falls to 71.0\% and
+\texttt{harness}, \texttt{prompt\_template}, \texttt{temperature}, and
+\texttt{chain\_of\_thought} are all 0.0\%, the tail exposes nothing beyond the
+protocol-fixed n-shot count, and the subset's apparent harness and CoT coverage is
+OLv2's pipeline-attached values alone.
 
-\paragraph{Why scoring mode is not in the coverage figure.}
-The coverage audit measures five fields that a source either populates or leaves
-blank. \texttt{scoring\_mode} (log-likelihood vs.\ free-form generation), the
-field the case studies show to be most consequential, is not among them because
-no source in our dataset records it as a discrete field: it is implicit in the
-harness configuration and recoverable only by knowing the exact tool and task
-version that produced the score. Its coverage is therefore effectively zero
-everywhere, for the same reason harness identity is---the value is never
-exposed---but, unlike harness identity, it cannot even be pipeline-attached from
-platform documentation, because one platform can run the same benchmark in
-either mode (\S\ref{sec:bbh}). That unmeasurability is itself the argument for
-promoting \texttt{scoring\_mode} to a first-class required field
-(\S\ref{sec:evalspec}).
+\paragraph{Scoring mode is unmeasurable.}
+\texttt{scoring\_mode}, the field the case studies show most consequential, is
+absent from the audit because no source records it discretely; it is implicit in
+the harness configuration. Unlike harness identity it cannot even be
+pipeline-attached, since one platform runs the same benchmark in either mode
+(\S\ref{sec:bbh}). That unmeasurability is itself the argument for making it a
+first-class required field (\S\ref{sec:evalspec}).
 
 \section{Case Studies}
 \label{sec:cases}
 
-The case studies are organised into three groups corresponding to
-three distinct mechanisms through which benchmark scores become incomparable
-across sources; Figure~\ref{fig:casestudies-unified} shows one representative
-divergence per mechanism.
-
-To quantify the relative importance of methodological factors before
-examining specific failure modes, we ran a controlled factorial experiment
-crossing four instruction-tuned models (Qwen2.5-14B, Qwen2.5-7B,
-Llama-3.1-8B, Mistral-7B-v0.3) against three benchmarks (BBH, GSM8K, MMLU)
-under three prompt formats (plain few-shot, instruction-formatted,
-chain-of-thought), two temperature settings (0.0 and 0.7), and two n-shot
-counts per benchmark (0-shot plus 3-shot for BBH, 0-shot plus 5-shot for
-GSM8K and MMLU), with three random seeds per cell; MMLU was restricted to
-temperature 0.0 and a single seed. The resulting dataset comprises 306
-evaluations. Prompt format dominates on GSM8K: at 5-shot, it accounts
-for approximately 27\% of variance (\(F = 13.0\), \(p < 0.001\); 24
-cells per format). MMLU's reduced 9-cell design at 5-shot is
-descriptively consistent (\(\eta^2 \approx 24.5\%\)) but underpowered
-(\(F = 0.98\), \(p = 0.43\)); the per-format means agree with the GSM8K
-pattern but cannot independently confirm it. A separate GPQA run (the same
-four models under the three prompt formats at 5-shot, single seed) shows the
-same direction --- chain-of-thought and instruction formats (both
-\(32.0\)) over plain (\(27.5\)) --- with \(\eta^2 \approx 13.8\%\), again
-underpowered at this scale (\(F = 0.72\), \(p = 0.51\)). Temperature contributes
-under 1\% on GSM8K (\(\eta^2 = 0.25\%\)); MMLU was run at a single
-temperature, so the temperature comparison is not available. The n-shot
-count's contribution is benchmark-dependent: negligible on MMLU
-(\(\eta^2 \approx 1\%\)), but on GSM8K inseparable from the answer parser,
-because 0-shot runs collapse to zero when the models omit the delimiter the
-extractor expects (\S\ref{app:exp-grid}). Full
-per-cell results and per-benchmark ANOVAs are in
-Appendix~\ref{app:experiments}. The grid and the case studies play
-complementary roles: the grid establishes, under controlled conditions, that
-these configuration factors move scores systematically and by how much (format
-$\eta^2 \approx 27\%$ on GSM8K), while the three case studies below show the same
-factors operating in the wild, each isolating one mechanism by which two real,
-separately published scores under a shared benchmark name turn out to measure
-different things. The case studies are thus instances of effects the grid shows
-to be systematic, not isolated anecdotes.
+The case studies fall into three groups, one per mechanism by which scores
+become incomparable across sources; Figure~\ref{fig:casestudies-unified} shows a
+representative divergence for each. A controlled factorial experiment first
+quantifies the factors (four models $\times$ three benchmarks $\times$ three
+prompt formats $\times$ two temperatures $\times$ two n-shot counts; 306
+evaluations; Appendix~\ref{app:exp-grid}). Prompt format dominates: on GSM8K it
+accounts for ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$; 95\%
+bootstrap CI $[14.1\%, 44.8\%]$), with MMLU ($\eta^2 \approx 24.5\%$) and a GPQA
+run ($\eta^2 \approx 13.8\%$) consistent but underpowered ($p = 0.43$, $0.51$).
+Temperature contributes under 1\% ($\eta^2 = 0.25\%$), and the n-shot effect is
+benchmark-dependent: negligible on MMLU but on GSM8K inseparable from the parser,
+since 0-shot runs collapse when models omit the expected delimiter. The grid shows
+these factors move scores systematically and by how much; the case studies below
+show the same factors in the wild, each isolating one mechanism by which two
+separately published scores under a shared name measure different things.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{./figures/case_studies_unified_belebele_S3.pdf}
 \caption{Three mechanisms of score incomparability
-(\S\S\ref{sec:protocol}--\ref{sec:convergence}).
-Each column compares two protocol variants under the same benchmark label
-(blue panel = top configuration, orange = bottom;
-$\Delta =$ bottom $-$ top in percentage points).
-\textbf{Left (\S\ref{sec:gsm8k}):} GSM8K on Qwen2.5-14B-Instruct, 5-shot,
-lm-evaluation-harness 0.4.11~--- plain vs.\ chain-of-thought prompt format.
-CoT elicits prose without the \texttt{\#\#\#\#} delimiter;
-parser records 0. $\Delta = -56.0$ pp.
-\textbf{Centre (\S\ref{sec:belebele}):} Belebele on Mistral-7B.
-Reka paper \citep{team2024reka}: 0-shot, multilingual average (150 languages),
-32.80. Falcon2 report \citep{malartic2024falcon2}: 5-shot, English only, 79.42.
-Falcon2's internal 0-shot English score (32.48) isolates the n-shot effect.
-$\Delta = +46.6$ pp.
-\textbf{Right (\S\ref{sec:sealion}):} BBH on Gemma-2-9B across five sources.
-OLv2 and SEA-LION share a pipeline origin (exact 2-decimal match, 34.10);
-the Gemma 2/Gemma 3 reports run CoT generation independently (68.20--69.40).
-$\Delta = +34.8$ pp (cluster gap).}
+(\S\S\ref{sec:protocol}--\ref{sec:convergence}). Each column compares two protocol
+variants under one benchmark label ($\Delta =$ bottom $-$ top, pp).
+\textbf{Left (\S\ref{sec:gsm8k}):} GSM8K, Qwen2.5-14B, plain vs.\ CoT, CoT omits
+the \texttt{\#\#\#\#} delimiter so the parser records 0 ($\Delta = -56.0$).
+\textbf{Centre (\S\ref{sec:belebele}):} Belebele, Mistral-7B, Reka
+\citep{team2024reka} (0-shot, 150-language average, 32.80) vs.\ Falcon2
+\citep{malartic2024falcon2} (5-shot, English, 79.42); $\Delta = +46.6$.
+\textbf{Right (\S\ref{sec:sealion}):} BBH, Gemma-2-9B, OLv2 and SEA-LION share a
+pipeline origin (exact match, 34.10) while the Gemma reports run CoT independently
+(68.20--69.40); $\Delta = +34.8$.}
 \label{fig:casestudies-unified}
 \end{figure*}
 
-\subsection{Case Study 1: Errors from Undocumented Scoring Mode}
+\subsection{Case Study 1: Undocumented Scoring Mode and Parsing}
 \label{sec:protocol}
 
-The mechanism in this case study: the harness that runs a benchmark makes
-implementation choices that the benchmark specification leaves underspecified,
-and different choices produce measurements that cannot be compared on the same
-scale, even when both are correctly executed.
+Here the harness makes implementation choices the benchmark specification leaves
+open, and different choices produce measurements that cannot be compared on the
+same scale even when both are correctly executed.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{./figures/case1_parser_flow_S3.pdf}
-\caption{Parser-flow diagram for Case Study 1 (\S\ref{sec:gsm8k}).
-The same Qwen2.5-14B-Instruct model output is routed through the same
-\texttt{\#\#\#\#} delimiter regex under two prompt formats.
-Plain few-shot output contains the delimiter; the regex matches and
-\texttt{exact\_match}$=1$. Chain-of-thought output contains step-by-step
-prose without the delimiter; \texttt{filtered\_resps}$=$\texttt{`[invalid]'}
-and \texttt{exact\_match}$=0$.
-Aggregate: 58.5\% (plain) vs.\ 2.5\% (CoT), $\Delta = -56.0$ pp.}
-\label{fig:case1-parser}
-\end{figure}
+\paragraph{BBH: log-likelihood vs.\ chain-of-thought.}\label{sec:bbh}
+BBH \citep{suzgun2023} specifies 3-shot chain-of-thought generation, with the
+answer extracted from free-form reasoning, the protocol ArXiv papers follow.
+OLv2 instead runs BBH under \emph{lighteval} with log-likelihood scoring (the
+model ranks candidate answers by token probability; no text is generated). OLv2's
+API exposes no harness field, so \emph{lighteval} and its scoring mode are known
+only from platform documentation. The effect is visible in the data
+(Table~\ref{tab:bbh-app}, Appendix~\ref{app:casetables}): Gemma-7B scores 21.12
+on OLv2 against 55.10--59.60 in ArXiv papers,\footnote{The 59.60 figure is
+reported under the surface label ``BigBench-Hard''; our normaliser keys on the
+``BBH'' alias, so it is shown for completeness but held out of the automated
+collision counts.} a gap over 35 points; the same holds for Gemma-2-2B (11.76
+vs.\ 40.80) and MAmmoTH2-7B-Plus (18.93 vs.\ 63.10). This is not a generic
+scoring-mode effect: E2 (Appendix~\ref{app:exp-e2}) shows the
+log-likelihood-vs-generation gap on MMLU is at most 0.28\,pp, two orders of
+magnitude smaller, so the BBH gap is specific to lighteval log-likelihood
+meeting BBH's CoT structure.
 
+\paragraph{MATH Lvl 5: a silent answer-parser swap.}\label{sec:math}
+OLv2 scored MATH Level 5 (1{,}324 problems, 5-shot) with a SymPy parser; in
+February 2025 HuggingFace replaced it with Math-Verify and re-evaluated all
+models \citep{kydlicek2025mathverify}. The old parser mishandled
+\textbackslash{}boxed\{\} outputs, sets/matrices/intervals, and
+numerical-equivalence (e.g.\ $1/3$ vs.\ $0.333\ldots$); the swap raised scores
+by $+4.66$\,pp on average over 3{,}751 models ($+8.27$ Algebra, $+6.93$
+Prealgebra, up to ${\approx}90$ points individually). OLv2 records a submission
+date but no evaluation timestamp, so pre- and post-transition scores cannot be
+told apart from the record, a model submitted in 2024 now carries a
+post-transition score.
 
-\subsubsection{BBH: Log-Likelihood Scoring vs.\ Chain-of-Thought Generation}
-\label{sec:bbh}
+\paragraph{GSM8K: prompt format breaks the parser.}\label{sec:gsm8k}
+The same parser sensitivity arises whenever a format-specific extractor meets a
+prompt-shaped output. In the factorial grid, Qwen2.5-14B-Instruct on GSM8K
+(5-shot, lm-evaluation-harness 0.4.11, temperature~0) scores 58.5\% (plain),
+57.0\% (instruct), and 2.5\% (cot) (E1, Appendix~\ref{app:exp-e1};
+Figure~\ref{fig:case1-parser}). The $\approx$56-point CoT collapse is parser
+failure: the harness extracts the answer with the GSM8K delimiter
+(\texttt{\#\#\#\#~\{answer\}}), which CoT prose omits, so the regex records zero
+even though the reasoning is correct. As with Math-Verify, the score reflects
+the parser's format assumptions, not capability: a CoT-prompted GSM8K score and
+a plain-prompted one are incommensurable under one label.
 
-The Big-Bench Hard (BBH) benchmark was introduced by \citet{suzgun2023}
-with a specific evaluation protocol: 3-shot chain-of-thought
-generation, where the model produces free-form reasoning text and the final
-answer is extracted from that text. This protocol is the standard that ArXiv
-papers reporting BBH scores follow, and it is the protocol implied by
-the benchmark's leaderboard in the literature.
-
-OLv2 evaluates BBH differently. It uses \emph{lighteval} with
-log-likelihood scoring: for each question, the model is presented with
-each candidate answer and the answer receiving the highest token log-probability
-is selected. No text generation occurs, and no chain-of-thought reasoning
-is elicited. OLv2's API does not expose the evaluation harness; the
-harness field in our dataset is empty for all OLv2 records. The actual
-harness (\emph{lighteval}) and its scoring mode (log-likelihood over answer
-choices) are confirmed by the platform's published documentation.
-
-The consequences are visible in the data. Per-source BBH scores for Gemma-7B are in Table~\ref{tab:bbh-app} (Appendix~\ref{app:casetables}), which shows
-OLv2's Gemma-7B BBH score of 21.12 against a cluster of ArXiv papers
-reporting 55.10 (Jamba paper, RecurrentGemma paper), 57.40 (MAmmoTH2 paper),
-and 59.60.\footnote{The 59.60 figure is reported under the surface label
-``BigBench-Hard''. Our normaliser keys on the ``BBH'' alias, so this value is
-shown here for completeness but is held out of the automated cross-source
-collision counts to avoid conflating it with a confirmed alias match; including
-it would only widen the gap.} The gap exceeds 35 percentage
-points. The same pattern holds for Gemma-2-2B (OLv2: 11.76; Instella paper:
-40.80) and for MAmmoTH2-7B-Plus (OLv2: 18.93; MAmmoTH2 paper: 63.10).
-
-A controlled scoring-mode comparison anchors this diagnosis. E2
-(Appendix~\ref{app:exp-e2}) rules out a generic scoring-mode effect: the
-log-likelihood vs.\ generation gap on MMLU is at most 0.28 pp across three
-paired instruction-tuned models, two orders of magnitude smaller than the
-BBH gap. The same infrastructure drives MMLU-Pro and any other benchmark
-OLv2 evaluates via lighteval log-likelihood; cross-source comparisons
-involving those scores should be treated with the same caution.
-
-\subsubsection{MATH Lvl 5: Answer Parser Replacement}
-\label{sec:math}
-
-OLv2 evaluates the MATH Level 5 subset (1{,}324 problems, 5-shot) using
-a SymPy-based answer parser. In February 2025, HuggingFace replaced this
-parser with Math-Verify and re-evaluated all submitted
-models~\citep{kydlicek2025mathverify}.
-
-The old parser failed on \textbackslash{}boxed\{\} outputs not matching a
-specific format string, mishandled sets, matrices, and interval notation via
-SymPy, and did not implement numerical-equivalence checks (e.g., treating
-$1/3$ and $0.333\ldots$ as different answers). The transition had measurable
-effects: an average gain of $+4.66$ percentage points across all 3{,}751
-re-evaluated models; $+8.27$ points on the Algebra subset; $+6.93$ points
-on the Prealgebra subset; and extreme individual cases up to approximately
-90 points on those subsets.
-
-Any cross-source comparison that places a pre-transition OLv2 MATH Lvl 5
-score alongside a post-transition score, or alongside a score from an
-external paper that uses a correct parser, is comparing incomparable
-quantities. OLv2 exposes a model submission date but not an
-evaluation-execution timestamp, so it is impossible to distinguish pre- and
-post-transition scores from the record alone: a model submitted in 2024
-now carries a post-transition score despite predating the parser change by
-months.
-
-\subsubsection{GSM8K: Chain-of-Thought Format and Answer-Parser Failure}
-\label{sec:gsm8k}
-
-The answer-parser sensitivity documented in Section~\ref{sec:math} extends
-beyond OLv2's SymPy transition to any harness that applies a format-specific
-extractor to a model output shaped by the prompt. Within the factorial
-grid, the Qwen2.5-14B-Instruct $\times$ GSM8K $\times$ 5-shot slice (E1,
-Appendix~\ref{app:experiments}) illustrates this directly: the model is
-evaluated under three prompt formats using lm-evaluation-harness 0.4.11,
-with three seeds at temperature 0.0 (Table~\ref{tab:e1-body}).
-
-
-\begin{table}[ht]
-\centering
-\small
-\begin{tabular}{lr}
-\toprule
-Prompt format & Score \\
-\midrule
-\texttt{plain} (direct-answer few-shot)      & 58.5\% \\
-\texttt{instruct} (system-prompt-formatted)  & 57.0\% \\
-\texttt{cot} (chain-of-thought few-shot)     & ~~2.5\% \\
-\bottomrule
-\end{tabular}
-\caption{E1: Qwen2.5-14B-Instruct on GSM8K, 5-shot, temperature 0.0,
-\texttt{limit=200}. Identical across seeds 42/123/7 (deterministic
-decoding). Full E1 design in Appendix~\ref{app:exp-e1}.}
-\label{tab:e1-body}
-\end{table}
-
-The chain-of-thought format reduces measured accuracy by $\approx$56 percentage
-points. The mechanism is parser failure (Figure~\ref{fig:case1-parser}): the CoT
-prompt elicits extended reasoning text, but the harness extracts the final
-answer by searching for the standard GSM8K delimiter
-(\texttt{\#\#\#\#~\{answer\}}). When the model
-produces multi-step reasoning followed by a summary, the regex fails to locate
-the delimiter and records zero for the item. The model's reasoning is not
-incorrect; the parser cannot read the output format the prompt instructed it
-to produce.
-
-This is the same structural failure as the Math-Verify case: the score
-reflects the parser's assumptions about output format, not the model's
-mathematical capability. A reader comparing a CoT-prompted score with a
-plain-prompted score on GSM8K, or a score from one harness whose extractor
-handles CoT output against one that does not, is comparing incommensurable
-quantities under an identical benchmark label.
-
-\subsection{Case Study 2: Differences from Implementation Inconsistency}
+\subsection{Case Study 2: One Name, Several Specifications}
 \label{sec:onenametwo}
 
-The mechanism in this case study: unlike Case Study 1 (Section~\ref{sec:protocol}),
-where a single benchmark specification is implemented differently by
-different harnesses, here multiple distinct specifications legitimately
-coexist under the same benchmark name. A reader comparing two scores labeled
-with the same name may be comparing measurements of genuinely different things.
+Unlike Case Study~1 (\S\ref{sec:protocol}), where one benchmark specification is
+implemented differently by different harnesses, here several legitimate
+specifications coexist under one benchmark name, so two equally-labelled scores
+can measure genuinely different things. Each example below states the gap, the
+two source configurations, and the missing field that would explain it.
 
-\subsubsection{TruthfulQA: Generation-Based Evaluation at Different N-Shot}
-\label{sec:truthfulqa}
+\paragraph{TruthfulQA: n-shot and judge confounded.}\label{sec:truthfulqa}
+Llama-2-Chat-7B is recorded at 57.04 and 26.30, both labelled ``TruthfulQA''
+\citep{lin2022truthfulqa}; both use the generation-based metric (\% truthful and
+informative), not MC1/MC2. The 57.04 is from the Code Llama paper
+\citep{roziere2023codellama} (6-shot, InstructGPT-format prompt, GPT-3 judge);
+the 26.30 figures use the T\"ulu suite \citep{ivison2023camels}, e.g.\ the OLMo
+paper \citep{groeneveld2024olmo} (0-shot, a fine-tuned Llama-2-7B judge). The
+30-point gap therefore confounds shot count (6 vs.\ 0) and judge (GPT-3 vs.\ a
+fine-tuned Llama-2-7B), and neither record carries an \texttt{n\_shot} or judge
+field. A controlled experiment (Appendix~\ref{app:exp-judge}) isolates the
+judge: over fixed responses, varying only the judge shifts means by up to
+1.35/10 and can reverse two systems' ranking, so judge identity alone makes two
+``TruthfulQA'' scores incomparable.
 
-TruthfulQA~\citep{lin2022truthfulqa} includes both multiple-choice metrics
-(MC1, MC2) and a generation-based metric: the percentage of answers that are
-both truthful and informative, judged by a GPT-based classifier following the
-original paper's protocol. These metrics are not interchangeable, but they operate
-on different model outputs and different measurement scales.
+\paragraph{Belebele: n-shot and language scope confounded.}\label{sec:belebele}
+Mistral-7B is recorded at 32.80 and 79.42, both ``Belebele''
+\citep{bandarkar2023belebele}. The 32.80 is the Reka report
+\citep{team2024reka} (0-shot, multilingual average over 150 variants); the 79.42
+is Falcon2 \citep{malartic2024falcon2} (5-shot, English only). Falcon2's own
+0-shot English score for Mistral-7B, 32.48, nearly matches Reka's 32.80, which
+isolates the effect: 0-shot$\to$5-shot on English yields the full 47-point gain
+($32.48 \to 79.42$) while language scope alone contributes almost nothing. The
+46.6-point gap is driven by n-shot, not language scope, and neither record
+labels either dimension.
 
-Our dataset contains records for Llama-2-Chat-7B at 57.04 (one ArXiv paper)
-and 26.30 (multiple ArXiv papers), all labeled ``TruthfulQA''. Verification
-of the source papers reveals that \emph{both} scores use the generation-based
-metric (\% truthful and informative), not MC1 or MC2:
+\paragraph{HellaSwag: scoring mode and n-shot confounded.}\label{sec:hellaswag}
+Gemma-7B is recorded at 49.80 and 81.20, both ``HellaSwag''
+\citep{zellers2019hellaswag}. The 49.80 is the Phi-3 report
+\citep{abdin2024phi3} (5-shot, generation-based, temperature~0); the 81.20 is
+the Gemma report \citep{gemmateam2024gemma} (0-shot, log-likelihood over the
+four continuations). The $\approx$31-point gap is too large for shot count
+alone, on a log-likelihood benchmark n-shot moves scores a few points (our
+grid: MMLU 0-vs-5-shot differ 2.6\,pp, $\eta^2\approx1\%$,
+Appendix~\ref{app:exp-grid}). The driver is scoring mode: free-form generation
+of the continuation is structurally harder than ranking pre-specified
+continuations. Neither record labels scoring mode or n-shot, so the gap is
+indistinguishable from a capability difference (Appendix~\ref{app:hellaswag}
+gives an alternative rendering of Figure~\ref{fig:casestudies-unified}).
 
-\begin{itemize}
-  \item The 57.04 figure comes from the Code Llama paper
-    \citep{roziere2023codellama} (arXiv:2308.12950), which evaluates
-    Llama-2-Chat-7B as a baseline. The paper uses a \textbf{6-shot} prompt
-    containing six random QA pairs in InstructGPT format, with a GPT-3-based
-    judge. This methodology follows Lin et al.\ (2022) and is identical in
-    metric to the Llama 2 paper's evaluation.
-  \item The 26.30 figures come from papers using the Tülu evaluation suite
-    \citep{ivison2023camels}, as exemplified by the OLMo paper
-    \citep{groeneveld2024olmo} (arXiv:2402.00838). The Tülu suite applies the
-    same generation-based metric at \textbf{0-shot}, but with a different judge:
-    a Llama-2-7B fine-tuned classifier rather than the GPT-3-based judge used
-    in the Code Llama evaluation.
-\end{itemize}
+\subsection{Case Study 3: Shared Pipelines Fake Independence}
+\label{sec:convergence}\label{sec:sealion}
 
-The gap (57.04 vs.\ 26.30) therefore reflects two confounded differences: shot
-count (6-shot vs.\ 0-shot) and judge implementation (GPT-3 vs.\ a Llama-2-7B
-classifier). Both factors inflate the Code Llama score relative to the Tülu
-score. Neither source paper records the shot count or the judge model in the
-metric label; both simply report ``TruthfulQA''. Without explicit
-\texttt{n\_shot} and judge fields in the record, the 30-point gap is
-uninterpretable from the label alone. We isolate the judge factor directly in a
-controlled experiment (Appendix~\ref{app:exp-judge}): holding a fixed set of
-model responses constant and varying only the judge model shifts mean scores by
-up to 1.35 points on a 10-point scale and can reverse the ranking of two
-systems, confirming that judge identity alone---independent of shot count---is
-enough to make two ``TruthfulQA'' scores incomparable.
+Two sources reporting the same score to several decimals need not be independent
+measurements; one may be the other re-reported. OLv2 reports Gemma-2-9B's BBH
+score as 34.10, and the SEA-LION paper (\citealt{ng2025sealion};
+arXiv:2504.05747) reports the same model at 34.10, an exact two-decimal
+match, while listing Open LLM Leaderboard among its benchmark sources. Such a
+match is consistent with either direct importation of the OLv2 score or
+independent re-evaluation on identical (lighteval) infrastructure, and the EEE
+record cannot distinguish them; but our harness-version control
+(Appendix~\ref{app:exp-e3}) shows independent reruns vary by up to 1.3\,pp across
+seeds, so an exact match is far more consistent with a re-import than a re-run,
+which would almost never agree to the second decimal. Either way the two records
+share a pipeline origin. The fields that would separate replication from
+re-import (\texttt{harness}, \texttt{prompt\_template\_hash},
+\texttt{evaluation\_timestamp}) were dropped before the comparison table, leaving
+the match as the only signal.
 
-\subsubsection{Belebele: N-Shot and Language Scope Confounded}
-\label{sec:belebele}
-
-Belebele~\citep{bandarkar2023belebele} is a multilingual reading-comprehension
-benchmark. Two evaluation dimensions that should be separately labelled are
-often not: the language scope (English-only vs.\ multilingual average) and the
-n-shot count (which has a substantial effect on accuracy for this benchmark).
-
-Our dataset records Mistral-7B receiving 32.80 from one ArXiv paper and
-79.42 from another, both labeled ``Belebele''. Verification of the source
-papers reveals that these two scores differ on both dimensions:
-
-\begin{itemize}
-  \item The 32.80 figure comes from the Reka paper \citep{team2024reka}
-    (arXiv:2404.12387), which evaluates Belebele at \textbf{0-shot} as a
-    \textbf{multilingual average} across 150 language variants. The evaluation
-    was run by the Reka authors themselves (marked with a dagger in the paper).
-  \item The 79.42 figure comes from the Falcon2 technical report
-    \citep{malartic2024falcon2} (arXiv:2407.14885), which evaluates Belebele
-    at \textbf{5-shot} on \textbf{English only}.
-\end{itemize}
-
-Crucially, the Falcon2 paper also reports a 0-shot English score for
-Mistral-7B of 32.48,  nearly identical to Reka's 0-shot multilingual average
-of 32.80. This internal comparison within the Falcon2 paper isolates the
-n-shot effect: going from 0-shot to 5-shot on English Belebele yields the
-full 47-point gain (32.48 $\to$ 79.42), while language scope alone (English
-vs.\ multilingual average at 0-shot) contributes almost nothing. The dominant
-driver of the 46.6-point gap between the two labeled scores is therefore the
-n-shot count, not the language scope.
-
-Neither record carries an \texttt{n\_shot} label or a language-scope field.
-``Belebele 32.80'' and ``Belebele 79.42'' are not comparable measurements of
-the same thing; they are two different evaluations of Mistral-7B that happen
-to share a benchmark name.
-
-\subsubsection{HellaSwag: Scoring Mode and N-Shot Confounded}
-\label{sec:hellaswag}
-
-HellaSwag~\citep{zellers2019hellaswag} is a sentence-completion benchmark for
-commonsense NLI. The benchmark
-label conceals two evaluation dimensions at once: scoring mode and n-shot count.
-
-Our dataset records Gemma-7B receiving 49.80 from one ArXiv paper and 81.20
-from another, both labeled ``HellaSwag''. Verification of the source papers
-reveals that the scores differ on both dimensions:
-
-\begin{itemize}
-  \item The 49.80 figure comes from the Phi-3 technical report
-    \citep{abdin2024phi3} (arXiv:2404.14219), which evaluates Gemma-7B as a
-    comparison baseline at \textbf{5-shot} using a \textbf{generation-based}
-    pipeline: the model generates free text and the answer is extracted from
-    its output (temperature~0, direct-answer format).
-  \item The 81.20 figure comes from the Gemma technical report
-    \citep{gemmateam2024gemma} (arXiv:2403.08295, Table~6), which reports
-    Gemma~7B at \textbf{0-shot} using \textbf{log-likelihood} scoring over
-    the four candidate continuations.
-\end{itemize}
-
-The $\approx$31-point gap is too large to be explained by the shot-count
-difference alone: on a log-likelihood benchmark, varying n-shot typically shifts
-scores by a few points at most, a bound we confirm directly in our factorial
-grid, where MMLU's 0-shot and 5-shot log-likelihood means differ by 2.6 pp
-($\eta^2 \approx 1\%$; Appendix~\ref{app:exp-grid}). The primary driver is the scoring mode.
-Generation-based evaluation of HellaSwag, asking the model to produce the
-correct continuation as free text, is structurally harder than log-likelihood
-evaluation, where the model ranks pre-specified continuations by token
-probability. Neither paper labels the scoring mode or the n-shot count in the
-metric label; both simply report ``HellaSwag''. Without explicit
-\texttt{scoring\_mode} and \texttt{n\_shot} fields in the record, the gap is
-indistinguishable from a genuine capability difference. Appendix~\ref{app:hellaswag}
-renders this case as an alternative middle column for
-Figure~\ref{fig:casestudies-unified}.
-
-\subsection{Case Study 3: Differences from Using a Different Harness}
-\label{sec:convergence}
-
-The mechanism in this case study: two sources reporting the same score to
-multiple decimal places do not necessarily reflect two independent
-measurements. They can reflect a single measurement that was rereported,
-making them functionally a single data point disguising as two.
-
-\subsubsection{SEA-LION and Gemma-2-9B on BBH}
-\label{sec:sealion}
-
-OLv2 reports Gemma-2-9B's BBH score as 34.10. The SEA-LION paper
-(\citealt{ng2025sealion}; arXiv:2504.05747, IJCNLP-AACL 2025) reports the
-same model's BBH score as 34.10, an exact match to two decimal places.
-The SEA-LION paper lists its benchmark sources as ``SEA-HELM Leaderboard,
-SEACrowd, Open LLM Leaderboard''. An exact two-decimal match of this kind is
-consistent with either of two mechanisms: direct importation of the OLv2
-score for a competitor model, or independent re-evaluation using identical
-infrastructure (the same lighteval configuration and task suite that OLv2
-runs). The EEE record cannot distinguish between them. Our harness-version
-control (Appendix~\ref{app:exp-e3}) shows that independent reruns of the same
-harness vary by up to 1.3 pp across seeds, so an \emph{exact} two-decimal match
-is far more consistent with a re-imported score than with an independent
-re-evaluation, which would almost never agree to the second decimal. In either
-case, the two records share a pipeline origin and are not independent
-measurements of Gemma-2-9B's BBH capability. The fields that would distinguish
-replication from re-import---\texttt{harness}, \texttt{prompt\_template\_hash},
-and \texttt{evaluation\_timestamp}---were dropped before the records reached the
-comparison table, leaving the exact two-decimal match as the only visible signal
-and no way to tell which mechanism produced it.
-
-The Gemma 2 and Gemma 3 technical reports list Gemma-2-9B's BBH score as
-68.20, 69.00, and 69.40 respectively (the Gemma 3 report gives two
-configurations). These reports use chain-of-thought generation, a different
-scoring protocol from OLv2's 3-shot lighteval log-likelihood, explaining the
-$\approx$35-point gap. The same harness-mismatch mechanism from Section~\ref{sec:bbh}
-applies here as a compounding factor. All five sources and their scores
-are listed in Table~\ref{tab:sealion-app} (Appendix~\ref{app:casetables}).
+The Gemma 2 and Gemma 3 reports instead list 68.20, 69.00, and 69.40, using
+chain-of-thought generation rather than OLv2's 3-shot lighteval log-likelihood,
+which explains the $\approx$35-point gap (the harness mismatch of
+\S\ref{sec:bbh} compounding here). All five sources are in
+Table~\ref{tab:sealion-app} (Appendix~\ref{app:casetables}).
 
 
 \section{Discussion}
@@ -1115,55 +797,23 @@ were dropped at step~2, the two records share a pipeline origin and cannot be tr
 % substitute. Evaluation reporting is in a similar position, and
 % requires a similar response.
 %% END DRAFT ----------------------------------------------------------
-An evaluation result is produced by a long chain of decisions: which
-harness, which version, which prompt template, which n-shot count, which
-temperature, which scoring mode, which answer extractor. At evaluation
-time, every link in that chain is known. The runtime environment carries
-the harness version, the prompt template is a string in memory and the
-temperature is a float in a configuration file. Between evaluation time
-and the reader, almost all of this information is dropped. Leaderboard
-APIs return scores and model identifiers but rarely expose the
-configuration that produced them. Aggregators store whatever the APIs
-return. Downstream papers cite the aggregator. By the time two scores
-meet on a comparison table, the procedures behind them are no longer
-comparable in any verifiable way.
+An evaluation result is the product of a long chain of decisions (harness,
+version, prompt template, n-shot, temperature, scoring mode, answer
+extractor), each known at evaluation time but almost all dropped before the
+reader. The three case studies locate the loss: at the leaderboard
+(\S\ref{sec:protocol}), at the benchmark label (\S\ref{sec:onenametwo}), and at
+the appearance of independent measurement (\S\ref{sec:convergence}). The two
+alternatives to documentation both fail where the need is greatest: re-extraction
+cannot recover what the leaderboard subset never records
+(Figure~\ref{fig:coverage}), and re-evaluation does not scale across thousands of
+model--benchmark pairs. This leaves documentation, necessary, if not always
+sufficient.
 
-The three case studies in \S\ref{sec:cases} document where this loss
-occurs: at the leaderboard (\S\ref{sec:protocol}, where OLv2 does not
-expose harness or scoring mode), at the benchmark label
-(\S\ref{sec:onenametwo}, where TruthfulQA, Belebele, and HellaSwag conceal
-n-shot, metric variant, and scoring mode), and at the appearance of
-independent measurement (\S\ref{sec:convergence}, where shared pipelines
-produce apparent replication that is illusory).
-
-Two alternatives to documentation are sometimes proposed. The first is
-automatic re-extraction from public artefacts. Our extraction pipeline is
-reliable when the source contains the information: the score-verification
-audit (\S\ref{sec:score-ann}) confirms 97.5\% precision across 2{,}027
-row-level annotations on 10 papers (though only $\approx$81\% recall --- it
-captures headline tables but skips many secondary ones), and the
-harness-identification audit
-(\S\ref{sec:harness-ann}) achieves 87.1\% per-row precision on the
-with-harness sample (3/5 papers at 100\%; the remaining 2 expose a
-specific failure mode where broad group attributions like ``across all
-aforementioned tasks'' are under-extracted) and 100\% correct abstention
-on the without-harness sample. But Figure~\ref{fig:coverage} shows the limit of
-extraction: in the 10-source leaderboard subset, prompt template and temperature
-have zero coverage outright, and harness identity is never exposed by a source
-API---its 93\% subset coverage is entirely pipeline-attached from platform
-documentation (\S\ref{sec:discrepancies}), not source-recorded.
-No extraction effort can recover what the source never recorded. The
-second alternative is independent re-evaluation, which is feasible at
-small scale but not across the thousands of model-benchmark pairs in a
-modern aggregated dataset. This leaves documentation: not sufficient in
-every case, but necessary in the current public ecosystem, because the
-two alternatives fail precisely where the need is greatest.
-
-\subsection{EvalSpec v0.1 as a Proposed Remedy}
+\subsection{EvalSpec: Adapting EEE for Comparable Reporting}
 \label{sec:evalspec}
 
 %% DRAFT --------------------------------------------------------------
-% EvalSpec v0.1 is a machine-readable reporting specification for
+% EvalSpec is a machine-readable reporting specification for
 % evaluation runs. It is designed to be the smallest set of fields that
 % turns a score into an identifiable measurement: enough that two
 % records meeting on the same benchmark can be compared without an
@@ -1198,96 +848,48 @@ two alternatives fail precisely where the need is greatest.
 % APIs do not return them.
 %% END DRAFT ----------------------------------------------------------
 
-EvalSpec v0.1 is a machine-readable reporting specification designed to be
-the smallest field set that turns a score into an identifiable measurement:
-enough that two records on the same benchmark can be compared without
-guesswork about the procedure that produced them.
+EvalSpec adapts the open EEE schema (\S\ref{sec:related}) to the gaps this audit
+exposes: starting from EEE, it requires the configuration fields whose absence the
+case studies show to break cross-source comparison, so two records on the same
+benchmark can be compared without guessing the procedure behind them. We release
+it with the populated dataset not as a finished standard but as a starting point,
+so that future evaluation papers report the configuration that makes their scores
+easy to extract and compare, and the community can keep adapting and extending it.
 
-Field selection follows directly from the case studies in
-\S\ref{sec:cases}. \texttt{scoring\_mode} (log-likelihood vs.\ free-form
-generation) is motivated by the BBH label-collapse (\S\ref{sec:bbh}) and
-the HellaSwag analysis (\S\ref{sec:hellaswag}). \texttt{harness\_name}
-and \texttt{harness\_version} are required because the SEA-LION case
-(\S\S\ref{sec:bbh}--\ref{sec:sealion}) shows that harness identity is
-the fingerprint distinguishing genuinely independent measurement from a
-shared-pipeline artefact. \texttt{n\_shot} is motivated by the TruthfulQA,
-Belebele, and HellaSwag audits
-(\S\S\ref{sec:truthfulqa}--\ref{sec:hellaswag}), where the n-shot count
-shifts the evaluation regime but is absent from every aggregated source's
-benchmark label. \texttt{benchmark\_variant} (recording sub-task keys such
-as \texttt{mc1} vs.\ \texttt{mc2}) is motivated by TruthfulQA and Belebele
-(\S\S\ref{sec:truthfulqa}--\ref{sec:belebele}), where the same name covers
-metrics with opposite definitions of correctness. \texttt{judge\_model} is
-required because TruthfulQA (\S\ref{sec:truthfulqa}) uses a fine-tuned
-judge whose identity is material to the score and absent from the
-aggregated record; a controlled experiment (Appendix~\ref{app:exp-judge})
-confirms the effect is not marginal---varying only the judge over fixed
-responses moves mean scores by up to 1.35 points on a 10-point scale and
-reorders the system ranking (cross-judge rank correlations span $+1.0$ to
-$-0.3$), so the judge is not an offset that cancels in a comparison. \texttt{evaluation\_timestamp} is required because the
-Math-Verify parser replacement (\S\ref{sec:math}) demonstrates that a
-silent infrastructure change produces a different score under the same
-benchmark label. The full field set by tier is in
-Table~\ref{tab:evalspec-fields-app} (Appendix~\ref{app:evalspec}).
+Field selection follows from the case studies (\S\ref{sec:cases}):
+\texttt{scoring\_mode} from the BBH and HellaSwag collapses
+(\S\S\ref{sec:bbh},~\ref{sec:hellaswag}); \texttt{harness\_name} and
+\texttt{harness\_version} from SEA-LION (\S\ref{sec:sealion}), where harness
+identity separates independent measurement from a shared-pipeline artefact;
+\texttt{n\_shot} and \texttt{benchmark\_variant} from TruthfulQA, Belebele, and
+HellaSwag (\S\S\ref{sec:truthfulqa}--\ref{sec:hellaswag}), where shot count and
+metric variant shift the regime unlabelled; \texttt{judge\_model} from TruthfulQA,
+where varying only the judge moves means up to 1.35/10 and reorders rankings
+(cross-judge correlations $+1.0$ to $-0.3$; Appendix~\ref{app:exp-judge}); and
+\texttt{evaluation\_timestamp} from the Math-Verify swap (\S\ref{sec:math}), which
+changes scores silently under one label. Two Recommended fields follow the same
+logic: \texttt{judge\_prompt\_hash} (the rating depends on the judge prompt and
+rubric, not the model alone) and \texttt{answer\_parser\_version} (the Math-Verify
+parser swap is invisible to \texttt{harness\_version}); hashed fields are
+canonicalised before hashing so cosmetic differences do not cause spurious
+mismatches. The full set by tier is in Table~\ref{tab:evalspec-fields-app}
+(Appendix~\ref{app:evalspec}).
 
-\paragraph{Worked example: resolving the SEA-LION collision.}
-To show that the required fields are sufficient and not merely plausible, we
-instantiate EvalSpec-R for the Gemma-2-9B BBH collision of \S\ref{sec:sealion}
-(Table~\ref{tab:evalspec-worked}). Two required fields separate the five records
-cleanly. \texttt{scoring\_mode} splits the cluster: \texttt{log-likelihood} for
-the 34.10 pair (OLv2 and SEA-LION), \texttt{generation} for the 68--69 Gemma
-reports---so the $\approx$35-point gap reads as a recorded protocol difference,
-not an anomaly to be explained away. Within the matching pair,
-\texttt{harness\_name} together with \texttt{evaluation\_timestamp} distinguishes
-an independent re-run from a re-import: an identical \texttt{lighteval}
-configuration with no distinct evaluation timestamp is the signature of a
-re-imported score, one that an independent re-run would essentially never
-reproduce to the second decimal (our harness-version control,
-\S\ref{app:exp-e3}, bounds genuine run-to-run variation at up to 1.3~pp). In the
-\emph{actual} EEE records every one of these discriminating fields is
-\texttt{unknown}; that is precisely why the collision is unresolvable today, and
-recording them is the resolution.
+Instantiating these fields for the SEA-LION collision
+(Table~\ref{tab:evalspec-worked}, Figure~\ref{fig:evalspec-json},
+Appendix~\ref{app:evalspec}) shows two suffice: \texttt{scoring\_mode} splits the
+34.10 log-likelihood pair from the 68--69 generation reports, and
+\texttt{harness\_name} plus \texttt{evaluation\_timestamp} separate SEA-LION's
+re-import from an independent re-run. In the actual records all are
+\texttt{unknown}, which is why the collision is unresolvable and recording them
+the resolution.
 
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llll}
-\toprule
-EvalSpec-R field & OLv2 & SEA-LION & Gemma rpt. \\
-\midrule
-\texttt{model\_id}      & gemma-2-9b & gemma-2-9b & gemma-2-9b \\
-\texttt{benchmark\_id}  & BBH        & BBH        & BBH \\
-score                   & 34.10      & 34.10      & 68.2--69.4 \\
-\texttt{scoring\_mode}  & log-lik.   & log-lik.   & generation \\
-\texttt{harness\_name}  & lighteval  & lighteval  & (CoT pipe) \\
-\texttt{n\_shot}        & 3          & 3          & 0--3 \\
-\texttt{eval\_timestamp}& ---        & ---        & --- \\
-\bottomrule
-\end{tabular}
-\caption{EvalSpec-R instantiated for the Gemma-2-9B BBH collision
-(\S\ref{sec:sealion}). Columns show the \emph{underlying} configuration each
-score was produced under; in the released EEE records these fields are
-\texttt{unknown} for all five sources. \texttt{scoring\_mode} separates the
-34.10 pair from the 68--69 reports, and \texttt{harness\_name}\,$+$\,a distinct
-\texttt{eval\_timestamp} would distinguish SEA-LION's re-import from an
-independent re-run.}
-\label{tab:evalspec-worked}
-\end{table}
-
-EvalSpec is encoded as a JSON-LD vocabulary extending \texttt{schema.org}
-and compatible with Croissant metadata records. Compliance is enforced by
-SHACL shape constraints, so that any record can be mechanically checked
-against a target tier without human judgement. The prompt template is
-recorded as a SHA-256 hash of the canonical template string: this keeps the
-specification zero-overhead for producers while preserving the ability to
-detect template changes across runs or harness upgrades. A reference
-validator and the full vocabulary are released alongside the dataset.
-
-None of the Required fields require new instrumentation: the values exist
-in the runtime environment at evaluation time. The barrier to adoption is
-not implementation cost but API exposure~--- leaderboards already record
-these values internally, but their public interfaces do not return them.
+EvalSpec is encoded as a JSON-LD vocabulary (extending \texttt{schema.org},
+compatible with Croissant) whose tiers can be mechanically checked by SHACL shape
+constraints, so conformance needs no human judgement; the prompt template is
+stored as a hash of its canonical string. None of the required fields need new
+instrumentation, the values already exist at evaluation time; the barrier is API
+exposure, not implementation cost.
 
 
 \subsection{Recommendations}
@@ -1318,42 +920,33 @@ these values internally, but their public interfaces do not return them.
 % this field implicit at the scale of the public ecosystem.
 %% END DRAFT ----------------------------------------------------------
 
-\paragraph{Leaderboard maintainers.}
-Leaderboard operators should expose \texttt{harness\_name},
+\paragraph{For practitioners.}
+\emph{Leaderboard operators} should expose \texttt{harness\_name},
 \texttt{harness\_version}, \texttt{scoring\_mode}, and
-\texttt{evaluation\_timestamp} through their public APIs. These values are
-already known at evaluation time; adding them is a logging decision, not
-an engineering project. The SEA-LION case (\S\ref{sec:sealion}) shows the
-cost of not exposing them: an exact score match becomes unreliable
-evidence of independent replication. Records meeting the EvalSpec
-Required tier would let downstream researchers separate shared-pipeline
-artefacts from genuine replications.
+\texttt{evaluation\_timestamp}, known at evaluation time, so a logging decision,
+not an engineering project; SEA-LION (\S\ref{sec:sealion}) shows the cost, where an
+exact match becomes unreliable evidence of replication. \emph{Model developers}
+should ship at least one EvalSpec-R record per reported benchmark, making scores
+verifiable against later third-party evaluations (E1, Appendix~\ref{app:exp-e1}:
+58.5\% vs.\ 2.5\% from one unrecorded prompt format). \emph{Schema designers}
+should treat \texttt{scoring\_mode} as a first-class controlled-vocabulary field
+(\texttt{log-likelihood}, \texttt{generation}, \texttt{preference},
+\texttt{execution}), since no combination of harness, n-shot, and timestamp
+recovers the log-likelihood-vs.-generation boundary (BBH, \S\ref{sec:bbh}; E2,
+Appendix~\ref{app:exp-e2}, shows the converse: under 0.3\,pp when scoring mode
+alone varies).
 
-\paragraph{Model developers.}
-Model releases should include at least one EvalSpec-R compliant record per
-reported benchmark. A single well-documented record makes scores verifiable
-against subsequent third-party evaluations and provides a concrete baseline
-for detecting benchmark variant drift. E1 (Appendix~\ref{app:exp-e1})
-shows the magnitude of drift available from a single unrecorded prompt
-format: 58.5\% vs.\ 2.5\% on the same model, benchmark, and harness. The
-TruthfulQA and Belebele discrepancies
-(\S\S\ref{sec:truthfulqa}--\ref{sec:belebele}) show the same conflation at
-the level of n-shot, metric variant, and judge; a machine-readable record
-anchors comparison to the configuration actually used in the release.
-
-\paragraph{Schema and platform designers.}
-\texttt{scoring\_mode} should be treated as a first-class
-controlled-vocabulary field in any evaluation metadata schema. No
-combination of other Required fields recovers it: a record can be fully
-specified on harness, n-shot, and timestamp and still leave the
-log-likelihood-vs.-generation boundary implicit. The BBH label-collapse
-(\S\ref{sec:bbh}) shows the consequence at ecosystem scale, and E2
-(Appendix~\ref{app:exp-e2}) shows the converse: when scoring mode is the
-only varied factor, the gap collapses to under 0.3 pp. A four-value
-controlled vocabulary (\texttt{log-likelihood}, \texttt{generation},
-\texttt{preference}, \texttt{execution}) closes this gap.
-
-
+\paragraph{Adoption.}
+None of the Required fields needs new instrumentation, they already exist at
+evaluation time, so the barrier is incentive, not engineering: a producer emits
+them by logging and a leaderboard by adding them to its API response. Even partial
+uptake pays off. Because conformance is machine-checkable (SHACL), records can be
+validated automatically rather than by hand; because the fields are uniform across
+sources, incomparable protocols stop being silently averaged into ``SOTA''
+comparisons and cross-source meta-analysis becomes possible. The cheapest
+migration path is producer-side: model developers who ship one EvalSpec-R record
+per reported benchmark make their own scores verifiable, which in turn pressures
+aggregators and leaderboards to surface the same fields.
 
 \section{Conclusions}
 
@@ -1368,15 +961,15 @@ controlled vocabulary (\texttt{log-likelihood}, \texttt{generation},
 % fields makes specific divergences uninterpretable.
 %
 % Documentation is the only remaining identification strategy.
-% EvalSpec v0.1 is a concrete proposal for what to record, grounded in
+% EvalSpec is a concrete proposal for what to record, grounded in
 % the audit and validated against the case studies. Dataset, pipeline,
 % schema, and analysis code are released under CC-BY-4.0.
 %% END DRAFT ----------------------------------------------------------
 
 Public evaluation records routinely report a score without the procedure that
 produced it. Across 46{,}559 records from 12 sources, the configuration fields
-most responsible for score divergence---harness identity, scoring mode, prompt
-template---are largely absent from the leaderboard subset, where prompt template
+most responsible for score divergence (harness identity, scoring mode, prompt
+template) are largely absent from the leaderboard subset, where prompt template
 and temperature reach zero valid coverage and no API exposes the evaluation
 harness. The cross-source overlap that would allow independent verification is
 rare and concentrated in a single dominant source. Three case studies show how
@@ -1385,7 +978,7 @@ controlled factorial experiment confirms that an undocumented prompt-format or
 answer-parser choice can move a score by tens of points on the same model,
 benchmark, and harness. Because targeted re-evaluation does not scale and
 automatic re-extraction cannot recover what a source never recorded,
-documentation is the remaining identification strategy. EvalSpec v0.1 specifies
+documentation is the remaining identification strategy. EvalSpec specifies
 the minimum set of fields to record, grounded in the audit and validated against
 the case studies. The dataset, schema, and pipeline are released for the
 community to extend.
@@ -1398,7 +991,11 @@ Aggregate coverage statistics therefore largely describe OLv2 plus a long tail
 of much smaller sources; statements about ``the leaderboard ecosystem'' should
 be read as statements about one dominant platform and a sparse periphery, not a
 balanced cross-section. We report the leaderboard subset separately from the
-full dataset throughout for this reason.
+full dataset throughout for this reason, and ablate OLv2 directly
+(Table~\ref{tab:coverage-app}): with it removed, the nine-source tail carries
+0.0\% coverage on harness, prompt template, temperature, and chain-of-thought,
+and only the protocol-fixed n-shot count (71.0\%) survives, so the dominant-source
+caveat does not overturn the headline, it sharpens it.
 
 \paragraph{Single-extractor ArXiv pipeline.} The ArXiv source is produced by a
 single LLM extractor (Claude Haiku). Our audits (\S\ref{sec:score-ann},
@@ -1409,11 +1006,14 @@ are point estimates on a small sample rather than ecosystem-wide guarantees. We
 accordingly exclude the ArXiv source from the headline coverage analysis and
 treat its metadata as unverified at scale.
 
-\paragraph{Case-study selection.} The three case studies are hand-selected
+\paragraph{Existence, not prevalence.} The three case studies are hand-selected
 instances of cross-source divergence, chosen because their mechanisms are
 diagnosable. They establish that each mechanism occurs and is consequential;
-they are not a random sample and do not support claims about how frequently each
-mechanism arises across the ecosystem.
+they are not a random sample. We therefore do not claim how frequently
+scoring-mode mismatch, variant conflation, or shared-pipeline reuse arise across
+the ecosystem. Quantifying that prevalence over all cross-source collisions is
+left to future work; the collision-detection pipeline that surfaced these cases
+could in principle support such a census.
 
 \paragraph{Statistical power.} The factorial grid is adequately powered on GSM8K
 (prompt format $F=13.0$, $p<0.001$) but underpowered on MMLU ($F=0.98$,
@@ -1421,24 +1021,44 @@ $p=0.43$) and GPQA ($F=0.72$, $p=0.51$), both reduced to single-seed or
 single-temperature designs under compute limits. We report the MMLU and GPQA
 results as directionally consistent with the GSM8K pattern, not as independent
 confirmation, and rest the load-bearing claims on GSM8K. Several grid cells use
-a 200-problem subset (\texttt{limit=200}) rather than the full benchmark, which
-supports relative format comparisons but not absolute-score claims.
+a 200-problem subset (\texttt{limit=200}) rather than the full benchmark; a
+full-set rerun of one cell confirms the subset is representative to within
+1.3\,pp (Appendix~\ref{app:exp-grid}). Our temperature result, under 1\% of
+variance, is established on GSM8K under greedy generation with answer parsing;
+it should not be read as a universal claim, and open-ended generation or
+safety/refusal tasks, where sampling drives output diversity, may show larger
+temperature sensitivity. The same \texttt{hf}-vs-vLLM backend shift
+(Appendix~\ref{app:exp-grid}) is a further reason to treat the absolute
+prompt-format and temperature magnitudes as backend-conditional.
 
 \paragraph{Pipeline-attached harness labels.} The 93\% harness coverage in the
 leaderboard subset is attached by our pipeline from platform documentation, not
 returned by any source API. It records what a platform documents it runs, which
-can itself drift from the runtime (\S\ref{sec:bbh}); it is not a source-of-truth
-field, and we mark it as inferred wherever it appears.
+can itself drift from the runtime, OLv2 is documented as \texttt{lm\_eval} but
+actually runs \emph{lighteval} (\S\ref{sec:bbh}). The released dataset marks every
+such value as inferred (not source-reported) so downstream users can correct or
+discount it rather than propagate the documentation label as ground truth.
 
-\section*{Use of AI Assistants}
+\paragraph{Extending the schema.} EvalSpec is released as an extensible adaptation
+of EEE, not a closed standard, and the audit surfaces further runtime context we
+leave to future expansion rather than fix as fields here: the inference backend
+(vLLM vs.\ \texttt{hf} inverts the GSM8K \texttt{plain}/\texttt{cot} ordering in
+our rerun, \S\ref{app:exp-grid}), the tokenizer version, and the dataset snapshot
+(a task commit hash or Croissant checksum, which the Math-Verify case,
+\S\ref{sec:math}, shows can change silently). These are the natural first targets
+as the community adopts and grows the schema.
 
-The evaluation-extraction pipeline central to this paper uses a large language
-model (Claude Haiku, via OpenRouter) to read ArXiv paper prose into the EEE
-schema; this methodological use is described in \S\ref{sec:pipeline} and audited
-in \S\S\ref{sec:score-ann}--\ref{sec:harness-ann}. Separately, the authors used
-LLM-based assistants for copy-editing and LaTeX formatting during manuscript
-preparation. All quantitative results, claims, and their interpretation are the
-authors' own; AI assistants did not generate experimental data or analysis.
+\paragraph{Robustness of the judge-model effect.} To verify the effect is not a
+single-task or small-panel artefact, we replicated the experiment with eight
+judge families, adding DeepSeek, Mistral, Qwen, and Amazon to the original
+four, and analysed it per MT-Bench task category
+(Appendix~\ref{app:exp-judge}). The effect strengthens rather than washes out:
+the judge-induced spread rises to a mean of 1.66 (max 1.80) on the 10-point
+scale, cross-judge Spearman rank correlations across the eight judges span
+$+1.0$ to $-0.1$ (mean $+0.61$ over 28 judge pairs), and a multi-point spread
+holds in every one of the eight MT-Bench task categories (1.5--2.9, largest on
+coding, extraction, and math). This wider replication reinforces
+\texttt{judge\_model} as a Required field.
 
 \section*{Acknowledgments}
 \bibliography{custom}
@@ -1567,21 +1187,26 @@ coverage bar chart in Figure~\ref{fig:coverage} (\S\ref{sec:discrepancies}).
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-Field & Full dataset & 10-source subset \\
+ & Full & 10-source & 9-source \\
+Field & dataset & subset & (excl.\ OLv2) \\
 \midrule
-shots & 80.5\% & 98.0\% \\
-harness$^{\dagger}$ & 63.2\% & 93.2\% \\
-chain\_of\_thought & 50.0\% & 77.7\% \\
-prompt\_template & 14.1\% & 0.0\% \\
-temperature & 3.1\% & 0.0\% \\
+shots & 80.5\% & 98.0\% & 71.0\% \\
+harness$^{\dagger}$ & 63.2\% & 93.2\% & 0.0\% \\
+chain\_of\_thought & 50.0\% & 77.7\% & 0.0\% \\
+prompt\_template & 14.1\% & 0.0\% & 0.0\% \\
+temperature & 3.1\% & 0.0\% & 0.0\% \\
 \bottomrule
 \end{tabular}
 \caption{Metadata coverage (fraction of records with a non-null,
 non-``unknown'' value). Full dataset: 46{,}559 records / 12 sources.
 10-source subset: 28{,}755 records, excluding the ArXiv extraction
 source. Numerical values underlying Figure~\ref{fig:coverage}.
+The 9-source column ablates OLv2 (the remaining 1{,}965 leaderboard
+records): every field except the protocol-fixed n-shot count falls to
+0.0\%, so the 10-source coverage is carried almost entirely by OLv2's
+own (pipeline-attached) values.
 $^{\dagger}$The harness row counts pipeline-auto-attached values
 (e.g., \texttt{lm\_eval} attached to every OLv2 record from platform
 documentation, not returned by the source API). No leaderboard source
@@ -1589,11 +1214,50 @@ exposes harness identity directly.}
 \label{tab:coverage-app}
 \end{table}
 
+To characterise the tail of the leaderboard ecosystem directly,
+Table~\ref{tab:coverage-persource} breaks coverage down by source. Only OLv2
+carries any harness coverage (pipeline-attached) or chain-of-thought coverage;
+across the nine-source tail, harness, prompt template, temperature, and
+chain-of-thought are uniformly 0.0\%, and only the n-shot count, fixed by each
+leaderboard's protocol, hence present for the sources that report at a single
+shot count, survives. This is the per-source view behind the aggregate ablation
+in Table~\ref{tab:coverage-app}.
 
-\section{EvalSpec v0.1 Field Set}
+\begin{table}[ht]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+Source & $N$ & shot & harn$^{\dagger}$ & prom. & temp & CoT \\
+\midrule
+OLv2          & 26{,}790 & 100 & 100 & 0 & 0 & 83.4 \\
+\midrule
+AlpacaEval 2  & 446 & 100 & 0 & 0 & 0 & 0 \\
+BFCL          & 327 & 100 & 0 & 0 & 0 & 0 \\
+BigCodeBench  & 280 & 100 & 0 & 0 & 0 & 0 \\
+Chatbot Arena & 218 & 0   & 0 & 0 & 0 & 0 \\
+EvalPlus      & 214 & 100 & 0 & 0 & 0 & 0 \\
+HF Model Card & 207 & 5.8 & 0 & 0 & 0 & 0 \\
+WildBench     & 122 & 0   & 0 & 0 & 0 & 0 \\
+SWE-Bench     & 117 & 100 & 0 & 0 & 0 & 0 \\
+MT-Bench      & 34  & 0   & 0 & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Per-source metadata coverage (\%) for the 10 leaderboard sources
+(\S\ref{sec:discrepancies}); OLv2 (top) is separated from the nine-source tail.
+Only OLv2 has non-zero harness (pipeline-attached) or chain-of-thought coverage;
+the tail exposes only the protocol-fixed n-shot count.
+$^{\dagger}$Harness is pipeline-attached from platform documentation, not
+source-reported (cf.\ Table~\ref{tab:coverage-app}).}
+\label{tab:coverage-persource}
+\end{table}
+
+
+\section{EvalSpec Field Set}
 \label{app:evalspec}
 
-Table~\ref{tab:evalspec-fields-app} lists the complete EvalSpec v0.1 field
+Table~\ref{tab:evalspec-fields-app} lists the complete EvalSpec field
 set by compliance tier, motivated in \S\ref{sec:evalspec}.
 
 \begin{table}[!htbp]
@@ -1614,7 +1278,9 @@ Required & \texttt{model\_id}               & Model identifier (HF path or equiv
          & \texttt{judge\_model}            & Scorer model (\texttt{null} if not applicable) \\
          & \texttt{evaluation\_timestamp}   & ISO-8601 date of evaluation run \\
 \midrule
-Recommended & \texttt{prompt\_template\_hash} & SHA-256 of canonical prompt template \\
+Recommended & \texttt{prompt\_template\_hash} & SHA-256 of the canonicalised prompt template \\
+            & \texttt{judge\_prompt\_hash}   & SHA-256 of the canonicalised judge prompt + rubric \\
+            & \texttt{answer\_parser\_version} & Answer-extractor / parser id and version \\
             & \texttt{temperature}           & Sampling temperature \\
             & \texttt{top\_p}                & Top-$p$ truncation threshold \\
             & \texttt{quantisation}          & Weight quantisation scheme \\
@@ -1626,12 +1292,93 @@ Full & \texttt{provenance\_url}             & Link to raw evaluation log or arte
      & \texttt{compute\_hours}              & Wall-clock GPU-hours \\
 \bottomrule
 \end{tabular}
-\caption{EvalSpec v0.1 field set by compliance tier (\S\ref{sec:evalspec}).
+\caption{EvalSpec field set by compliance tier (\S\ref{sec:evalspec}).
 Required fields are the minimum for score comparability;
 Recommended fields support reproducibility;
 Full fields enable complete audit.}
 \label{tab:evalspec-fields-app}
 \end{table}
+
+\paragraph{The \texttt{scoring\_mode} controlled vocabulary.}
+\texttt{scoring\_mode} takes one of four values, defined by how the reported
+score is produced. \textbf{log-likelihood}: the model assigns a probability to
+each pre-specified answer option and the highest (length-normalised) token
+log-probability is selected; no free text is generated. \textbf{generation}: the
+model produces free text and the answer is extracted from it by a parser or
+regex before scoring. \textbf{preference}: a judge (human or model) rates or
+ranks outputs and the score is derived from those judgements (e.g., win rate,
+Elo, or a 1--10 rubric rating). \textbf{execution}: the output is run against
+test cases or a formal verifier and scored by the result (e.g., unit-test pass
+rate, proof checking).
+
+Multi-stage and hybrid pipelines are labelled by the stage that produces the
+reported number, with the composite recorded in \texttt{benchmark\_variant}. A
+pipeline that ranks candidates by log-likelihood and then generates a rationale
+is \textbf{log-likelihood} if the ranked selection is scored and
+\textbf{generation} if the generated text is scored. A preference judge applied
+to a short answer extracted from free text is \textbf{preference} when the
+rating is the score and \textbf{generation} when the extracted answer is matched
+against a key. Chain-of-thought followed by a multiple-choice post-check is
+labelled by the final selection mechanism. When two stages contribute to a
+single merged score, the primary stage is recorded in \texttt{scoring\_mode} and
+the secondary stage named in \texttt{benchmark\_variant}.
+
+\begin{table}[ht]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llll}
+\toprule
+EvalSpec-R field & OLv2 & SEA-LION & Gemma rpt. \\
+\midrule
+\texttt{model\_id}      & gemma-2-9b & gemma-2-9b & gemma-2-9b \\
+\texttt{benchmark\_id}  & BBH        & BBH        & BBH \\
+score                   & 34.10      & 34.10      & 68.2--69.4 \\
+\texttt{scoring\_mode}  & log-lik.   & log-lik.   & generation \\
+\texttt{harness\_name}  & lighteval  & lighteval  & (CoT pipe) \\
+\texttt{n\_shot}        & 3          & 3          & 0--3 \\
+\texttt{eval\_timestamp}& --        & --        & -- \\
+\bottomrule
+\end{tabular}
+\caption{EvalSpec-R instantiated for the Gemma-2-9B BBH collision
+(\S\ref{sec:sealion}, worked example in \S\ref{sec:evalspec}). Columns show the
+\emph{underlying} configuration each score was produced under; in the released
+EEE records these fields are \texttt{unknown} for all five sources.
+\texttt{scoring\_mode} separates the 34.10 pair from the 68--69 reports, and
+\texttt{harness\_name}\,$+$\,a distinct \texttt{eval\_timestamp} would
+distinguish SEA-LION's re-import from an independent re-run.}
+\label{tab:evalspec-worked}
+\end{table}
+
+\paragraph{A conformant record.} Figure~\ref{fig:evalspec-json} shows a full
+EvalSpec-Required record for the OLv2 Gemma-2-9B BBH score (\S\ref{sec:sealion}).
+In the actual OLv2 export every field below \texttt{score} is \texttt{unknown};
+populating them, each known at evaluation time, is what makes the score
+comparable, and is the end-to-end form a producer emits.
+
+\begin{figure}[ht]
+\small
+\begin{verbatim}
+{
+  "model_id": "google/gemma-2-9b",
+  "benchmark_id": "bbh",
+  "score": 34.10,
+  "scoring_mode": "log-likelihood",
+  "harness_name": "lighteval",
+  "harness_version": "<version>",
+  "n_shot": 3,
+  "benchmark_variant": "bbh",
+  "judge_model": null,
+  "evaluation_timestamp": "<ISO-8601>",
+  "prompt_template_hash": "sha256:<hash>"
+}
+\end{verbatim}
+\caption{An EvalSpec Required-tier conformant record for the OLv2 Gemma-2-9B
+BBH score (\S\ref{sec:sealion}); placeholders ($\langle\cdot\rangle$) mark
+values the producer fills at evaluation time. The fields below \texttt{score}
+are \texttt{unknown} in the released OLv2 record.}
+\label{fig:evalspec-json}
+\end{figure}
 
 
 \FloatBarrier
@@ -1717,7 +1464,8 @@ models (Qwen2.5-14B-Instruct, Qwen2.5-7B-Instruct, Llama-3.1-8B-Instruct,
 Mistral-7B-Instruct-v0.3) were evaluated on three benchmarks (BBH, GSM8K,
 MMLU) under three prompt formats (\texttt{plain} few-shot,
 \texttt{instruct} system-prompt-formatted, \texttt{cot} chain-of-thought
-few-shot), two temperatures (0.0, 0.7), and two n-shot counts per
+few-shot; templates in Appendix~\ref{app:prompts}), two temperatures
+(0.0, 0.7), and two n-shot counts per
 benchmark: 0-shot plus 3-shot for BBH, 0-shot plus 5-shot for GSM8K and
 MMLU. Three random seeds (42, 123, 7) were used per cell. MMLU was
 reduced to temperature 0.0 with a single seed (42) due to
@@ -1742,6 +1490,28 @@ $\times$ 1 temperature $\times$ 1 seed) is descriptively consistent
 per-format means agree with the GSM8K pattern but cannot independently
 confirm it. Per-format means for both benchmarks are reported in
 Table~\ref{tab:anova-per-benchmark}.
+
+To characterise the uncertainty in these point estimates under the
+\texttt{limit=200} subsampling, we bootstrap each $\eta^2$ by resampling cells
+with replacement within each prompt-format group ($10{,}000$ replicates). The
+GSM8K format effect has a 95\% bootstrap interval of $[14.1\%, 44.8\%]$, which
+excludes small effects and confirms the result is not an artefact of the
+problem subset. The MMLU interval is $[3.3\%, 85.4\%]$: it spans nearly the
+whole range, the bootstrap signature of the same underpowering the $F$-test
+reports, and the reason we read MMLU as directional rather than confirmatory.
+
+A direct full-benchmark rerun confirms the subset is representative. We re-ran the
+Qwen2.5-7B-Instruct GSM8K \texttt{plain} and \texttt{cot} cells (5-shot, greedy) on
+the full test set (1{,}319 problems) and at \texttt{limit=200}: scores agree to
+within 1.3\,pp in both formats (\texttt{plain} 17.29 vs.\ 17.00; \texttt{cot} 58.23
+vs.\ 59.50), so the 200-problem subset tracks the full set. This rerun used the
+\texttt{hf} (transformers) backend, as vLLM was unavailable on the run environment
+(a CUDA mismatch); its absolute scores and even the \texttt{plain}/\texttt{cot}
+ordering differ from the vLLM grid, where the same cell scores \texttt{plain} 40.2
+and \texttt{cot} 27.7. That cross-backend gap is itself an instance of our
+thesis, the inference backend is an undocumented configuration choice that moves
+scores, so the rerun validates subset representativeness within a backend, not the
+vLLM absolute numbers. Script and raw records are released.
 
 We attribute variance to the n-shot factor the same way, pooling each
 benchmark's successful cells by shot count (0-shot vs.\ 5-shot;
@@ -1814,6 +1584,23 @@ is the same parser--format coupling as Case Study~1. On MMLU
 \end{table}
 
 
+\subsection{Prompt Templates}
+\label{app:prompts}
+
+The three prompt formats differ only in the system message applied through each
+model's chat template; the few-shot body, five \texttt{Question:}/\texttt{Answer:}
+exemplars followed by the target question, is identical across formats.
+\texttt{plain} uses each model's default system prompt; \texttt{instruct} uses
+``You are an expert problem solver. Answer each question carefully and
+directly.''; and \texttt{cot} uses ``You are an expert problem solver. Before
+answering, think step by step and show your reasoning. Then state the final
+answer.'' The \texttt{instruct} and \texttt{cot} system messages are identical
+across all four models; only \texttt{plain} varies, because it inherits the
+model's own default. The exact rendered prompt for every (model, benchmark,
+format) cell is released with the dataset, along with the canonical templates and
+a worked example, so the prompt-format effect magnitudes can be reproduced
+independently rather than only checked against a hash.
+
 
 \subsection{E1: GSM8K Prompt-Format Sensitivity}
 \label{app:exp-e1}
@@ -1838,16 +1625,29 @@ Prompt format (temp 0.0, seeds 42/123/7) & Score \\
 0.4.11, \texttt{limit=200}. Scores at temperature 0.0 are identical
 across all three seeds (deterministic decoding), so each row reports a
 single number rather than a mean with variance. The \texttt{cot}
-collapse to 2.5\% reflects parser failure: the standard GSM8K extractor
-\texttt{re.search(r'\#\#\#\#\textbackslash s+(\textbackslash S+)', output)}
-finds no delimiter in the chain-of-thought free-text output
-(\S\ref{sec:gsm8k}).}
+collapse to 2.5\% reflects parser failure: the standard GSM8K extractor, which
+looks for the \texttt{\#\#\#\#} answer delimiter, finds none in the
+chain-of-thought free-text output (\S\ref{sec:gsm8k}).}
 \label{tab:e1-gsm8k}
 \end{table}
 
 The same nine cells run at temperature 0.7 give means across three seeds
 of 58.67\% (plain), 52.67\% (instruct), and 2.83\% (CoT), confirming that
 the parser-failure mechanism holds across sampling regimes.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\linewidth]{./figures/case1_parser_flow_S3.pdf}
+\caption{Parser-flow diagram for Case Study 1 (\S\ref{sec:gsm8k}).
+The same Qwen2.5-14B-Instruct model output is routed through the same
+\texttt{\#\#\#\#} delimiter regex under two prompt formats.
+Plain few-shot output contains the delimiter; the regex matches and
+\texttt{exact\_match}$=1$. Chain-of-thought output contains step-by-step
+prose without the delimiter; \texttt{filtered\_resps}$=$\texttt{`[invalid]'}
+and \texttt{exact\_match}$=0$.
+Aggregate: 58.5\% (plain) vs.\ 2.5\% (CoT), $\Delta = -56.0$ pp.}
+\label{fig:case1-parser}
+\end{figure}
 
 
 \subsection{E2: MMLU Scoring-Mode Control}
@@ -1869,7 +1669,7 @@ Model & log-likelihood & generation & $|\Delta|$ (pp) \\
 Mistral-7B-Instruct-v0.3   & 61.92 & 61.64 & 0.28 \\
 Qwen2.5-7B-Instruct        & 74.26 & 74.43 & 0.17 \\
 Llama-3.1-8B-Instruct      & 68.30 & 68.16 & 0.14 \\
-Qwen2.5-14B-Instruct       &  ---  & 79.79 & ---  \\
+Qwen2.5-14B-Instruct       &  --  & 79.79 & --  \\
 \bottomrule
 \end{tabular}
 \caption{MMLU 5-shot, plain prompt, temperature 0.0, lm-evaluation-harness
@@ -1905,7 +1705,7 @@ Model & Harness & seed 42 & seed 123 \\
 Qwen2.5-1.5B-Instruct & 0.4.3  & 32.83 & 33.74 \\
 Qwen2.5-1.5B-Instruct & 0.4.11 & 33.06 & 33.36 \\
 Qwen2.5-7B-Instruct   & 0.4.3  & 75.06 & 76.35 \\
-Qwen2.5-7B-Instruct   & 0.4.11 & 75.51 & ---   \\
+Qwen2.5-7B-Instruct   & 0.4.11 & 75.51 & --   \\
 \bottomrule
 \end{tabular}
 \caption{GSM8K (full test set, 5-shot, \texttt{hf} backend) under
@@ -1920,7 +1720,7 @@ The harness version shifts the GSM8K score by less than the run-to-run seed
 variation: cross-version differences are at most 0.45 pp, while seeds alone move
 the same configuration by up to 1.29 pp. The effect is real but small relative
 to seed noise, which is precisely why \texttt{harness\_version} belongs in the
-EvalSpec Required tier (\S\ref{sec:evalspec})---so that a future divergence can
+EvalSpec Required tier (\S\ref{sec:evalspec}), so that a future divergence can
 be attributed to the version rather than guessed at. The same control bounds the
 run-to-run variability invoked in the SEA-LION analysis (\S\ref{sec:sealion}).
 
@@ -1941,8 +1741,8 @@ judges is attributable to the judge alone. Each cell aggregates 78--80 ratings,
 except Gemini-3.5-Flash (48--63), which intermittently returned empty completions.
 
 Table~\ref{tab:judge-sensitivity} reports the mean rating per
-(contestant, judge). The judge-induced spread---the gap between a contestant's
-highest and lowest judge mean---averages 1.08 points and reaches 1.35 points on
+(contestant, judge). The judge-induced spread, the gap between a contestant's
+highest and lowest judge mean, averages 1.08 points and reaches 1.35 points on
 the 10-point scale. More consequentially, the judge choice reorders the
 leaderboard: Ministral-8B is ranked first by GPT-4o-mini and Llama-3.1-70B but
 last by Gemini-3.5-Flash. Pairwise Spearman rank correlations between judges
@@ -1952,6 +1752,20 @@ anti-correlated). The judge model is therefore not a calibration offset that
 cancels in a comparison; it can invert which system appears better, so a
 benchmark score produced by an LLM judge is uninterpretable without recording
 the judge (\S\ref{sec:evalspec}).
+
+\paragraph{Extended panel and per-task replication.} To test breadth, we repeated
+the experiment with eight judge families (the original four plus DeepSeek-Chat,
+Mistral-Large, Qwen2.5-72B-Instruct, and Amazon-Nova-Pro) over the same fixed
+responses, and broke the result out by MT-Bench task category. The judge-induced
+spread \emph{increases} with the wider panel, mean 1.66, max 1.80 on the
+10-point scale (vs.\ 1.08/1.35 for four judges), because the added families rate
+systematically more generously than Claude-Haiku and Gemini. Cross-judge Spearman
+rank correlation over the eight judges spans $+1.00$ to $-0.10$ (mean $+0.61$,
+28 pairs): the ranking stays unstable. The effect is present in all eight task
+categories, with mean per-category spreads of 2.9 (coding), 2.5 (extraction),
+2.4 (math), 2.3 (humanities), 2.1 (roleplay), 2.0 (stem), 1.9 (reasoning), and
+1.5 (writing), largest on the structured, verifiable tasks. The judge-model
+effect is therefore neither a single-task nor a small-panel artefact.
 
 \begin{table}[ht]
 \centering

@@ -195,6 +195,33 @@ spread averages 1.08 (max 1.35) points, and cross-judge Spearman rank correlatio
 spans **+1.00 to −0.30** — an LLM-judge score is uninterpretable without recording
 the judge.
 
+**Robustness — 8 judge families × 8 tasks** (`experiments/judge_sensitivity_extended/`).
+To confirm this is not a 4-judge or single-task artefact, the study was extended to
+**8 judge families** (adding DeepSeek, Mistral, Qwen, Amazon) and reported per
+MT-Bench task category. The effect *strengthens*: spread rises to **mean 1.66 /
+max 1.80**, cross-judge Spearman over the 8 judges spans **+1.00 to −0.10**
+(mean +0.61, 28 pairs), and a multi-point spread holds in **all 8 task categories**
+(1.5–2.9, largest on coding, extraction, and math).
+
+### 6. GSM8K full-set robustness check (limit=200 vs full)
+
+The factorial grid scored GSM8K on a 200-problem subset (`limit=200`) for compute
+budget. To confirm the subset is representative, the Qwen2.5-7B plain-vs-cot cell was
+rerun at **full size** (1319 questions) on a Colab A100
+(`experiments/controlled_eval/full_vs_limit200_qwen7b_gsm8k.py`):
+
+| format | limit=200 | full (1319) | Δ |
+|---|---|---|---|
+| plain | 17.00 | 17.29 | **+0.29** |
+| cot | 59.50 | 58.23 | **−1.27** |
+
+**Result.** Full-vs-subset deltas are ≤1.3 pp for both formats — **the 200-problem
+subset is representative** of the full test set. (This rerun used lm-eval's hf
+backend, since vLLM's current wheel targets CUDA-13 vs Colab's CUDA-12; the hf
+absolute scores differ from the grid's vLLM scores — itself a backend-as-config
+effect — so it validates subset-representativeness rather than reproducing the
+vLLM numbers.)
+
 ## Dataset
 The aggregated dataset is available on HuggingFace:
 - Dataset: https://huggingface.co/datasets/evaleval/EEE_datastore

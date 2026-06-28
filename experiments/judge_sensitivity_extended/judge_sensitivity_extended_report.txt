@@ -1,0 +1,28 @@
+================================================================================================
+JUDGE-MODEL SENSITIVITY (EXTENDED): 8 judge families x 8 MT-Bench task categories
+================================================================================================
+Contestants: 5  |  Judges: 8  |  MT-Bench turn-1 (80 questions)
+
+contestant                      gpt-4o-mini gemini-3.5-f llama-3.1-70 claude-haiku deepseek-cha mistral-larg qwen-2.5-72b  nova-pro-v1   spread
+-----------------------------------------------------------------------------------------------------------------------------------------------
+google/gemma-3-4b-it                   8.24         7.96         8.31         7.26         8.38         8.96         8.59         8.69     1.70
+qwen/qwen-2.5-7b-instruct              7.86         7.94         7.96         6.97         8.49         8.66         8.61         8.57     1.69
+meta-llama/llama-3.1-8b-instruct         8.04         7.67         8.22         6.87         8.25         8.50         8.61         8.56     1.74
+mistralai/ministral-8b-2512            8.44         7.57         8.62         7.51         8.90         9.30         8.80         8.88     1.80
+qwen/qwen-2.5-72b-instruct             8.32         8.61         8.38         7.74         9.12         9.12         8.86         8.85     1.38
+
+Judge-induced spread: mean 1.66, max 1.80 (10-point scale)
+Cross-judge Spearman rank correlation over 8 judges: min -0.10, max +1.00, mean +0.61 (28 judge pairs)
+
+Per-task (MT-Bench category) judge-induced spread, averaged over contestants:
+  category       mean spread  max spread  judges
+  coding                2.86        3.70       8
+  extraction            2.52        3.24       8
+  humanities            2.33        3.98       8
+  math                  2.42        2.70       8
+  reasoning             1.91        2.50       8
+  roleplay              2.09        2.50       8
+  stem                  2.00        2.45       8
+  writing               1.47        1.71       8
+
+Takeaway: the judge-model effect is not a single-task artefact. Across all 8 MT-Bench task categories and 8 judge families the judge induces a multi-point score spread and the cross-judge ranking is unstable, reinforcing judge_model as an EvalSpec Required field.

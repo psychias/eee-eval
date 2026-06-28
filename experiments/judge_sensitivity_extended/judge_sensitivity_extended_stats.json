@@ -1,0 +1,124 @@
+{
+  "n_contestants": 5,
+  "n_judges": 8,
+  "judges": [
+    "openai/gpt-4o-mini",
+    "google/gemini-3.5-flash",
+    "meta-llama/llama-3.1-70b-instruct",
+    "anthropic/claude-haiku-4.5",
+    "deepseek/deepseek-chat",
+    "mistralai/mistral-large",
+    "qwen/qwen-2.5-72b-instruct",
+    "amazon/nova-pro-v1"
+  ],
+  "contestants": [
+    "google/gemma-3-4b-it",
+    "qwen/qwen-2.5-7b-instruct",
+    "meta-llama/llama-3.1-8b-instruct",
+    "mistralai/ministral-8b-2512",
+    "qwen/qwen-2.5-72b-instruct"
+  ],
+  "overall": {
+    "mean_spread": 1.661,
+    "max_spread": 1.795,
+    "spreads": {
+      "google/gemma-3-4b-it": 1.702,
+      "qwen/qwen-2.5-7b-instruct": 1.688,
+      "meta-llama/llama-3.1-8b-instruct": 1.737,
+      "mistralai/ministral-8b-2512": 1.795,
+      "qwen/qwen-2.5-72b-instruct": 1.381
+    }
+  },
+  "cross_judge_spearman": {
+    "min": -0.1,
+    "max": 1.0,
+    "mean": 0.607,
+    "n_pairs": 28
+  },
+  "per_category": {
+    "coding": {
+      "mean_spread": 2.86,
+      "max_spread": 3.7
+    },
+    "extraction": {
+      "mean_spread": 2.523,
+      "max_spread": 3.243
+    },
+    "humanities": {
+      "mean_spread": 2.33,
+      "max_spread": 3.978
+    },
+    "math": {
+      "mean_spread": 2.418,
+      "max_spread": 2.7
+    },
+    "reasoning": {
+      "mean_spread": 1.909,
+      "max_spread": 2.5
+    },
+    "roleplay": {
+      "mean_spread": 2.086,
+      "max_spread": 2.5
+    },
+    "stem": {
+      "mean_spread": 1.997,
+      "max_spread": 2.45
+    },
+    "writing": {
+      "mean_spread": 1.466,
+      "max_spread": 1.714
+    }
+  },
+  "matrix": {
+    "google/gemma-3-4b-it": {
+      "openai/gpt-4o-mini": 8.238,
+      "google/gemini-3.5-flash": 7.963,
+      "meta-llama/llama-3.1-70b-instruct": 8.306,
+      "anthropic/claude-haiku-4.5": 7.263,
+      "deepseek/deepseek-chat": 8.375,
+      "mistralai/mistral-large": 8.965,
+      "qwen/qwen-2.5-72b-instruct": 8.588,
+      "amazon/nova-pro-v1": 8.688
+    },
+    "qwen/qwen-2.5-7b-instruct": {
+      "openai/gpt-4o-mini": 7.862,
+      "google/gemini-3.5-flash": 7.94,
+      "meta-llama/llama-3.1-70b-instruct": 7.956,
+      "anthropic/claude-haiku-4.5": 6.975,
+      "deepseek/deepseek-chat": 8.488,
+      "mistralai/mistral-large": 8.662,
+      "qwen/qwen-2.5-72b-instruct": 8.606,
+      "amazon/nova-pro-v1": 8.575
+    },
+    "meta-llama/llama-3.1-8b-instruct": {
+      "openai/gpt-4o-mini": 8.037,
+      "google/gemini-3.5-flash": 7.667,
+      "meta-llama/llama-3.1-70b-instruct": 8.219,
+      "anthropic/claude-haiku-4.5": 6.869,
+      "deepseek/deepseek-chat": 8.25,
+      "mistralai/mistral-large": 8.496,
+      "qwen/qwen-2.5-72b-instruct": 8.606,
+      "amazon/nova-pro-v1": 8.564
+    },
+    "mistralai/ministral-8b-2512": {
+      "openai/gpt-4o-mini": 8.438,
+      "google/gemini-3.5-flash": 7.571,
+      "meta-llama/llama-3.1-70b-instruct": 8.619,
+      "anthropic/claude-haiku-4.5": 7.506,
+      "deepseek/deepseek-chat": 8.9,
+      "mistralai/mistral-large": 9.301,
+      "qwen/qwen-2.5-72b-instruct": 8.8,
+      "amazon/nova-pro-v1": 8.875
+    },
+    "qwen/qwen-2.5-72b-instruct": {
+      "openai/gpt-4o-mini": 8.325,
+      "google/gemini-3.5-flash": 8.609,
+      "meta-llama/llama-3.1-70b-instruct": 8.381,
+      "anthropic/claude-haiku-4.5": 7.744,
+      "deepseek/deepseek-chat": 9.125,
+      "mistralai/mistral-large": 9.122,
+      "qwen/qwen-2.5-72b-instruct": 8.863,
+      "amazon/nova-pro-v1": 8.85
+    }
+  }
+}

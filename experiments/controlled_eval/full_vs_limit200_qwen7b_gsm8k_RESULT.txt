@@ -1,0 +1,16 @@
+Full-set vs limit=200 robustness check — Qwen2.5-7B-Instruct, GSM8K, 5-shot
+Backend: lm-evaluation-harness 0.4.11, Hugging Face (transformers) backend, A100,
+  batch_size=48, greedy (do_sample=False), strict-match (#### parser), apply_chat_template.
+  (vLLM unavailable on Colab: current wheel is CUDA-13, Colab image is CUDA-12.)
+
+format     limit=200   full(1319)    delta   paper@200(vLLM)
+-----------------------------------------------------------
+plain          17.00        17.29    +0.29        40.2
+cot            59.50        58.23    -1.27        27.7
+
+FINDING: full-vs-limit200 delta <=1.3 pp for both formats -> the 200-problem
+subset is representative of the full GSM8K test set (the grid's limit=200 is sound).
+
+CAVEAT: hf-backend absolute scores differ from (and invert) the paper's vLLM
+scores (plain/cot ordering flips), i.e. the backend itself moves scores -
+consistent with the paper's thesis, but not a like-for-like vLLM reproduction.
