@@ -102,26 +102,28 @@ Llama-3.1-8B-Instruct, Mistral-7B-Instruct-v0.3) × 3 benchmarks (BBH, GSM8K, MM
 × 3 prompt formats (`plain` few-shot, `instruct` system-prompt, `cot`
 chain-of-thought) × 2 temperatures (0.0, 0.7) × 2 n-shot counts (0 + 3-shot for
 BBH; 0 + 5-shot for GSM8K/MMLU) × 3 seeds (42, 123, 7). MMLU reduced to temp 0.0 /
-single seed for server constraints. **306 successful runs** (144 BBH + 144 GSM8K +
-18 MMLU); GSM8K/MMLU use a 200-problem subset, BBH the full suite.
+single seed for server constraints. **312 successful runs** (144 BBH + 144 GSM8K +
+24 MMLU); GSM8K/MMLU use a 200-problem subset, BBH the full suite. (MMLU cells were
+re-scored on the `hf` backend to recover 6 runs that failed under vLLM; log-likelihood
+scoring is backend-independent, agreeing within 0.5 pp on cells run both ways.)
 
 **Result — prompt format (one-way ANOVA per benchmark, 5-shot cells).**
 
 | Benchmark | `plain` | `instruct` | `cot` | format effect |
 |---|---|---|---|---|
 | GSM8K (n=24/cell) | 38.75 | 34.19 | 19.25 | **η²≈27.4%**, F=13.0, p=1.6×10⁻⁵ |
-| MMLU (n=3/cell) | 63.60 | 62.45 | 51.98 | η²≈24.5%, F=0.98, p=0.43 (underpowered) |
+| MMLU (n=4/cell) | 65.67 | 65.87 | 51.95 | η²≈35.1%, F=2.43, p=0.14 (underpowered) |
 
 Prompt format alone explains **27.4%** of GSM8K score variance (plain→cot gap
-19.50 pp); temperature explains only η²≈0.25% (F=0.18, p=0.68). MMLU shows the same
-*ordering* but the reduced design can't confirm it — the magnitude is
-benchmark-specific, the direction is not.
+19.50 pp); temperature explains only η²≈0.25% (F=0.18, p=0.68). MMLU's point estimate
+(η²≈35.1%) is even larger but remains underpowered (p=0.14) — the same *ordering* as
+GSM8K, the direction robust but the significance not.
 
 **Result — n-shot (ANOVA, pooled by shot count).** GSM8K η²≈**65.1%** (F=264.6,
 p<10⁻³⁰) but this is *not* a capability gain: every 0-shot cell scores exactly
 **0.00** because instruction-tuned models omit the `####` answer delimiter the
-GSM8K parser requires (a parser–format coupling, not learning). MMLU η²≈**1.0%**
-(F=0.16, p=0.69; 0-shot 61.94 vs 5-shot 59.34) — on a log-likelihood benchmark
+GSM8K parser requires (a parser–format coupling, not learning). MMLU η²≈**0.1%**
+(F=0.03, p=0.87; 0-shot 60.17 vs 5-shot 61.16) — on a log-likelihood benchmark
 n-shot is nearly inert.
 
 ### 2. E1 — GSM8K prompt-format sensitivity
@@ -142,17 +144,18 @@ returns 0 for nearly every item. The same pattern holds at temp 0.7 (58.67 /
 
 ### 3. E2 — MMLU scoring-mode control
 
-**Setup.** 3 models on MMLU, 5-shot, `plain`, temp 0.0, scored both ways —
-log-likelihood (`limit=500`) vs generation (full 14,042); Qwen2.5-14B generation-only.
+**Setup.** 4 models on MMLU, 5-shot, `plain`, temp 0.0, scored both ways —
+log-likelihood vs generation, both on the **full** 14,042-item test set (an exact
+same-sample comparison for every model).
 
 | Model | log-likelihood | generation | \|Δ\| |
 |---|---|---|---|
-| Mistral-7B-Instruct-v0.3 | 61.92 | 61.64 | 0.28 |
-| Qwen2.5-7B-Instruct | 74.26 | 74.43 | 0.17 |
-| Llama-3.1-8B-Instruct | 68.30 | 68.16 | 0.14 |
-| Qwen2.5-14B-Instruct | — | 79.79 | — |
+| Mistral-7B-Instruct-v0.3 | 61.85 | 61.64 | 0.21 |
+| Qwen2.5-7B-Instruct | 74.25 | 74.43 | 0.18 |
+| Llama-3.1-8B-Instruct | 68.19 | 68.16 | 0.03 |
+| Qwen2.5-14B-Instruct | 79.97 | 79.79 | 0.18 |
 
-**Result.** Max gap **0.28 pp** — scoring mode is nearly inert *on MMLU*. This
+**Result.** Max gap **0.21 pp** — scoring mode is nearly inert *on MMLU*. This
 rules out a generic scoring-mode effect and shows the ≈35-point BBH gap (case
 study §5.1) is specific to lighteval log-likelihood × BBH's CoT structure, not a
 property of log-likelihood scoring in general.
@@ -166,10 +169,10 @@ else held fixed.
 | Model | 0.4.3 (s42/s123) | 0.4.11 (s42/s123) |
 |---|---|---|
 | Qwen2.5-1.5B-Instruct | 32.83 / 33.74 | 33.06 / 33.36 |
-| Qwen2.5-7B-Instruct | 75.06 / 76.35 | 75.51 / — |
+| Qwen2.5-7B-Instruct | 75.06 / 76.35 | 75.51 / 78.32 |
 
-**Result.** Largest seed-matched cross-version difference is **0.45 pp** — *below*
-the within-version seed spread (up to 1.29 pp). The effect is real but small; more
+**Result.** Largest seed-matched cross-version difference is **1.97 pp** — *below*
+the within-version seed spread (up to 2.81 pp). The effect is real but small; more
 importantly the two versions are **dependency-irreconcilable** (different
 `transformers` stacks), so even "same harness, different version" breaks
 comparability — which is why `harness_version` is an EvalSpec Required field.

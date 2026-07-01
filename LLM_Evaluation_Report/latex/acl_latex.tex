@@ -576,11 +576,11 @@ The case studies fall into three groups, one per mechanism by which scores
 become incomparable across sources; Figure~\ref{fig:casestudies-unified} shows a
 representative divergence for each. A controlled factorial experiment first
 quantifies the factors (four models $\times$ three benchmarks $\times$ three
-prompt formats $\times$ two temperatures $\times$ two n-shot counts; 306
+prompt formats $\times$ two temperatures $\times$ two n-shot counts; 312
 evaluations; Appendix~\ref{app:exp-grid}). Prompt format dominates: on GSM8K it
 accounts for ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$; 95\%
-bootstrap CI $[14.1\%, 44.8\%]$), with MMLU ($\eta^2 \approx 24.5\%$) and a GPQA
-run ($\eta^2 \approx 13.8\%$) consistent but underpowered ($p = 0.43$, $0.51$).
+bootstrap CI $[14.1\%, 44.8\%]$), with MMLU ($\eta^2 \approx 35.1\%$) and a GPQA
+run ($\eta^2 \approx 13.8\%$) consistent but underpowered ($p = 0.14$, $0.51$).
 Temperature contributes under 1\% ($\eta^2 = 0.25\%$), and the n-shot effect is
 benchmark-dependent: negligible on MMLU but on GSM8K inseparable from the parser,
 since 0-shot runs collapse when models omit the expected delimiter. The grid shows
@@ -626,7 +626,7 @@ reported under the surface label ``BigBench-Hard''; our normaliser keys on the
 collision counts.} a gap over 35 points; the same holds for Gemma-2-2B (11.76
 vs.\ 40.80) and MAmmoTH2-7B-Plus (18.93 vs.\ 63.10). This is not a generic
 scoring-mode effect: E2 (Appendix~\ref{app:exp-e2}) shows the
-log-likelihood-vs-generation gap on MMLU is at most 0.28\,pp, two orders of
+log-likelihood-vs-generation gap on MMLU is at most 0.21\,pp, two orders of
 magnitude smaller, so the BBH gap is specific to lighteval log-likelihood
 meeting BBH's CoT structure.
 
@@ -694,8 +694,8 @@ Gemma-7B is recorded at 49.80 and 81.20, both ``HellaSwag''
 \citep{abdin2024phi3} (5-shot, generation-based, temperature~0); the 81.20 is
 the Gemma report \citep{gemmateam2024gemma} (0-shot, log-likelihood over the
 four continuations). The $\approx$31-point gap is too large for shot count
-alone, on a log-likelihood benchmark n-shot moves scores a few points (our
-grid: MMLU 0-vs-5-shot differ 2.6\,pp, $\eta^2\approx1\%$,
+alone, on a log-likelihood benchmark n-shot moves scores by about a point (our
+grid: MMLU 0-vs-5-shot differ 1.0\,pp, $\eta^2\approx0.1\%$,
 Appendix~\ref{app:exp-grid}). The driver is scoring mode: free-form generation
 of the continuation is structurally harder than ranking pre-specified
 continuations. Neither record labels scoring mode or n-shot, so the gap is
@@ -936,8 +936,8 @@ should treat \texttt{scoring\_mode} as a first-class controlled-vocabulary field
 (\texttt{log-likelihood}, \texttt{generation}, \texttt{preference},
 \texttt{execution}), since no combination of harness, n-shot, and timestamp
 recovers the log-likelihood-vs.-generation boundary (BBH, \S\ref{sec:bbh}; E2,
-Appendix~\ref{app:exp-e2}, shows the converse: under 0.3\,pp when scoring mode
-alone varies).
+Appendix~\ref{app:exp-e2}, shows the converse: at most 0.21\,pp when scoring
+mode alone varies).
 
 \paragraph{Adoption.}
 None of the Required fields needs new instrumentation, they already exist at
@@ -1019,8 +1019,8 @@ left to future work; the collision-detection pipeline that surfaced these cases
 could in principle support such a census.
 
 \paragraph{Statistical power.} The factorial grid is adequately powered on GSM8K
-(prompt format $F=13.0$, $p<0.001$) but underpowered on MMLU ($F=0.98$,
-$p=0.43$) and GPQA ($F=0.72$, $p=0.51$), both reduced to single-seed or
+(prompt format $F=13.0$, $p<0.001$) but underpowered on MMLU ($F=2.43$,
+$p=0.14$) and GPQA ($F=0.72$, $p=0.51$), both reduced to single-seed or
 single-temperature designs under compute limits. We report the MMLU and GPQA
 results as directionally consistent with the GSM8K pattern, not as independent
 confirmation, and rest the load-bearing claims on GSM8K. Several grid cells use
@@ -1141,6 +1141,8 @@ in \S\ref{sec:harness-ann}.
 \begin{table}[ht]
 \centering
 \small
+\setlength{\tabcolsep}{4pt}%
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lll}
 \toprule
 Source & Score & Notes \\
@@ -1151,7 +1153,8 @@ RecurrentGemma paper & 55.10 & CoT generation \\
 MAmmoTH2 paper & 57.40 & CoT generation \\
 (BigBench-Hard alias) & 59.60 & CoT generation \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{Gemma-7B BBH scores across sources (\S\ref{sec:bbh}). The
 $\approx$35-point gap reflects OLv2's lighteval log-likelihood scoring
 vs.\ the ArXiv papers' chain-of-thought generation. The final row is reported
@@ -1163,6 +1166,8 @@ out of the automated cross-source collision counts (\S\ref{sec:bbh}).}
 \begin{table}[ht]
 \centering
 \small
+\setlength{\tabcolsep}{4pt}%
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lll}
 \toprule
 Source & Score & Notes \\
@@ -1173,7 +1178,8 @@ Gemma 2 report & 68.20 & CoT generation (3-shot) \\
 Gemma 3 report & 69.00 & CoT generation (0-shot) \\
 Gemma 3 report & 69.40 & CoT generation \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{Gemma-2-9B BBH scores across five sources (\S\ref{sec:sealion}).
 Two clusters: shared pipeline origin (OLv2/SEA-LION) and protocol mismatch
 (3-shot log-likelihood vs.\ 0-shot CoT).}
@@ -1267,6 +1273,7 @@ set by compliance tier, motivated in \S\ref{sec:evalspec}.
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lll}
 \toprule
 \textbf{Tier} & \textbf{Field} & \textbf{Description} \\
@@ -1294,7 +1301,8 @@ Full & \texttt{provenance\_url}             & Link to raw evaluation log or arte
      & \texttt{contamination\_check}        & Decontamination method and date \\
      & \texttt{compute\_hours}              & Wall-clock GPU-hours \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{EvalSpec field set by compliance tier (\S\ref{sec:evalspec}).
 Required fields are the minimum for score comparability;
 Recommended fields support reproducibility;
@@ -1423,7 +1431,7 @@ per-experiment design and results follow in
 Factorial Grid &
 Quantify relative importance of methodological factors &
 Qwen2.5-14B, Qwen2.5-7B, Llama-3.1-8B, Mistral-7B-v0.3 &
-3 benchmarks $\times$ 3 formats $\times$ 2 temps $\times$ 2 n-shots $\times$ 3 seeds (MMLU reduced to 1 temp $\times$ 1 seed); 312 attempted, 306 completed &
+3 benchmarks $\times$ 3 formats $\times$ 2 temps $\times$ 2 n-shots $\times$ 3 seeds (MMLU reduced to 1 temp $\times$ 1 seed); 312 attempted, 312 completed &
 Prompt format $\approx$27\% of variance on GSM8K ($F{=}13.0$, $p{<}0.001$); see \S\ref{app:exp-grid} for the full per-benchmark breakdown \\
 \midrule
 E1 &
@@ -1434,15 +1442,15 @@ Plain 58.5\%, Instruct 57.0\%, CoT 2.5\% (\S\ref{sec:gsm8k}) \\
 \midrule
 E2 &
 Isolate scoring-mode effect from other factors &
-Mistral-7B-Instruct-v0.3, Qwen2.5-7B-Instruct, Llama-3.1-8B-Instruct (paired); Qwen2.5-14B-Instruct (generation only) &
+Mistral-7B-Instruct-v0.3, Qwen2.5-7B-Instruct, Llama-3.1-8B-Instruct, Qwen2.5-14B-Instruct (all paired) &
 MMLU, 5-shot, plain prompt, temperature 0.0; log-likelihood vs.\ generation-based scoring &
-Maximum gap across three paired models: 0.28 pp (\S\ref{sec:bbh}, ruling out a generic scoring-mode effect) \\
+Maximum gap 0.21 pp across the four models, ruling out a generic scoring-mode effect (\S\ref{sec:bbh}) \\
 \midrule
 E3 &
 Test whether the harness \emph{version} alone shifts scores &
 Qwen2.5-1.5B-Instruct, Qwen2.5-7B-Instruct &
 GSM8K full, 5-shot, \texttt{hf} backend; lm-evaluation-harness 0.4.3 vs.\ 0.4.11; seeds 42, 123 &
-Cross-version $\le$0.45 pp, below the seed spread ($\le$1.29 pp); backs \texttt{harness\_version} + the SEA-LION argument (\S\ref{sec:sealion}) \\
+Cross-version $\le$1.97 pp, below the seed spread ($\le$2.81 pp); backs \texttt{harness\_version} + the SEA-LION argument (\S\ref{sec:sealion}) \\
 \midrule
 Judge &
 Isolate the judge-model effect (LLM-as-judge) &
@@ -1472,14 +1480,17 @@ few-shot; templates in Appendix~\ref{app:prompts}), two temperatures
 benchmark: 0-shot plus 3-shot for BBH, 0-shot plus 5-shot for GSM8K and
 MMLU. Three random seeds (42, 123, 7) were used per cell. MMLU was
 reduced to temperature 0.0 with a single seed (42) due to
-evaluation-server constraints. The analysis covers 306 successful evaluations:
+evaluation-server constraints. The analysis covers 312 successful evaluations:
 144 BBH cells (4 models $\times$ 2 n-shots $\times$ 3 formats $\times$ 2
-temperatures $\times$ 3 seeds), 144 GSM8K cells (same design), and 18
-MMLU cells (3 models $\times$ 2 n-shots $\times$ 3 formats at temperature
+temperatures $\times$ 3 seeds), 144 GSM8K cells (same design), and 24
+MMLU cells (4 models $\times$ 2 n-shots $\times$ 3 formats at temperature
 0.0 with a single seed).
 
-Inference was run with lm-evaluation-harness 0.4.11 and vLLM. GSM8K and
-MMLU runs used a 200-problem subset (\texttt{limit=200}) for compute
+Inference was run with lm-evaluation-harness 0.4.11 and vLLM; the MMLU cells
+were additionally re-scored on the \texttt{hf} (transformers) backend to
+recover runs that failed under vLLM, which is equivalent for log-likelihood
+multiple-choice ranking (agreeing within 0.5\,pp on cells run both ways).
+GSM8K and MMLU runs used a 200-problem subset (\texttt{limit=200}) for compute
 budget; BBH used the full task suite. Variance attribution uses two
 separate one-way ANOVAs on the prompt-format factor, computed per
 benchmark on the 5-shot cells to avoid pooling across the unbalanced
@@ -1487,9 +1498,9 @@ GSM8K and MMLU designs. GSM8K contributes 72 cells (4 models $\times$ 3
 formats $\times$ 2 temperatures $\times$ 3 seeds): prompt format yields
 $F = 13.00$, $p = 1.6 \times 10^{-5}$, $\eta^2 \approx 27.4\%$, while
 temperature contributes $\eta^2 \approx 0.25\%$ ($F = 0.18$, $p = 0.68$).
-MMLU's reduced 9-cell design at 5-shot (3 models $\times$ 3 formats
+MMLU's 12-cell design at 5-shot (4 models $\times$ 3 formats
 $\times$ 1 temperature $\times$ 1 seed) is descriptively consistent
-($\eta^2 \approx 24.5\%$) but underpowered ($F = 0.98$, $p = 0.43$); the
+($\eta^2 \approx 35.1\%$) but underpowered ($F = 2.43$, $p = 0.14$); the
 per-format means agree with the GSM8K pattern but cannot independently
 confirm it. Per-format means for both benchmarks are reported in
 Table~\ref{tab:anova-per-benchmark}.
@@ -1499,7 +1510,7 @@ To characterise the uncertainty in these point estimates under the
 with replacement within each prompt-format group ($10{,}000$ replicates). The
 GSM8K format effect has a 95\% bootstrap interval of $[14.1\%, 44.8\%]$, which
 excludes small effects and confirms the result is not an artefact of the
-problem subset. The MMLU interval is $[3.3\%, 85.4\%]$: it spans nearly the
+problem subset. The MMLU interval is $[10.3\%, 78.5\%]$: it spans nearly the
 whole range, the bootstrap signature of the same underpowering the $F$-test
 reports, and the reason we read MMLU as directional rather than confirmatory.
 
@@ -1520,8 +1531,8 @@ We attribute variance to the n-shot factor the same way, pooling each
 benchmark's successful cells by shot count (0-shot vs.\ 5-shot;
 Table~\ref{tab:anova-nshot}), and the two benchmarks behave oppositely in a
 way that is itself diagnostic. On MMLU the n-shot effect is negligible:
-pooled across models and formats, 0-shot scores 61.94 and 5-shot 59.34
-(\(\eta^2 \approx 1.0\%\), \(F = 0.16\), \(p = 0.69\)). This corroborates
+pooled across models and formats, 0-shot scores 60.17 and 5-shot 61.16
+(\(\eta^2 \approx 0.1\%\), \(F = 0.03\), \(p = 0.87\)). This corroborates
 the HellaSwag analysis (\S\ref{sec:hellaswag}) with a controlled
 measurement: on a log-likelihood-scored benchmark, varying n-shot moves the
 score by at most a few points. On GSM8K the n-shot factor appears dominant
@@ -1546,9 +1557,9 @@ GSM8K & \texttt{plain}    & 24 & 38.75 & 18.50--59.50 \\
 GSM8K & \texttt{instruct} & 24 & 34.19 & 16.50--57.00 \\
 GSM8K & \texttt{cot}      & 24 & 19.25 & ~~2.00--41.00 \\
 \midrule
-MMLU  & \texttt{plain}    &  3 & 63.60 & 55.17--73.18 \\
-MMLU  & \texttt{instruct} &  3 & 62.45 & 52.52--72.46 \\
-MMLU  & \texttt{cot}      &  3 & 51.98 & 35.97--61.95 \\
+MMLU  & \texttt{plain}    &  4 & 65.67 & 55.17--73.03 \\
+MMLU  & \texttt{instruct} &  4 & 65.87 & 52.52--76.09 \\
+MMLU  & \texttt{cot}      &  4 & 51.95 & 35.97--61.95 \\
 \bottomrule
 \end{tabular}
 \caption{Per-benchmark, per-format score distributions at 5-shot in the
@@ -1570,14 +1581,14 @@ Benchmark & n-shot & $n$ & Mean \\
 GSM8K & 0-shot & 72 & ~~0.00 \\
 GSM8K & 5-shot & 72 & 30.73 \\
 \midrule
-MMLU  & 0-shot &  9 & 61.94 \\
-MMLU  & 5-shot &  9 & 59.34 \\
+MMLU  & 0-shot & 12 & 60.17 \\
+MMLU  & 5-shot & 12 & 61.16 \\
 \bottomrule
 \end{tabular}
 \caption{Per-benchmark, per-shot score means, pooled across models, prompt
 formats, temperatures, and seeds. One-way ANOVA on the n-shot factor:
 GSM8K \(\eta^2 \approx 65.1\%\) (\(F = 264.6\), \(p < 10^{-30}\)), MMLU
-\(\eta^2 \approx 1.0\%\) (\(F = 0.16\), \(p = 0.69\)). The GSM8K 0-shot
+\(\eta^2 \approx 0.1\%\) (\(F = 0.03\), \(p = 0.87\)). The GSM8K 0-shot
 mean of exactly 0.00 reflects parser failure, not absent capability: the
 instruction-tuned models omit the \texttt{\#\#\#\#} answer delimiter
 without few-shot priming (\S\ref{sec:gsm8k}), so the apparent n-shot effect
@@ -1656,10 +1667,9 @@ Aggregate: 58.5\% (plain) vs.\ 2.5\% (CoT), $\Delta = -56.0$ pp.}
 \subsection{E2: MMLU Scoring-Mode Control}
 \label{app:exp-e2}
 
-Three instruction-tuned models were evaluated on MMLU 5-shot under both
+Four instruction-tuned models were evaluated on MMLU 5-shot under both
 log-likelihood and generation-based scoring to test whether scoring mode
-alone produces large score gaps (Table~\ref{tab:e2-scoring-mode}). A fourth
-model (Qwen2.5-14B-Instruct) contributes a generation-only run for reference.
+alone produces large score gaps (Table~\ref{tab:e2-scoring-mode}).
 
 \begin{table}[ht]
 \centering
@@ -1669,20 +1679,19 @@ model (Qwen2.5-14B-Instruct) contributes a generation-only run for reference.
 \toprule
 Model & log-likelihood & generation & $|\Delta|$ (pp) \\
 \midrule
-Mistral-7B-Instruct-v0.3   & 61.92 & 61.64 & 0.28 \\
-Qwen2.5-7B-Instruct        & 74.26 & 74.43 & 0.17 \\
-Llama-3.1-8B-Instruct      & 68.30 & 68.16 & 0.14 \\
-Qwen2.5-14B-Instruct       &  --  & 79.79 & --  \\
+Mistral-7B-Instruct-v0.3   & 61.85 & 61.64 & 0.21 \\
+Qwen2.5-7B-Instruct        & 74.25 & 74.43 & 0.18 \\
+Llama-3.1-8B-Instruct      & 68.19 & 68.16 & 0.03 \\
+Qwen2.5-14B-Instruct       & 79.97 & 79.79 & 0.18 \\
 \bottomrule
 \end{tabular}
 \caption{MMLU 5-shot, plain prompt, temperature 0.0, lm-evaluation-harness
-0.4.11. Log-likelihood runs use a 500-question subset
-(\texttt{limit=500}); generation runs use the full MMLU test set
-(\texttt{limit=14042}). The maximum gap across the three paired models
-is 0.28 pp, which rules out a generic scoring-mode effect: the
-$\approx$35-point BBH gap documented in \S\ref{sec:bbh} is specific to
-the interaction between lighteval's log-likelihood approach and BBH's
-chain-of-thought structure, not a property of log-likelihood scoring in
+0.4.11. Both scoring modes use the full MMLU test set
+(\texttt{limit=14042}), an exact same-sample comparison for every model. The
+maximum scoring-mode gap is 0.21 pp, which rules out a generic scoring-mode
+effect: the $\approx$35-point BBH gap documented in \S\ref{sec:bbh} is
+specific to the interaction between lighteval's log-likelihood approach and
+BBH's chain-of-thought structure, not a property of log-likelihood scoring in
 general.}
 \label{tab:e2-scoring-mode}
 \end{table}
@@ -1708,20 +1717,20 @@ Model & Harness & seed 42 & seed 123 \\
 Qwen2.5-1.5B-Instruct & 0.4.3  & 32.83 & 33.74 \\
 Qwen2.5-1.5B-Instruct & 0.4.11 & 33.06 & 33.36 \\
 Qwen2.5-7B-Instruct   & 0.4.3  & 75.06 & 76.35 \\
-Qwen2.5-7B-Instruct   & 0.4.11 & 75.51 & --   \\
+Qwen2.5-7B-Instruct   & 0.4.11 & 75.51 & 78.32 \\
 \bottomrule
 \end{tabular}
 \caption{GSM8K (full test set, 5-shot, \texttt{hf} backend) under
 lm-evaluation-harness 0.4.3 vs.\ 0.4.11 with identical configuration. The
-largest seed-matched cross-version difference is 0.45 pp (Qwen2.5-7B, seed 42),
-below the within-version seed spread (up to 1.29 pp on Qwen2.5-7B/0.4.3). The
-0.4.11 / 7B seed-123 cell is omitted. Raw records released with the dataset.}
+largest seed-matched cross-version difference is 1.97 pp (Qwen2.5-7B, seed 123),
+still below the within-version seed spread (up to 2.81 pp on Qwen2.5-7B/0.4.11).
+Raw records released with the dataset.}
 \label{tab:e3-harness-version}
 \end{table}
 
 The harness version shifts the GSM8K score by less than the run-to-run seed
-variation: cross-version differences are at most 0.45 pp, while seeds alone move
-the same configuration by up to 1.29 pp. The effect is real but small relative
+variation: cross-version differences are at most 1.97 pp, while seeds alone move
+the same configuration by up to 2.81 pp. The effect is real but small relative
 to seed noise, which is precisely why \texttt{harness\_version} belongs in the
 EvalSpec Required tier (\S\ref{sec:evalspec}), so that a future divergence can
 be attributed to the version rather than guessed at. The same control bounds the
