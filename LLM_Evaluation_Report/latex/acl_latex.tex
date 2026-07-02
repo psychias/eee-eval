@@ -759,24 +759,32 @@ indistinguishable from a capability difference (Appendix~\ref{app:hellaswag}
 gives an alternative rendering of Figure~\ref{fig:casestudies-unified}).
 
 \paragraph{When is a scoring-mode mismatch consequential? A diagnostic.}
-The BBH, HellaSwag, and MMLU results together yield a rule of thumb for
-anticipating where a log-likelihood-vs-generation mismatch matters, rather than
-leaving it case-by-case. The gap tracks whether the answer is \emph{recovered by
-ranking} or \emph{produced and parsed}: (i) on multiple-choice benchmarks scored
-by ranking fixed continuations (MMLU-style), the two modes agree to within
-$\approx$0.2\,pp (E2, Appendix~\ref{app:exp-e2}), because both consult the same
-answer key; (ii) on benchmarks where the model must \emph{generate} the answer
-and a parser extracts it, or where the protocol is chain-of-thought structured
-(GSM8K's \texttt{\#\#\#\#} delimiter, HellaSwag free-form continuation, BBH CoT),
-the two modes diverge by tens of points, because generation exposes the
-format/parser coupling and reasoning structure that ranking bypasses. The
-consequential cases are therefore predictable from the record itself: a benchmark
-whose \texttt{scoring\_mode} is \texttt{generation} \emph{and} whose answer is
-parsed or CoT-structured is at risk of a mode artefact; a pure log-likelihood
-multiple-choice record is not. This is precisely why EvalSpec places
-\texttt{scoring\_mode} in the Required tier, it is the one field that flags
-whether a cross-source gap under a shared benchmark name could be a scoring-mode
-artefact at all.
+Rather than leave this as a case-by-case observation, the results yield a
+diagnostic that predicts, for a benchmark \emph{not} in our study, whether a
+log-likelihood-vs-generation mismatch can move the score. A mismatch is
+consequential to the degree a benchmark is high-risk on any of three protocol axes:
+\begin{itemize}
+\item \textbf{Answer-extraction dependence:} does scoring parse/normalise generated
+text (high-risk) or rank fixed options (low-risk)? Parser brittleness is what
+collapses GSM8K when the \texttt{\#\#\#\#} delimiter is absent (\S\ref{sec:gsm8k}).
+\item \textbf{Output-space constraint:} a small closed label set (low-risk) versus
+open-ended generation (high-risk), which widens the space in which the two modes
+can diverge.
+\item \textbf{Chain-of-thought interaction:} does the protocol elicit reasoning a
+parser must then reduce to a final answer (high-risk) or score the answer directly
+(low-risk)? This is the BBH mechanism (\S\ref{sec:bbh}).
+\end{itemize}
+Pure multiple-choice log-likelihood benchmarks are low-risk on all three, so the
+two modes agree: MMLU differs by 0.21\,pp (E2, Appendix~\ref{app:exp-e2}), and the
+three log-likelihood benchmarks we add to the grid precisely to test this
+(ARC-Challenge, WinoGrande, OpenBookQA; Appendix~\ref{app:exp-grid}) show only
+small prompt-format effects, as predicted. Benchmarks high-risk on one or more axis
+diverge by tens of points: GSM8K (extraction + open output), BBH (extraction +
+CoT), HellaSwag (open continuation). The prediction is therefore mechanical from
+the protocol, not the benchmark name, and it is what \texttt{scoring\_mode} plus
+the presence of a parser encodes, which is why EvalSpec places \texttt{scoring\_mode}
+in the Required tier: it tells a reader which axis a cross-source gap under a shared
+name could be hiding.
 
 \subsection{Case Study 3: Shared Pipelines Fake Independence}
 \label{sec:convergence}\label{sec:sealion}
@@ -1062,6 +1070,23 @@ while one emitting only the Required fields still yields comparable aggregate
 scores. EvalSpec thus fixes a comparability \emph{floor} without capping the
 reproducibility ceiling that richer EEE records provide, and its records are the
 natural unit that operational systems (\S\ref{sec:related}) consume.
+
+\paragraph{Provenance and reproducibility as first-class.} Two properties make the
+above auditable rather than aspirational. First, \emph{each value carries its
+evidence source}: EvalSpec adds a provenance tag separating source-reported values
+(returned by the producer) from API-exposed, documentation-inferred (e.g.\ a
+harness label attached from a leaderboard's docs), and LLM-extracted ones, so a
+reader can tell measurement from inference, exactly the distinction the OLv2
+harness label needs (\S\ref{sec:pipeline}); the released dataset already applies it
+to the load-bearing inferred fields. Second, \emph{each headline number links to a
+released artifact}: the dataset, extraction and analysis code, and the collision,
+coverage, and audit scripts regenerate every reported table from the released
+records (\S\ref{sec:materials}). With the EEE profile above and the crosswalk to
+operational layers such as Evaluation Cards \citep{ghosh2026evalcards}, whose
+comparability and reproducibility signals consume precisely the fields EvalSpec
+makes mandatory, provenance and reproducibility become structural properties of the
+record rather than optional extras, which is what lets a third party audit a score
+and what lowers the barrier to adoption.
 
 \section{Conclusions}
 
