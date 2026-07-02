@@ -43,11 +43,14 @@ def norm_bench(b):
 
 
 def norm_model(model_id, name):
+    # Strip the org prefix + separators only. We deliberately do NOT strip
+    # capability suffixes (instruct/chat/base): conflating a base and an
+    # instruct checkpoint would manufacture false collisions and inflate the
+    # disagreement rate. This keeps the collision count a conservative lower
+    # bound on true cross-source overlap.
     tail = (model_id or name or "").strip().split("/")[-1]
     k = re.sub(r"[^a-z0-9]", "", tail.lower())
-    if k in MODEL_ALIAS:
-        return MODEL_ALIAS[k]
-    return re.sub(r"(instruct|chat|it|hf|v0|base)$", "", k)
+    return MODEL_ALIAS.get(k, k)
 
 
 def fnum(x):
@@ -96,6 +99,32 @@ def main():
     print(f"  disagree >5pp: {big} ({100*big/max(multi,1):.1f}% of collisions)")
     print(f"  unattributable disagreements: {unattributable}/{disagree} "
           f"({100*unattributable/max(disagree,1):.0f}%)")
+
+    # OLv2 runtime-vs-documented harness signature (Sec 6, "pipeline-attached
+    # harness labels"): OLv2 runs lighteval (log-likelihood) though we label it
+    # lm_eval; its score should sit systematically below sources that use the
+    # documented CoT/generation protocol, one-signed across many models.
+    import statistics
+    gaps = defaultdict(list)
+    for recs in cells.values():
+        srcs = {r.get("source") for r in recs}
+        if "open_llm_leaderboard_v2" not in srcs or len(srcs) < 2:
+            continue
+        olv = [fnum(r["score"]) for r in recs
+               if r.get("source") == "open_llm_leaderboard_v2" and fnum(r.get("score")) is not None]
+        oth = [fnum(r["score"]) for r in recs
+               if r.get("source") != "open_llm_leaderboard_v2" and fnum(r.get("score")) is not None]
+        if olv and oth:
+            b = None
+            for r in recs:
+                if r.get("source") == "open_llm_leaderboard_v2":
+                    b = norm_bench(r.get("benchmark")); break
+            gaps[b].append(statistics.median(oth) - olv[0])
+    print("\nOLv2 (lighteval) vs other-source gap, per benchmark:")
+    for b, gs in sorted(gaps.items(), key=lambda x: -len(x[1])):
+        if len(gs) >= 2:
+            print(f"  {b:14} n={len(gs):3}  median={statistics.median(gs):+.1f}pp  "
+                  f"OLv2 lower in {sum(1 for g in gs if g > 0)}/{len(gs)}")
 
 
 if __name__ == "__main__":

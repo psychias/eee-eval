@@ -887,13 +887,14 @@ sufficient.
 
 \paragraph{From existence to prevalence.}\label{sec:prevalence} The case studies
 establish that each mechanism \emph{occurs}; a corpus-wide pass shows how often the
-precondition for catching one is even present. After normalising model and benchmark names across
-all 46{,}559 records, 40{,}756 distinct model--benchmark cells remain, of which
-only \textbf{274 (0.67\%)} are reported by two or more independent sources, a
-direct measure of the fragmentation that makes cross-source verification rare.
-Where that overlap does occur it usually disagrees: \textbf{206 of the 274 (75\%)}
-differ by more than 1\,pp and \textbf{165 (60\%)} by more than 5\,pp (up to
-70\,pp for Mistral-7B on HumanEval across two sources). The disagreements are also
+precondition for catching one is even present. After conservatively normalising model and benchmark names across
+all 46{,}559 records (keeping base and instruct checkpoints distinct), 42{,}114
+distinct model--benchmark cells remain, of which only \textbf{267 (0.63\%)} are
+reported by two or more independent sources, a direct measure of the fragmentation
+that makes cross-source verification rare. Where that overlap does occur it usually
+disagrees: \textbf{185 of the 267 (69\%)} differ by more than 1\,pp and
+\textbf{139 (52\%)} by more than 5\,pp (differences above 30\,pp are common, e.g.\
+Gemma-2-9B BBH at 34.1 vs.\ 68.2 across OLv2 and the model's own report). The disagreements are also
 systematically unattributable: no colliding record carries a scoring-mode field
 (unrecorded ecosystem-wide, \S\ref{sec:discrepancies}) and most omit the
 harness, so the gap cannot be assigned to a cause from the record alone.
@@ -1160,7 +1161,14 @@ directional MMLU/GPQA effects without altering the load-bearing GSM8K result.
 leaderboard subset is attached by our pipeline from platform documentation, not
 returned by any source API. It records what a platform documents it runs, which
 can itself drift from the runtime, OLv2 is documented as \texttt{lm\_eval} but
-actually runs \emph{lighteval} (\S\ref{sec:bbh}). The released dataset marks every
+actually runs \emph{lighteval} (\S\ref{sec:bbh}). This drift is not the single
+Gemma-2-9B case: across every model--benchmark pair where OLv2 and a model's own
+paper both report the same benchmark, the OLv2 score is lower in \textbf{37 of 42}
+BBH pairs (median gap \textbf{25.6\,pp}) and \textbf{19 of 24} MMLU-Pro pairs
+(median \textbf{8.0\,pp}), a one-signed gap consistent with lighteval's
+log-likelihood scoring rather than the documented \texttt{lm\_eval}
+chain-of-thought protocol, and not with a capability difference (which would not be
+one-directional across twenty-odd models). The released dataset marks every
 such value as inferred (not source-reported) so downstream users can correct or
 discount it rather than propagate the documentation label as ground truth.
 
