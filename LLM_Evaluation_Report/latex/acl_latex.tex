@@ -565,9 +565,14 @@ the source paper never states. Extraction of \emph{stated} metadata is therefore
 reliable, but apparent field coverage overstates \emph{verifiable} coverage,
 especially for \texttt{prompt\_template} and \texttt{decoding\_strategy};
 \texttt{n\_shot} is both high-precision and usually paper-stated, whereas prompt
-and decoding are high-precision only \emph{when} the paper states them. The
-released records flag inferred-versus-stated values so downstream users can
-discount defaults.
+and decoding are high-precision only \emph{when} the paper states them. Because the
+reference judgments come from a second language model rather than a human, this
+figure is an inter-extractor agreement rate, not precision against a human gold
+standard; the two extractors could share failure modes, so it upper-bounds rather
+than certifies correctness, and the more robust finding is the qualitative one, the
+21\% default-filling, which any reader can confirm against the cited papers. The
+released records flag inferred-versus-stated values so downstream users can discount
+defaults.
 
 
 \subsection{Results and Discrepancies}
@@ -632,10 +637,16 @@ become incomparable across sources; Figure~\ref{fig:casestudies-unified} shows a
 representative divergence for each. A controlled factorial experiment first
 quantifies the factors (four models $\times$ three benchmarks $\times$ three
 prompt formats $\times$ two temperatures $\times$ two n-shot counts; 312
-evaluations; Appendix~\ref{app:exp-grid}). Prompt format dominates: on GSM8K it
+evaluations; Appendix~\ref{app:exp-grid}). Prompt format dominates on the generation benchmark: on GSM8K it
 accounts for ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$; 95\%
-bootstrap CI $[14.1\%, 44.8\%]$), with MMLU ($\eta^2 \approx 35.1\%$) and a GPQA
-run ($\eta^2 \approx 13.8\%$) consistent but underpowered ($p = 0.14$, $0.51$).
+bootstrap CI $[14.1\%, 44.8\%]$), operating through the format--parser coupling of
+\S\ref{sec:gsm8k} rather than a capability shift. On all five log-likelihood
+benchmarks the format effect is not significant (MMLU $p = 0.14$, GPQA $p = 0.51$,
+plus three added in Appendix~\ref{app:exp-grid}); their large $\eta^2$ point
+estimates (e.g.\ MMLU $35.1\%$) are underpowered, with single-seed $n{=}4$ groups
+and wide bootstrap intervals, so we read them as consistent with rather than
+evidence for the small effects the scoring-mode diagnostic (\S\ref{sec:hellaswag})
+predicts.
 Temperature contributes under 1\% ($\eta^2 = 0.25\%$), and the n-shot effect is
 benchmark-dependent: negligible on MMLU but on GSM8K inseparable from the parser,
 since 0-shot runs collapse when models omit the expected delimiter. The grid shows
@@ -738,11 +749,13 @@ Mistral-7B is recorded at 32.80 and 79.42, both ``Belebele''
 \citep{bandarkar2023belebele}. The 32.80 is the Reka report
 \citep{team2024reka} (0-shot, multilingual average over 150 variants); the 79.42
 is Falcon2 \citep{malartic2024falcon2} (5-shot, English only). Falcon2's own
-0-shot English score for Mistral-7B, 32.48, nearly matches Reka's 32.80, which
-isolates the effect: 0-shot$\to$5-shot on English yields the full 47-point gain
-($32.48 \to 79.42$) while language scope alone contributes almost nothing. The
-46.6-point gap is driven by n-shot, not language scope, and neither record
-labels either dimension.
+0-shot English score for Mistral-7B, 32.48, nearly matches Reka's 32.80. Read with
+care, since these are single numbers from two uncontrolled reports rather than a
+controlled decomposition, the near-match is consistent with n-shot dominating:
+0-shot$\to$5-shot on English spans nearly the full 47-point gain
+($32.48 \to 79.42$), with language scope apparently contributing little. Either
+way the 46.6-point gap under one ``Belebele'' label confounds n-shot with language
+scope, and neither record labels either dimension.
 
 \paragraph{HellaSwag: scoring mode and n-shot confounded.}\label{sec:hellaswag}
 Gemma-7B is recorded at 49.80 and 81.20, both ``HellaSwag''
@@ -797,10 +810,11 @@ match, while listing Open LLM Leaderboard among its benchmark sources. Such a
 match is consistent with either direct importation of the OLv2 score or
 independent re-evaluation on the identical harness, and the EEE
 record cannot distinguish them; but our harness-version control
-(Appendix~\ref{app:exp-e3}) shows independent reruns vary by up to 1.3\,pp across
-seeds, so an exact match is far more consistent with a re-import than a re-run,
-which would almost never agree to the second decimal. Either way the two records
-share a pipeline origin. The fields that would separate replication from
+(Appendix~\ref{app:exp-e3}) shows reruns vary by up to 2.81\,pp across
+seeds, so an exact two-decimal match is more consistent with a re-import than with
+an independent re-run under a different seed. A re-run under OLv2's exact,
+deterministic configuration could of course reproduce it, but SEA-LION records no
+such configuration; either way the two records share a pipeline origin. The fields that would separate replication from
 re-import (\texttt{harness}, \texttt{prompt\_template\_hash},
 \texttt{evaluation\_timestamp}) were dropped before the comparison table, leaving
 the match as the only signal.
@@ -905,13 +919,14 @@ reported by two or more independent sources, a direct measure of the fragmentati
 that makes cross-source verification rare. Where that overlap does occur it usually
 disagrees: \textbf{185 of the 267 (69\%)} differ by more than 1\,pp and
 \textbf{139 (52\%)} by more than 5\,pp (differences above 30\,pp are common, e.g.\
-Gemma-2-9B BBH at 34.1 vs.\ 68.2 across OLv2 and the model's own report). The disagreements are also
-systematically unattributable: no colliding record carries a scoring-mode field
-(unrecorded ecosystem-wide, \S\ref{sec:discrepancies}) and most omit the
-harness, so the gap cannot be assigned to a cause from the record alone.
-Prevalence is thus bounded less by how often the mechanisms fire than by how
-rarely two sources measure the same thing at all; when they do, divergence is the
-norm and its cause is unrecorded. Name normalisation is heuristic, so 0.67\% is a
+Gemma-2-9B BBH at 34.1 vs.\ 68.2 across OLv2 and the model's own report). The
+disagreements are also unattributable from the record: \textbf{98\%} have the
+harness field missing from at least one of the two colliding records, and scoring
+mode is recorded in none of them, though that last point is corpus-wide, not
+special to collisions (\S\ref{sec:discrepancies}), so the gap cannot be assigned to
+a cause. Prevalence is thus bounded less by how often the mechanisms fire than by
+how rarely two sources measure the same thing at all; when they do, divergence is
+the norm and its cause is unrecorded. Name normalisation is heuristic, so 0.63\% is a
 lower bound on overlap; the released collision script reproduces the count.
 
 \subsection{EvalSpec: Adapting EEE for Comparable Reporting}
@@ -1153,9 +1168,9 @@ its inferred metadata as such so downstream users can discount defaults.
 hand-selected instances chosen because their mechanisms are diagnosable, not a
 random sample. The corpus-wide pass (\S\ref{sec:prevalence}, ``from
 existence to prevalence'') quantifies the \emph{aggregate} picture, cross-source
-overlap is rare (0.67\% of cells), and where it exists divergence is the norm
-(75\% $>$1\,pp) and unattributable (no scoring-mode field, harness usually
-absent). What it does not do is attribute each collision to a \emph{specific}
+overlap is rare (0.63\% of cells), and where it exists divergence is the norm
+(69\% $>$1\,pp) and unattributable (harness missing from a record in 98\% of
+disagreements; scoring mode absent ecosystem-wide). What it does not do is attribute each collision to a \emph{specific}
 mechanism (scoring-mode mismatch vs.\ variant conflation vs.\ shared-pipeline
 reuse), because the very fields that would separate them are the ones missing;
 per-mechanism prevalence therefore remains bounded by the same metadata gap the
@@ -1198,10 +1213,14 @@ benchmark, the OLv2 score is lower in \textbf{37 of 42} BBH pairs (median gap
 \textbf{25.6\,pp}) and \textbf{19 of 24} MMLU-Pro pairs (median \textbf{8.0\,pp}),
 a one-signed gap consistent with OLv2's log-likelihood scoring rather than the
 papers' chain-of-thought protocol, and not with a capability difference (which
-would not be one-directional across twenty-odd models). The released dataset marks
-inferred fields as such and records the scoring mode where known, so downstream
-users can attribute such gaps rather than propagate a documentation label as ground
-truth.
+would not be one-directional across twenty-odd models). Because each pair compares
+OLv2 to a \emph{different} model's own report, this is suggestive rather than a
+clean isolation, the gap also carries the papers' self-reported protocol choices
+(few-shot, decoding, and a bias toward a favourable number); we read it as evidence
+that the missing scoring-mode metadata makes the divergence \emph{unattributable},
+not as a measured scoring-mode effect size. The released dataset marks inferred
+fields as such and records the scoring mode where known, so downstream users can
+attribute such gaps rather than propagate a documentation label as ground truth.
 
 \paragraph{Extending the schema.} EvalSpec is released as an extensible adaptation
 of EEE, not a closed standard, and the audit surfaces further runtime context we
@@ -1697,14 +1716,17 @@ three are closed-set log-likelihood benchmarks, so the diagnostic predicts a sma
 prompt-format effect, and that is what we find: at 5-shot the format spread is
 6.1\,pp (ARC-Challenge), 2.9\,pp (WinoGrande), and 2.1\,pp (OpenBookQA), and none of
 the three effects is significant ($F = 1.13/1.15/0.38$, $p = 0.36/0.36/0.70$),
-matching MMLU and GPQA. Across all five log-likelihood multiple-choice benchmarks
-the prompt-format effect is thus statistically indistinguishable from significance,
-whereas on generation-scored GSM8K it is large and significant
-($\eta^2 \approx 27\%$, $p < 0.001$). Prompt format is therefore not a universal
-driver but one whose magnitude is set by the scoring protocol, exactly as the
-diagnostic predicts; and because this arm is run entirely on one backend at full
-set, it also removes the \texttt{limit=200} and vLLM-vs-\texttt{hf} confounds that
-qualify the original grid.
+like MMLU and GPQA. At this design's single-seed $n{=}4$ per format group these
+five log-likelihood tests are underpowered, so their null results are
+\emph{consistent with} the small effects the diagnostic predicts, not positive
+evidence of them; the load-bearing contrast is with generation-scored GSM8K, where
+the format effect is large and significant ($\eta^2 \approx 27\%$, $p < 0.001$) on
+the same design. That a significant effect appears on the generation benchmark and
+not on any of the five log-likelihood benchmarks is what the diagnostic predicts:
+prompt format is not a universal driver but one whose magnitude is set by the
+scoring protocol. Because this arm is run entirely on one backend at full set, it
+also removes the \texttt{limit=200} and vLLM-vs-\texttt{hf} confounds that qualify
+the original grid.
 
 We attribute variance to the n-shot factor the same way, pooling each
 benchmark's successful cells by shot count (0-shot vs.\ 5-shot;
