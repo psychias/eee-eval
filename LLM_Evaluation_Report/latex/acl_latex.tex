@@ -690,15 +690,15 @@ pipeline origin (exact match, 34.10) while the Gemma reports run CoT independent
 \label{sec:protocol}
 
 Here the harness makes implementation choices the benchmark specification leaves
-open, and different choices produce measurements that cannot be compared on the
-same scale even when both are correctly executed.
+open, and different choices produce measurements incomparable on the same scale
+even when both are correctly executed.
 
 \paragraph{BBH: log-likelihood vs.\ chain-of-thought.}\label{sec:bbh}
-BBH \citep{suzgun2023} specifies 3-shot chain-of-thought generation, with the
+BBH \citep{suzgun2023} specifies 3-shot chain-of-thought generation with the
 answer extracted from free-form reasoning, the protocol ArXiv papers follow.
 OLv2 instead runs BBH under its fork of the EleutherAI lm-evaluation-harness,
-scoring it 3-shot by normalised accuracy (\texttt{acc\_norm}): the model ranks the
-fixed answer choices by log-likelihood and no reasoning is generated
+scoring 3-shot by normalised accuracy (\texttt{acc\_norm}): the model ranks the
+fixed answer choices by log-likelihood, generating no reasoning
 \citep{openllmv2about}. OLv2's API exposes no harness or scoring-mode field, so
 both are known only from its documentation. The effect is visible in the data
 (Table~\ref{tab:bbh-app}, Appendix~\ref{app:casetables}): Gemma-7B scores 21.12
@@ -764,13 +764,12 @@ Mistral-7B is recorded at 32.80 and 79.42, both ``Belebele''
 \citep{bandarkar2023belebele}. The 32.80 is the Reka report
 \citep{team2024reka} (0-shot, multilingual average over 150 variants); the 79.42
 is Falcon2 \citep{malartic2024falcon2} (5-shot, English only). Falcon2's own
-0-shot English score for Mistral-7B, 32.48, nearly matches Reka's 32.80. Read with
-care, since these are single numbers from two uncontrolled reports rather than a
-controlled decomposition, the near-match is consistent with n-shot dominating:
-0-shot$\to$5-shot on English spans nearly the full 47-point gain
-($32.48 \to 79.42$), with language scope apparently contributing little. Either
+0-shot English score for Mistral-7B, 32.48, nearly matches Reka's 32.80. These are
+single uncontrolled numbers, not a controlled decomposition, but the near-match is
+consistent with n-shot dominating: 0-shot$\to$5-shot on English spans nearly the
+full 47-point gain ($32.48 \to 79.42$), language scope contributing little. Either
 way the 46.6-point gap under one ``Belebele'' label confounds n-shot with language
-scope, and neither record labels either dimension.
+scope, neither of which the records label.
 
 \paragraph{HellaSwag: scoring mode and n-shot confounded.}\label{sec:hellaswag}
 Gemma-7B is recorded at 49.80 and 81.20, both ``HellaSwag''
@@ -778,13 +777,13 @@ Gemma-7B is recorded at 49.80 and 81.20, both ``HellaSwag''
 \citep{abdin2024phi3} (5-shot, generation-based, temperature~0); the 81.20 is
 the Gemma report \citep{gemmateam2024gemma} (0-shot, log-likelihood over the
 four continuations). The $\approx$31-point gap is too large for shot count
-alone, on a log-likelihood benchmark n-shot moves scores by about a point (our
+alone: on a log-likelihood benchmark n-shot moves scores by about a point (our
 grid: MMLU 0-vs-5-shot differ 1.0\,pp, $\eta^2\approx0.1\%$,
-Appendix~\ref{app:exp-grid}). The driver is scoring mode: free-form generation
-of the continuation is structurally harder than ranking pre-specified
-continuations. Neither record labels scoring mode or n-shot, so the gap is
-indistinguishable from a capability difference (Appendix~\ref{app:hellaswag}
-gives an alternative rendering of Figure~\ref{fig:casestudies-unified}).
+Appendix~\ref{app:exp-grid}). The driver is scoring mode: generating the
+continuation is structurally harder than ranking pre-specified ones. Neither
+record labels scoring mode or n-shot, so the gap is indistinguishable from a
+capability difference (Appendix~\ref{app:hellaswag} gives an alternative rendering
+of Figure~\ref{fig:casestudies-unified}).
 
 \paragraph{When is a scoring-mode mismatch consequential? A diagnostic.}
 The results yield a
@@ -793,13 +792,12 @@ log-likelihood-vs-generation mismatch can move the score. A mismatch is
 consequential to the degree a benchmark is high-risk on any of three protocol axes:
 \begin{itemize}
 \item \textbf{Answer-extraction dependence:} does scoring parse/normalise generated
-text (high-risk) or rank fixed options (low-risk)? Parser brittleness is what
-collapses GSM8K when the \texttt{\#\#\#\#} delimiter is absent (\S\ref{sec:gsm8k}).
+text (high-risk) or rank fixed options (low-risk)? Parser brittleness collapses
+GSM8K when the \texttt{\#\#\#\#} delimiter is absent (\S\ref{sec:gsm8k}).
 \item \textbf{Output-space constraint:} a small closed label set (low-risk) versus
-open-ended generation (high-risk), which widens the space in which the two modes
-can diverge.
+open-ended generation (high-risk), which widens the space in which the modes diverge.
 \item \textbf{Chain-of-thought interaction:} does the protocol elicit reasoning a
-parser must then reduce to a final answer (high-risk) or score the answer directly
+parser must reduce to a final answer (high-risk) or score the answer directly
 (low-risk)? This is the BBH mechanism (\S\ref{sec:bbh}).
 \end{itemize}
 Pure multiple-choice log-likelihood benchmarks are low-risk on all three, so the
@@ -1112,10 +1110,10 @@ released artifact}: the dataset, extraction and analysis code, and the collision
 coverage, and audit scripts regenerate every reported table from the released
 records (\S\ref{sec:materials}). With the EEE profile above and the crosswalk to
 operational layers such as Evaluation Cards \citep{ghosh2026evalcards}, whose
-comparability and reproducibility signals consume precisely the fields EvalSpec
-makes mandatory, provenance and reproducibility become structural properties of the
-record rather than optional extras, which is what lets a third party audit a score
-and what lowers the barrier to adoption.
+signals consume precisely the fields EvalSpec makes mandatory, provenance and
+reproducibility become structural properties of the record rather than optional
+extras, which is what lets a third party audit a score and lowers the barrier to
+adoption.
 
 \section{Conclusions}
 
@@ -1672,14 +1670,14 @@ per-format means agree with the GSM8K pattern but cannot independently
 confirm it. Per-format means for both benchmarks are reported in
 Table~\ref{tab:anova-per-benchmark}.
 
-To characterise the uncertainty in these point estimates under the
-\texttt{limit=200} subsampling, we bootstrap each $\eta^2$ by resampling cells
-with replacement within each prompt-format group ($10{,}000$ replicates). The
-GSM8K format effect has a 95\% bootstrap interval of $[14.1\%, 44.8\%]$, which
-excludes small effects and confirms the result is not an artefact of the
-problem subset. The MMLU interval is $[10.3\%, 78.5\%]$: it spans nearly the
-whole range, the bootstrap signature of the same underpowering the $F$-test
-reports, and the reason we read MMLU as directional rather than confirmatory.
+To characterise uncertainty under \texttt{limit=200} subsampling, we bootstrap
+each $\eta^2$ by resampling cells with replacement within each prompt-format
+group ($10{,}000$ replicates). The GSM8K format effect's 95\% bootstrap interval
+$[14.1\%, 44.8\%]$ excludes small effects, confirming the result is not an
+artefact of the problem subset. The MMLU interval $[10.3\%, 78.5\%]$ spans
+nearly the whole range, the bootstrap signature of the same underpowering the
+$F$-test reports, and the reason we read MMLU as directional rather than
+confirmatory.
 
 A direct full-benchmark rerun confirms the subset is representative. We re-ran the
 Qwen2.5-7B-Instruct GSM8K \texttt{plain} and \texttt{cot} cells (5-shot, greedy) on
