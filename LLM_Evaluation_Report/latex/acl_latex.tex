@@ -637,7 +637,9 @@ become incomparable across sources; Figure~\ref{fig:casestudies-unified} shows a
 representative divergence for each. A controlled factorial experiment first
 quantifies the factors (four models $\times$ three benchmarks $\times$ three
 prompt formats $\times$ two temperatures $\times$ two n-shot counts; 312
-evaluations; Appendix~\ref{app:exp-grid}). Prompt format dominates on the generation benchmark: on GSM8K it
+evaluations), with three further log-likelihood benchmarks then added full-set on a
+common backend to test generalization (Appendix~\ref{app:exp-grid}). Prompt format
+dominates on the generation benchmark: on GSM8K it
 accounts for ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$; 95\%
 bootstrap CI $[14.1\%, 44.8\%]$), operating through the format--parser coupling of
 \S\ref{sec:gsm8k} rather than a capability shift. On all five log-likelihood
@@ -1762,6 +1764,9 @@ MMLU  & \texttt{plain}    &  4 & 65.67 & 55.17--73.03 \\
 MMLU  & \texttt{instruct} &  4 & 65.87 & 52.52--76.09 \\
 MMLU  & \texttt{cot}      &  4 & 51.95 & 35.97--61.95 \\
 \midrule
+GPQA  & \texttt{plain}    &  4 & 27.50 & 19.50--35.50 \\
+GPQA  & \texttt{instruct} &  4 & 32.00 & 26.00--38.00 \\
+GPQA  & \texttt{cot}      &  4 & 32.00 & 25.50--40.50 \\
 ARC-C & \texttt{plain}    &  4 & 55.12 & 45.82--61.35 \\
 ARC-C & \texttt{instruct} &  4 & 56.74 & 51.54--60.24 \\
 ARC-C & \texttt{cot}      &  4 & 50.68 & 44.03--58.96 \\
@@ -1775,11 +1780,13 @@ OBQA  & \texttt{cot}      &  4 & 40.60 & 36.40--46.80 \\
 \end{tabular}
 \caption{Per-benchmark, per-format score distributions at 5-shot in the
 factorial grid. GSM8K cells are pooled across 4 models $\times$ 2
-temperatures $\times$ 3 seeds; MMLU and the three added log-likelihood
+temperatures $\times$ 3 seeds; MMLU, GPQA, and the three added log-likelihood
 benchmarks (ARC-Challenge, WinoGrande, OpenBookQA) across 4 models $\times$ 1
 temperature $\times$ 1 seed. The plain--cot gap is 19.50 pp on generation-scored
-GSM8K but only 6.1/2.9/2.1 pp on the added log-likelihood benchmarks, matching the
-scoring-mode diagnostic. Raw values released with the dataset.}
+GSM8K, whose format effect is significant; on the five log-likelihood benchmarks
+the gap ranges from 2.1 pp (OpenBookQA) to 13.9 pp (MMLU) but none reaches
+significance at this design's single-seed $n{=}4$, matching the scoring-mode
+diagnostic. Raw values released with the dataset.}
 \label{tab:anova-per-benchmark}
 \end{table}
 
