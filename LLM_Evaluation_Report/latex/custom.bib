@@ -257,6 +257,18 @@
   note      = {arXiv:2503.22968; HaeRae Evaluation Toolkit (HRET)}
 }
 
+% Open LLM Leaderboard v2 — official About/reproducibility documentation.
+% Verified 2026-07-02: states OLv2 runs the EleutherAI lm-evaluation-harness (HF
+% fork) and scores BBH 3-shot by normalized accuracy (acc_norm), i.e. multiple-choice
+% log-likelihood over the answer options, no chain-of-thought.
+@misc{openllmv2about,
+  author       = {{Hugging Face}},
+  title        = {Open {LLM} Leaderboard v2 --- About},
+  year         = {2024},
+  howpublished = {\url{https://huggingface.co/docs/leaderboards/en/open_llm_leaderboard/about}},
+  note         = {Evaluations run on a fork of the EleutherAI Language Model Evaluation Harness; BBH scored 3-shot, \texttt{acc\_norm}. Accessed 2026-07-02}
+}
+
 % Peng et al. 2026 — DEP (decentralized, leak-proof evaluation protocol)
 % arXiv:2603.01167.
 @article{peng2026dep,

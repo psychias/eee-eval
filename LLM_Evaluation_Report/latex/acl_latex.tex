@@ -185,8 +185,9 @@ Open LLM Leaderboard v2 (OLv2) reports Gemma-7B's Big-Bench Hard (BBH) score as
 21.12; the Jamba, RecurrentGemma, and MAmmoTH2 papers, among others, report BBH
 between 55 and 60 for the same model, a gap over 35 points. Neither side
 fabricates: each reports the score its pipeline produced. What is missing is the
-procedure: OLv2 runs BBH with lighteval log-likelihood scoring, whereas the papers
-use the original 3-shot chain-of-thought protocol. These are not the same
+procedure: OLv2 scores BBH 3-shot by multiple-choice log-likelihood
+(\texttt{acc\_norm}), whereas the papers use the original 3-shot chain-of-thought
+protocol. These are not the same
 measurement, and a benchmark name does not make them so. The same pattern recurs
 for Gemma-2-9B (\S\ref{sec:sealion}), where the metadata that would distinguish
 the two protocols is stripped from every record before the scores meet.
@@ -600,9 +601,10 @@ from the subset (\texttt{prompt\_template} and \texttt{temperature} at 0\%) or
 present only because the pipeline attaches \texttt{lm\_eval} to every OLv2 record
 from documentation (\S\ref{sec:pipeline}): no leaderboard we examined returns
 harness identity via its API, so the 93\% subset harness coverage is
-auto-attachment, not source data. As \S\ref{sec:bbh} shows, OLv2 actually runs
-\emph{lighteval}, so even the pipeline-attached \texttt{lm\_eval} label is itself
-inferred.
+auto-attachment, not source data: the \texttt{lm\_eval} label is inferred from
+OLv2's documentation \citep{openllmv2about}, not returned by any record, and the
+scoring mode it runs (multiple-choice log-likelihood on BBH, \S\ref{sec:bbh}) is
+not carried at all.
 
 \paragraph{One platform plus a sparse tail.}
 OLv2 supplies 26{,}790 of the 28{,}755 leaderboard records (93.2\%), so the subset
@@ -668,10 +670,11 @@ same scale even when both are correctly executed.
 \paragraph{BBH: log-likelihood vs.\ chain-of-thought.}\label{sec:bbh}
 BBH \citep{suzgun2023} specifies 3-shot chain-of-thought generation, with the
 answer extracted from free-form reasoning, the protocol ArXiv papers follow.
-OLv2 instead runs BBH under \emph{lighteval} with log-likelihood scoring (the
-model ranks candidate answers by token probability; no text is generated). OLv2's
-API exposes no harness field, so \emph{lighteval} and its scoring mode are known
-only from platform documentation. The effect is visible in the data
+OLv2 instead runs BBH under its fork of the EleutherAI lm-evaluation-harness,
+scoring it 3-shot by normalised accuracy (\texttt{acc\_norm}): the model ranks the
+fixed answer choices by log-likelihood and no reasoning is generated
+\citep{openllmv2about}. OLv2's API exposes no harness or scoring-mode field, so
+both are known only from its documentation. The effect is visible in the data
 (Table~\ref{tab:bbh-app}, Appendix~\ref{app:casetables}): Gemma-7B scores 21.12
 on OLv2 against 55.10--59.60 in ArXiv papers,\footnote{The 59.60 figure is
 reported under the surface label ``BigBench-Hard''; our normaliser keys on the
@@ -680,8 +683,8 @@ collision counts.} a gap over 35 points; the same holds for Gemma-2-2B (11.76
 vs.\ 40.80) and MAmmoTH2-7B-Plus (18.93 vs.\ 63.10). This is not a generic
 scoring-mode effect: E2 (Appendix~\ref{app:exp-e2}) shows the
 log-likelihood-vs-generation gap on MMLU is at most 0.21\,pp, two orders of
-magnitude smaller, so the BBH gap is specific to lighteval log-likelihood
-meeting BBH's CoT structure.
+magnitude smaller, so the BBH gap is specific to OLv2's multiple-choice
+log-likelihood scoring meeting BBH's chain-of-thought structure.
 
 \paragraph{MATH Lvl 5: a silent answer-parser swap.}\label{sec:math}
 OLv2 scored MATH Level 5 (1{,}324 problems, 5-shot) with a SymPy parser; in
@@ -784,7 +787,7 @@ score as 34.10, and the SEA-LION paper (\citealt{ng2025sealion};
 arXiv:2504.05747) reports the same model at 34.10, an exact two-decimal
 match, while listing Open LLM Leaderboard among its benchmark sources. Such a
 match is consistent with either direct importation of the OLv2 score or
-independent re-evaluation on identical (lighteval) infrastructure, and the EEE
+independent re-evaluation on the identical harness, and the EEE
 record cannot distinguish them; but our harness-version control
 (Appendix~\ref{app:exp-e3}) shows independent reruns vary by up to 1.3\,pp across
 seeds, so an exact match is far more consistent with a re-import than a re-run,
@@ -795,7 +798,7 @@ re-import (\texttt{harness}, \texttt{prompt\_template\_hash},
 the match as the only signal.
 
 The Gemma 2 and Gemma 3 reports instead list 68.20, 69.00, and 69.40, using
-chain-of-thought generation rather than OLv2's 3-shot lighteval log-likelihood,
+chain-of-thought generation rather than OLv2's 3-shot multiple-choice log-likelihood,
 which explains the $\approx$35-point gap (the harness mismatch of
 \S\ref{sec:bbh} compounding here). All five sources are in
 Table~\ref{tab:sealion-app} (Appendix~\ref{app:casetables}).
@@ -1159,18 +1162,21 @@ directional MMLU/GPQA effects without altering the load-bearing GSM8K result.
 
 \paragraph{Pipeline-attached harness labels.} The 93\% harness coverage in the
 leaderboard subset is attached by our pipeline from platform documentation, not
-returned by any source API. It records what a platform documents it runs, which
-can itself drift from the runtime, OLv2 is documented as \texttt{lm\_eval} but
-actually runs \emph{lighteval} (\S\ref{sec:bbh}). This drift is not the single
-Gemma-2-9B case: across every model--benchmark pair where OLv2 and a model's own
-paper both report the same benchmark, the OLv2 score is lower in \textbf{37 of 42}
-BBH pairs (median gap \textbf{25.6\,pp}) and \textbf{19 of 24} MMLU-Pro pairs
-(median \textbf{8.0\,pp}), a one-signed gap consistent with lighteval's
-log-likelihood scoring rather than the documented \texttt{lm\_eval}
-chain-of-thought protocol, and not with a capability difference (which would not be
-one-directional across twenty-odd models). The released dataset marks every
-such value as inferred (not source-reported) so downstream users can correct or
-discount it rather than propagate the documentation label as ground truth.
+returned by any source API, so it is inferred rather than source-reported. Even
+when the label is correct it is insufficient: OLv2's documentation identifies its
+lm-evaluation-harness fork but not the \emph{scoring mode} that fork applies, which
+for BBH is 3-shot multiple-choice log-likelihood (\texttt{acc\_norm}), not the
+chain-of-thought generation the models' own reports use \citep{openllmv2about}.
+That difference is systematic, not the single Gemma-2-9B case: across every
+model--benchmark pair where OLv2 and a model's own paper both report the same
+benchmark, the OLv2 score is lower in \textbf{37 of 42} BBH pairs (median gap
+\textbf{25.6\,pp}) and \textbf{19 of 24} MMLU-Pro pairs (median \textbf{8.0\,pp}),
+a one-signed gap consistent with OLv2's log-likelihood scoring rather than the
+papers' chain-of-thought protocol, and not with a capability difference (which
+would not be one-directional across twenty-odd models). The released dataset marks
+inferred fields as such and records the scoring mode where known, so downstream
+users can attribute such gaps rather than propagate a documentation label as ground
+truth.
 
 \paragraph{Extending the schema.} EvalSpec is released as an extensible adaptation
 of EEE, not a closed standard, and the audit surfaces further runtime context we
@@ -1277,7 +1283,7 @@ in \S\ref{sec:harness-ann}.
 \toprule
 Source & Score & Notes \\
 \midrule
-OLv2 (lighteval, log-likelihood) & 21.12 & 3-shot \\
+OLv2 (lm-eval, log-likelihood) & 21.12 & 3-shot \\
 Jamba paper & 55.10 & CoT generation \\
 RecurrentGemma paper & 55.10 & CoT generation \\
 MAmmoTH2 paper & 57.40 & CoT generation \\
@@ -1286,7 +1292,7 @@ MAmmoTH2 paper & 57.40 & CoT generation \\
 \end{tabular}%
 }
 \caption{Gemma-7B BBH scores across sources (\S\ref{sec:bbh}). The
-$\approx$35-point gap reflects OLv2's lighteval log-likelihood scoring
+$\approx$35-point gap reflects OLv2's multiple-choice log-likelihood scoring
 vs.\ the ArXiv papers' chain-of-thought generation. The final row is reported
 under the surface label ``BigBench-Hard''; it is shown for completeness but held
 out of the automated cross-source collision counts (\S\ref{sec:bbh}).}
@@ -1302,7 +1308,7 @@ out of the automated cross-source collision counts (\S\ref{sec:bbh}).}
 \toprule
 Source & Score & Notes \\
 \midrule
-OLv2 (lighteval, log-likelihood) & 34.10 & 3-shot \\
+OLv2 (lm-eval, log-likelihood) & 34.10 & 3-shot \\
 SEA-LION paper & 34.10 & shared pipeline origin \\
 Gemma 2 report & 68.20 & CoT generation (3-shot) \\
 Gemma 3 report & 69.00 & CoT generation (0-shot) \\
@@ -1476,7 +1482,7 @@ EvalSpec-R field & OLv2 & SEA-LION & Gemma rpt. \\
 \texttt{benchmark\_id}  & BBH        & BBH        & BBH \\
 score                   & 34.10      & 34.10      & 68.2--69.4 \\
 \texttt{scoring\_mode}  & log-lik.   & log-lik.   & generation \\
-\texttt{harness\_name}  & lighteval  & lighteval  & (CoT pipe) \\
+\texttt{harness\_name}  & lm\_eval  & lm\_eval  & (CoT pipe) \\
 \texttt{n\_shot}        & 3          & 3          & 0--3 \\
 \texttt{eval\_timestamp}& --        & --        & -- \\
 \bottomrule
@@ -1505,7 +1511,7 @@ comparable, and is the end-to-end form a producer emits.
   "benchmark_id": "bbh",
   "score": 34.10,
   "scoring_mode": "log-likelihood",
-  "harness_name": "lighteval",
+  "harness_name": "lm-evaluation-harness",
   "harness_version": "<version>",
   "n_shot": 3,
   "benchmark_variant": "bbh",
@@ -1820,7 +1826,7 @@ Qwen2.5-14B-Instruct       & 79.97 & 79.79 & 0.18 \\
 (\texttt{limit=14042}), an exact same-sample comparison for every model. The
 maximum scoring-mode gap is 0.21 pp, which rules out a generic scoring-mode
 effect: the $\approx$35-point BBH gap documented in \S\ref{sec:bbh} is
-specific to the interaction between lighteval's log-likelihood approach and
+specific to the interaction between OLv2's multiple-choice log-likelihood approach and
 BBH's chain-of-thought structure, not a property of log-likelihood scoring in
 general.}
 \label{tab:e2-scoring-mode}
