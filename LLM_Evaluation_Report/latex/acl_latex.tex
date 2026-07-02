@@ -1688,6 +1688,24 @@ thesis, the inference backend is an undocumented configuration choice that moves
 scores, so the rerun validates subset representativeness within a backend, not the
 vLLM absolute numbers. Script and raw records are released.
 
+\paragraph{Generalizing across benchmarks on a common backend.} To test whether
+the prompt-format effect generalizes, and whether the scoring-mode diagnostic
+(\S\ref{sec:hellaswag}) holds beyond the original benchmarks, we added three more,
+ARC-Challenge, WinoGrande, and OpenBookQA, evaluated for all four models on a
+single \texttt{hf} backend over the full test sets (no \texttt{limit=200}). All
+three are closed-set log-likelihood benchmarks, so the diagnostic predicts a small
+prompt-format effect, and that is what we find: at 5-shot the format spread is
+6.1\,pp (ARC-Challenge), 2.9\,pp (WinoGrande), and 2.1\,pp (OpenBookQA), and none of
+the three effects is significant ($F = 1.13/1.15/0.38$, $p = 0.36/0.36/0.70$),
+matching MMLU and GPQA. Across all five log-likelihood multiple-choice benchmarks
+the prompt-format effect is thus statistically indistinguishable from significance,
+whereas on generation-scored GSM8K it is large and significant
+($\eta^2 \approx 27\%$, $p < 0.001$). Prompt format is therefore not a universal
+driver but one whose magnitude is set by the scoring protocol, exactly as the
+diagnostic predicts; and because this arm is run entirely on one backend at full
+set, it also removes the \texttt{limit=200} and vLLM-vs-\texttt{hf} confounds that
+qualify the original grid.
+
 We attribute variance to the n-shot factor the same way, pooling each
 benchmark's successful cells by shot count (0-shot vs.\ 5-shot;
 Table~\ref{tab:anova-nshot}), and the two benchmarks behave oppositely in a
@@ -1721,14 +1739,25 @@ GSM8K & \texttt{cot}      & 24 & 19.25 & ~~2.00--41.00 \\
 MMLU  & \texttt{plain}    &  4 & 65.67 & 55.17--73.03 \\
 MMLU  & \texttt{instruct} &  4 & 65.87 & 52.52--76.09 \\
 MMLU  & \texttt{cot}      &  4 & 51.95 & 35.97--61.95 \\
+\midrule
+ARC-C & \texttt{plain}    &  4 & 55.12 & 45.82--61.35 \\
+ARC-C & \texttt{instruct} &  4 & 56.74 & 51.54--60.24 \\
+ARC-C & \texttt{cot}      &  4 & 50.68 & 44.03--58.96 \\
+Wino  & \texttt{plain}    &  4 & 69.32 & 66.14--72.22 \\
+Wino  & \texttt{instruct} &  4 & 68.13 & 64.64--71.35 \\
+Wino  & \texttt{cot}      &  4 & 71.01 & 68.59--73.64 \\
+OBQA  & \texttt{plain}    &  4 & 42.70 & 38.20--46.80 \\
+OBQA  & \texttt{instruct} &  4 & 42.50 & 38.20--46.00 \\
+OBQA  & \texttt{cot}      &  4 & 40.60 & 36.40--46.80 \\
 \bottomrule
 \end{tabular}
 \caption{Per-benchmark, per-format score distributions at 5-shot in the
 factorial grid. GSM8K cells are pooled across 4 models $\times$ 2
-temperatures $\times$ 3 seeds; MMLU cells across 3 models $\times$ 1
-temperature $\times$ 1 seed. The plain/instruct/cot ordering of means is
-the same on both benchmarks; the GSM8K plain--cot gap is 19.50 pp and
-the MMLU plain--cot gap is 11.61 pp. Raw values released with the dataset.}
+temperatures $\times$ 3 seeds; MMLU and the three added log-likelihood
+benchmarks (ARC-Challenge, WinoGrande, OpenBookQA) across 4 models $\times$ 1
+temperature $\times$ 1 seed. The plain--cot gap is 19.50 pp on generation-scored
+GSM8K but only 6.1/2.9/2.1 pp on the added log-likelihood benchmarks, matching the
+scoring-mode diagnostic. Raw values released with the dataset.}
 \label{tab:anova-per-benchmark}
 \end{table}
 

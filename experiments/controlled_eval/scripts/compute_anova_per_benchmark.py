@@ -32,10 +32,14 @@ JSONL_PATH  = os.path.join(RESULTS_DIR, "controlled_eval_results.jsonl")
 # the same schema; it is loaded as an additional benchmark for the format and
 # n-shot variance analysis. Absent -> silently skipped.
 GPQA_PATH   = os.path.join(RESULTS_DIR, "gpqa_results.jsonl")
+# Three added benchmarks (ARC-Challenge, WinoGrande, OpenBookQA) run on a common
+# hf backend to test whether the prompt-format effect generalises. Absent -> skipped.
+GEN_PATH    = os.path.join(RESULTS_DIR, "generalization_hf.jsonl")
 OUT_PATH    = os.path.join(RESULTS_DIR, "anova_per_benchmark.json")
 
 # Benchmarks analysed for the per-format ANOVA (5-shot) and the n_shot factor.
-BENCHMARKS  = ("gsm8k", "mmlu", "gpqa")
+BENCHMARKS  = ("gsm8k", "mmlu", "gpqa",
+               "ARC-Challenge", "WinoGrande", "OpenBookQA")
 
 
 def load_rows(path):
@@ -44,12 +48,13 @@ def load_rows(path):
 
 
 def load_all_rows():
-    """Factorial-grid rows plus the separately-run GPQA cells (if present)."""
+    """Factorial-grid rows plus the separately-run GPQA and generalization cells."""
     rows = load_rows(JSONL_PATH)
-    if os.path.exists(GPQA_PATH):
-        gpqa = load_rows(GPQA_PATH)
-        rows.extend(gpqa)
-        print(f"Loaded {len(gpqa)} GPQA rows from {GPQA_PATH}")
+    for path, label in ((GPQA_PATH, "GPQA"), (GEN_PATH, "generalization")):
+        if os.path.exists(path):
+            extra = load_rows(path)
+            rows.extend(extra)
+            print(f"Loaded {len(extra)} {label} rows from {path}")
     return rows
 
 

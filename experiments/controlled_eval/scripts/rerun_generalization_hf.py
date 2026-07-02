@@ -3,10 +3,12 @@ backend (hf), full test set (no limit=200), to test whether the prompt-format
 effect and the scoring-mode diagnostic (Sec. 5) hold beyond the original
 benchmarks.
 
-New benchmarks (all open, log-likelihood multiple-choice, fit the MMLU-style
-format x n-shot design): ARC-Challenge, HellaSwag, WinoGrande. The diagnostic
-predicts a small prompt-format effect on these (answer recovered by ranking), in
-contrast to the large effect on the generation benchmarks GSM8K/BBH.
+New benchmarks (all open, small, log-likelihood multiple-choice, fit the
+MMLU-style format x n-shot design): ARC-Challenge, WinoGrande, OpenBookQA. The
+diagnostic predicts a small prompt-format effect on these (answer recovered by
+ranking), in contrast to the large effect on the generation benchmarks GSM8K/BBH.
+(HellaSwag was considered but its full 10k-item set makes each cell ~25 min; the
+three chosen benchmarks are all <2k items so the full-set sweep stays tractable.)
 
 Format applied via system_instruction + apply_chat_template; seed 42; limit=None.
 Runs ONLINE (these datasets are small and stable, unlike the flaky cais/mmlu, so
@@ -29,8 +31,8 @@ from datetime import datetime, timezone
 
 MODELS = [("Qwen/Qwen2.5-7B-Instruct", "Qwen/Qwen2.5-7B-Instruct", 16)]
 BENCHES = [("arc_challenge", "ARC-Challenge"),
-           ("hellaswag", "HellaSwag"),
-           ("winogrande", "WinoGrande")]
+           ("winogrande", "WinoGrande"),
+           ("openbookqa", "OpenBookQA")]
 FORMAT_TEMPLATES = {
     "plain": None,
     "instruct": "You are an expert problem solver. Answer each question carefully and directly.",
