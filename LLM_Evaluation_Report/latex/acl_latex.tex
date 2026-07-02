@@ -624,15 +624,10 @@ auto-attachment, not source data: the \texttt{lm\_eval} label is inferred from
 OLv2's documentation \citep{openllmv2about}, and the scoring mode it runs
 (multiple-choice log-likelihood on BBH, \S\ref{sec:bbh}) is not carried at all.
 
-\paragraph{One platform plus a sparse tail.}
 OLv2 supplies 26{,}790 of the 28{,}755 leaderboard records (93.2\%), so the subset
-figures largely measure one platform's API. Ablating it sharpens the finding
-rather than weakening it (Table~\ref{tab:coverage-app}, final column): across the
-remaining nine sources (1{,}965 records) n-shot coverage falls to 71.0\% and
-\texttt{harness}, \texttt{prompt\_template}, \texttt{temperature}, and
-\texttt{chain\_of\_thought} are all 0.0\%, the tail exposes nothing beyond the
-protocol-fixed n-shot count, and the subset's apparent harness and CoT coverage is
-OLv2's pipeline-attached values alone.
+figures largely measure one platform's API; ablating it sharpens the finding, as
+the remaining nine sources expose nothing beyond the protocol-fixed n-shot count
+(Table~\ref{tab:coverage-app}, final column; Limitations).
 
 \paragraph{Scoring mode is unmeasurable.}
 \texttt{scoring\_mode}, the field the case studies show most consequential, is
@@ -740,19 +735,13 @@ specifications coexist under one benchmark name, so two equally-labelled scores
 can measure genuinely different things. Each example below states the gap, the
 two source configurations, and the missing field that would explain it.
 
-\paragraph{TruthfulQA: n-shot and judge confounded.}\label{sec:truthfulqa}
-Llama-2-Chat-7B is recorded at 57.04 and 26.30, both labelled ``TruthfulQA''
-\citep{lin2022truthfulqa}; both use the generation-based metric (\% truthful and
-informative), not MC1/MC2. The 57.04 is from the Code Llama paper
-\citep{roziere2023codellama} (6-shot, InstructGPT-format prompt, GPT-3 judge);
-the 26.30 figures use the T\"ulu suite \citep{ivison2023camels}, e.g.\ the OLMo
-paper \citep{groeneveld2024olmo} (0-shot, a fine-tuned Llama-2-7B judge). The
-30-point gap therefore confounds shot count (6 vs.\ 0) and judge (GPT-3 vs.\ a
-fine-tuned Llama-2-7B), and neither record carries an \texttt{n\_shot} or judge
-field. A controlled experiment (Appendix~\ref{app:exp-judge}) isolates the
-judge: over fixed responses, varying only the judge shifts means by up to
-1.35/10 and can reverse two systems' ranking, so judge identity alone makes two
-``TruthfulQA'' scores incomparable.
+\paragraph{TruthfulQA: n-shot and judge confounded.} Llama-2-Chat-7B appears at
+57.04 (6-shot, GPT-3 judge) and 26.30 (0-shot, fine-tuned Llama-2-7B judge) under
+one ``TruthfulQA'' label \citep{lin2022truthfulqa}, confounding shot count with
+judge; a controlled experiment isolates the judge, showing that varying it alone
+shifts means by up to 1.35/10 and reverses rankings, so neither the missing
+\texttt{n\_shot} nor \texttt{judge\_model} field is recoverable
+(Appendices~\ref{sec:truthfulqa},~\ref{app:exp-judge}).
 
 \paragraph{Belebele: n-shot and language scope confounded.}\label{sec:belebele}
 Mistral-7B is recorded at 32.80 and 79.42, both ``Belebele''
@@ -989,8 +978,9 @@ Field selection follows from the case studies (\S\ref{sec:cases}):
 (\S\S\ref{sec:bbh},~\ref{sec:hellaswag}); \texttt{harness\_name} and
 \texttt{harness\_version} from SEA-LION (\S\ref{sec:sealion}), where harness
 identity separates independent measurement from a shared-pipeline artefact;
-\texttt{n\_shot} and \texttt{benchmark\_variant} from TruthfulQA, Belebele, and
-HellaSwag (\S\S\ref{sec:truthfulqa}--\ref{sec:hellaswag}), where shot count and
+\texttt{n\_shot} and \texttt{benchmark\_variant} from TruthfulQA
+(Appendix~\ref{sec:truthfulqa}), Belebele, and HellaSwag
+(\S\S\ref{sec:belebele},~\ref{sec:hellaswag}), where shot count and
 metric variant shift the regime unlabelled; \texttt{judge\_model} from TruthfulQA,
 where varying only the judge moves means up to 1.35/10 and reorders rankings
 (cross-judge correlations $+1.0$ to $-0.3$; Appendix~\ref{app:exp-judge}); and
@@ -1588,6 +1578,21 @@ Prealgebra, up to ${\approx}90$ points individually). OLv2 records a submission
 date but no evaluation timestamp, so pre- and post-transition scores cannot be
 told apart from the record, a model submitted in 2024 now carries a
 post-transition score.
+
+\subsection{TruthfulQA: n-shot and judge confounded}
+\label{sec:truthfulqa}
+A sub-example of Case Study~2 (\S\ref{sec:onenametwo}). Llama-2-Chat-7B is recorded
+at 57.04 and 26.30, both labelled ``TruthfulQA'' \citep{lin2022truthfulqa}; both
+use the generation-based metric (\% truthful and informative), not MC1/MC2. The
+57.04 is from the Code Llama paper \citep{roziere2023codellama} (6-shot,
+InstructGPT-format prompt, GPT-3 judge); the 26.30 figures use the T\"ulu suite
+\citep{ivison2023camels}, e.g.\ the OLMo paper \citep{groeneveld2024olmo} (0-shot,
+a fine-tuned Llama-2-7B judge). The 30-point gap therefore confounds shot count
+(6 vs.\ 0) and judge (GPT-3 vs.\ a fine-tuned Llama-2-7B), and neither record
+carries an \texttt{n\_shot} or judge field. A controlled experiment
+(Appendix~\ref{app:exp-judge}) isolates the judge: over fixed responses, varying
+only the judge shifts means by up to 1.35/10 and can reverse two systems' ranking,
+so judge identity alone makes two ``TruthfulQA'' scores incomparable.
 \FloatBarrier
 \section{Experimental Setup}
 \label{app:experiments}
