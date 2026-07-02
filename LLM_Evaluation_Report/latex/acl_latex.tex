@@ -712,17 +712,12 @@ log-likelihood-vs-generation gap on MMLU is at most 0.21\,pp, two orders of
 magnitude smaller, so the BBH gap is specific to OLv2's multiple-choice
 log-likelihood scoring meeting BBH's chain-of-thought structure.
 
-\paragraph{MATH Lvl 5: a silent answer-parser swap.}\label{sec:math}
-OLv2 scored MATH Level 5 (1{,}324 problems, 5-shot) with a SymPy parser; in
-February 2025 HuggingFace replaced it with Math-Verify and re-evaluated all
-models \citep{kydlicek2025mathverify}. The old parser mishandled
-\textbackslash{}boxed\{\} outputs, sets/matrices/intervals, and
-numerical-equivalence (e.g.\ $1/3$ vs.\ $0.333\ldots$); the swap raised scores
-by $+4.66$\,pp on average over 3{,}751 models ($+8.27$ Algebra, $+6.93$
-Prealgebra, up to ${\approx}90$ points individually). OLv2 records a submission
-date but no evaluation timestamp, so pre- and post-transition scores cannot be
-told apart from the record, a model submitted in 2024 now carries a
-post-transition score.
+\paragraph{MATH Lvl 5: a silent answer-parser swap.} A third instance sits at the
+dataset-version rather than scoring-mode layer: OLv2's February-2025 swap of the
+MATH Level 5 answer parser (SymPy${\to}$Math-Verify) shifted scores by up to
+${\approx}90$ points individually, and no evaluation timestamp in the record dates
+a score to before or after the transition, the same missing-metadata failure as
+BBH (detail in Appendix~\ref{sec:math}).
 
 \paragraph{GSM8K: prompt format breaks the parser.}\label{sec:gsm8k}
 The same parser sensitivity arises whenever a format-specific extractor meets a
@@ -1578,6 +1573,21 @@ both prompts shown are canonical reconstructions since neither source
 paper publishes its HellaSwag prompts verbatim.}
 \label{fig:unified-hellaswag}
 \end{figure*}
+
+\subsection{MATH Level 5: the Math-Verify answer-parser swap}
+\label{sec:math}
+This is the third sub-example of Case Study~1 (\S\ref{sec:protocol}), a
+dataset-version rather than scoring-mode failure. OLv2 scored MATH Level 5
+(1{,}324 problems, 5-shot) with a SymPy parser; in February 2025 HuggingFace
+replaced it with Math-Verify and re-evaluated all models
+\citep{kydlicek2025mathverify}. The old parser mishandled
+\textbackslash{}boxed\{\} outputs, sets/matrices/intervals, and
+numerical-equivalence (e.g.\ $1/3$ vs.\ $0.333\ldots$); the swap raised scores
+by $+4.66$\,pp on average over 3{,}751 models ($+8.27$ Algebra, $+6.93$
+Prealgebra, up to ${\approx}90$ points individually). OLv2 records a submission
+date but no evaluation timestamp, so pre- and post-transition scores cannot be
+told apart from the record, a model submitted in 2024 now carries a
+post-transition score.
 \FloatBarrier
 \section{Experimental Setup}
 \label{app:experiments}
