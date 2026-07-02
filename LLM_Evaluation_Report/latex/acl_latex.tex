@@ -289,6 +289,24 @@ cross-source interchange substrate and Croissant-style dataset/task versioning
 (commit hashes, checksums) for benchmark snapshots, aligning evaluation records
 with emerging dataset-metadata standards rather than introducing a parallel one.
 
+\paragraph{Operational evaluation systems.} A parallel line builds \emph{systems}
+around evaluation rather than reporting specifications for it. Evaluation Cards
+\citep{ghosh2026evalcards} compose benchmark, run, and model metadata into an
+interpretive monitoring layer that derives reproducibility, documentation,
+provenance, and comparability signals across results at scale; HRET
+\citep{lee2025hret} is a registry-based execution toolkit that standardises how
+evaluations are \emph{run} (inference backends, scoring methods), narrowing
+$\sim$10-point cross-institution gaps on Korean benchmarks; and DEP
+\citep{peng2026dep} is a decentralised protocol that keeps benchmark data
+server-side to prevent leakage. These are complementary to, not competitors of, a
+reporting specification: EvalSpec neither runs evaluations (HRET), hosts them
+(DEP), nor monitors them at scale (Evaluation Cards). It instead fixes the minimal
+per-record fields whose absence provably breaks cross-source comparison
+(\S\ref{sec:cases}), so an EvalSpec-conformant record is exactly the input such
+systems consume, emitted by a harness like HRET, or ingested by a monitoring layer
+like Evaluation Cards, whose comparability signals presuppose the very fields
+EvalSpec makes mandatory.
+
 
 \subsection{The EEE Schema}
 
@@ -329,8 +347,12 @@ and score, with an optional \texttt{generation\_config} for temperature and prom
 template). A unified schema turns missing information from an invisible gap into a
 recordable absence, a field no source populates is empty in every record rather
 than silently inferred, and those visibly-empty fields motivate this paper. We
-adapt EvalSpec (\S\ref{sec:evalspec}) from EEE and release the dataset and schema
-under CC-BY-4.0 for the community to extend.
+adapt EvalSpec (\S\ref{sec:evalspec}) from EEE and release, under CC-BY-4.0, the
+full dataset and schema together with the extraction and analysis code, the
+controlled-experiment scripts, and the prompt templates and raw per-run outputs
+behind every reported number, so each claim is reproducible end-to-end; the
+collision, coverage, and audit scripts regenerate the corresponding tables from
+the released records.
 
 \section{Materials}
 \label{sec:materials}
@@ -491,7 +513,8 @@ artefacts (base/chat variant duplication, 33; a spurious HumanEval leading ``0''
 pass@k, 1). \emph{Recall}, reported scores the pipeline captured, is
 approximately \textbf{81\%} but variable (52--100\% per paper): it captures
 headline tables but skips secondary ones and, in table-heavy papers, whole
-comparison models. Neither check verifies the surrounding metadata. Separately,
+comparison models. Neither check verifies the surrounding metadata; a third audit
+(\S\ref{sec:meta-ann}) covers the non-score protocol fields. Separately,
 16{,}374/17{,}228 (95.0\%) LLM-extracted ArXiv records carry a non-null
 score, a structural presence check, not a correctness one.
 
@@ -514,6 +537,36 @@ Llemma, 74/89), the LLM tags only the benchmarks named in the same sentence.
 Abstention on the without-harness sample is 869/869 = 100\%: \texttt{unknown} for
 every row, and text search confirms none names a public harness for its own
 evaluations.
+
+\subsection{Precision of Metadata Beyond Scores}
+\label{sec:meta-ann}
+The score and harness audits leave the remaining protocol fields unchecked, so we
+ran a third audit on a fresh six-paper sample disjoint from both (StarCoder~2,
+DeepSeek-Coder-V2, Granite Code, Gemma~3, Qwen3, OpenELM), verifying the four
+non-harness benchmark-level fields, \texttt{n\_shot}, \texttt{temperature},
+\texttt{prompt\_template}, and \texttt{decoding\_strategy}. As an independent
+cross-extractor check, a second model re-read each paper's evaluation tables and
+appendix and judged every non-null extracted value as matching the paper,
+contradicting it, or \emph{unstated} (the paper is silent, so the value is a
+pipeline default and is excluded from precision). Across 229 distinct per-benchmark
+tuples (631 non-null values), precision on values the paper actually states is
+high: \texttt{n\_shot} 99.4\% (171/172), \texttt{temperature} 100\% (42/42),
+\texttt{prompt\_template} 93.4\% (114/122), \texttt{decoding\_strategy} 98.8\%
+(163/165), and 97.8\% overall (490/501). The eleven errors are concentrated: eight
+are \texttt{chain-of-thought} \texttt{prompt\_template} labels applied to Gemma~3
+benchmarks the paper does not mark CoT, two are Granite CRUXEval decoding labels
+(\texttt{greedy} where the paper samples at temperature~0.2), and one is a Gemma~3
+shot count (FLoRes-Indic 5 vs.\ the paper's 1). The more consequential finding is
+coverage-side: \textbf{21\% (130/631) of extracted metadata values are unstated
+pipeline defaults} (\texttt{prompt\_template=direct},
+\texttt{decoding\_strategy=greedy}, \texttt{n\_shot=0} for completion benchmarks)
+the source paper never states. Extraction of \emph{stated} metadata is therefore
+reliable, but apparent field coverage overstates \emph{verifiable} coverage,
+especially for \texttt{prompt\_template} and \texttt{decoding\_strategy};
+\texttt{n\_shot} is both high-precision and usually paper-stated, whereas prompt
+and decoding are high-precision only \emph{when} the paper states them. The
+released records flag inferred-versus-stated values so downstream users can
+discount defaults.
 
 
 \subsection{Results and Discrepancies}
@@ -702,6 +755,26 @@ continuations. Neither record labels scoring mode or n-shot, so the gap is
 indistinguishable from a capability difference (Appendix~\ref{app:hellaswag}
 gives an alternative rendering of Figure~\ref{fig:casestudies-unified}).
 
+\paragraph{When is a scoring-mode mismatch consequential? A diagnostic.}
+The BBH, HellaSwag, and MMLU results together yield a rule of thumb for
+anticipating where a log-likelihood-vs-generation mismatch matters, rather than
+leaving it case-by-case. The gap tracks whether the answer is \emph{recovered by
+ranking} or \emph{produced and parsed}: (i) on multiple-choice benchmarks scored
+by ranking fixed continuations (MMLU-style), the two modes agree to within
+$\approx$0.2\,pp (E2, Appendix~\ref{app:exp-e2}), because both consult the same
+answer key; (ii) on benchmarks where the model must \emph{generate} the answer
+and a parser extracts it, or where the protocol is chain-of-thought structured
+(GSM8K's \texttt{\#\#\#\#} delimiter, HellaSwag free-form continuation, BBH CoT),
+the two modes diverge by tens of points, because generation exposes the
+format/parser coupling and reasoning structure that ranking bypasses. The
+consequential cases are therefore predictable from the record itself: a benchmark
+whose \texttt{scoring\_mode} is \texttt{generation} \emph{and} whose answer is
+parsed or CoT-structured is at risk of a mode artefact; a pure log-likelihood
+multiple-choice record is not. This is precisely why EvalSpec places
+\texttt{scoring\_mode} in the Required tier, it is the one field that flags
+whether a cross-source gap under a shared benchmark name could be a scoring-mode
+artefact at all.
+
 \subsection{Case Study 3: Shared Pipelines Fake Independence}
 \label{sec:convergence}\label{sec:sealion}
 
@@ -811,6 +884,23 @@ cannot recover what the leaderboard subset never records
 (Figure~\ref{fig:coverage}), and re-evaluation does not scale across thousands of
 model--benchmark pairs. This leaves documentation, necessary, if not always
 sufficient.
+
+\paragraph{From existence to prevalence.}\label{sec:prevalence} The case studies
+establish that each mechanism \emph{occurs}; a corpus-wide pass shows how often the
+precondition for catching one is even present. After normalising model and benchmark names across
+all 46{,}559 records, 40{,}756 distinct model--benchmark cells remain, of which
+only \textbf{274 (0.67\%)} are reported by two or more independent sources, a
+direct measure of the fragmentation that makes cross-source verification rare.
+Where that overlap does occur it usually disagrees: \textbf{206 of the 274 (75\%)}
+differ by more than 1\,pp and \textbf{165 (60\%)} by more than 5\,pp (up to
+70\,pp for Mistral-7B on HumanEval across two sources). The disagreements are also
+systematically unattributable: no colliding record carries a scoring-mode field
+(unrecorded ecosystem-wide, \S\ref{sec:discrepancies}) and most omit the
+harness, so the gap cannot be assigned to a cause from the record alone.
+Prevalence is thus bounded less by how often the mechanisms fire than by how
+rarely two sources measure the same thing at all; when they do, divergence is the
+norm and its cause is unrecorded. Name normalisation is heuristic, so 0.67\% is a
+lower bound on overlap; the released collision script reproduces the count.
 
 \subsection{EvalSpec: Adapting EEE for Comparable Reporting}
 \label{sec:evalspec}
@@ -951,6 +1041,24 @@ migration path is producer-side: model developers who ship one EvalSpec-R record
 per reported benchmark make their own scores verifiable, which in turn pressures
 aggregators and leaderboards to surface the same fields.
 
+\paragraph{Interoperability with EEE.} EvalSpec is not a competing schema but a
+compliance \emph{profile} over EEE: every EvalSpec field resolves to an existing
+EEE path, so a conformant record is a valid EEE record with the
+comparability-critical fields marked mandatory. The Required tier draws from EEE's
+\texttt{model\_info}, \texttt{evaluation\_name}, and \texttt{generation\_config}
+(harness, \texttt{scoring\_mode}, n-shot); the Recommended tier from
+\texttt{metric\_config} (metric name, score normalisation, prompt-template hash)
+and the remaining \texttt{generation\_config} arguments (temperature, decoding);
+the Full tier from \texttt{source\_metadata} (inference backend, tokenizer, dataset
+checksum). Because the profile is a tier annotation rather than a new container,
+EEE's evolving \texttt{metric\_config} and its optional instance-level records
+(per-item predictions) extend EvalSpec at no cost: a producer already emitting
+instance-level EEE data satisfies the Full tier and enables item-level re-scoring,
+while one emitting only the Required fields still yields comparable aggregate
+scores. EvalSpec thus fixes a comparability \emph{floor} without capping the
+reproducibility ceiling that richer EEE records provide, and its records are the
+natural unit that operational systems (\S\ref{sec:related}) consume.
+
 \section{Conclusions}
 
 %% DRAFT --------------------------------------------------------------
@@ -1001,22 +1109,29 @@ and only the protocol-fixed n-shot count (71.0\%) survives, so the dominant-sour
 caveat does not overturn the headline, it sharpens it.
 
 \paragraph{Single-extractor ArXiv pipeline.} The ArXiv source is produced by a
-single LLM extractor (Claude Haiku). Our audits (\S\ref{sec:score-ann},
-\S\ref{sec:harness-ann}) verify its output against the source papers on a
-20-paper sample by hand, but we did not collect inter-annotator agreement at
-scale or compare independent extractors, so the reported precision and recall
-are point estimates on a small sample rather than ecosystem-wide guarantees. We
-accordingly exclude the ArXiv source from the headline coverage analysis and
-treat its metadata as unverified at scale.
+single LLM extractor (Claude Haiku). Three audits verify its output against the
+source papers, on scores (\S\ref{sec:score-ann}), harness identity
+(\S\ref{sec:harness-ann}), and the non-score protocol fields
+(\S\ref{sec:meta-ann}); the last uses an independent second model as a
+cross-extractor check and is what surfaces the pipeline's default-filling
+behaviour (21\% of metadata values are unstated defaults). Together these cover 26
+papers, but remain point estimates on a modest sample rather than ecosystem-wide
+guarantees, and we did not collect large-scale human inter-annotator agreement. We
+accordingly exclude the ArXiv source from the headline coverage analysis and mark
+its inferred metadata as such so downstream users can discount defaults.
 
-\paragraph{Existence, not prevalence.} The three case studies are hand-selected
-instances of cross-source divergence, chosen because their mechanisms are
-diagnosable. They establish that each mechanism occurs and is consequential;
-they are not a random sample. We therefore do not claim how frequently
-scoring-mode mismatch, variant conflation, or shared-pipeline reuse arise across
-the ecosystem. Quantifying that prevalence over all cross-source collisions is
-left to future work; the collision-detection pipeline that surfaced these cases
-could in principle support such a census.
+\paragraph{Existence vs.\ mechanism-level prevalence.} The three case studies are
+hand-selected instances chosen because their mechanisms are diagnosable, not a
+random sample. The corpus-wide pass (\S\ref{sec:prevalence}, ``from
+existence to prevalence'') quantifies the \emph{aggregate} picture, cross-source
+overlap is rare (0.67\% of cells), and where it exists divergence is the norm
+(75\% $>$1\,pp) and unattributable (no scoring-mode field, harness usually
+absent). What it does not do is attribute each collision to a \emph{specific}
+mechanism (scoring-mode mismatch vs.\ variant conflation vs.\ shared-pipeline
+reuse), because the very fields that would separate them are the ones missing;
+per-mechanism prevalence therefore remains bounded by the same metadata gap the
+paper documents, and a full mechanism-labelled census must wait until enough
+records carry EvalSpec-Required fields to support it.
 
 \paragraph{Statistical power.} The factorial grid is adequately powered on GSM8K
 (prompt format $F=13.0$, $p<0.001$) but underpowered on MMLU ($F=2.43$,
@@ -1032,7 +1147,14 @@ it should not be read as a universal claim, and open-ended generation or
 safety/refusal tasks, where sampling drives output diversity, may show larger
 temperature sensitivity. The same \texttt{hf}-vs-vLLM backend shift
 (Appendix~\ref{app:exp-grid}) is a further reason to treat the absolute
-prompt-format and temperature magnitudes as backend-conditional.
+prompt-format and temperature magnitudes as backend-conditional. The mitigation
+is straightforward and partly already applied: full-set rather than subset
+scoring, a single consistent backend, and more cells per benchmark tighten these
+claims. We have taken first steps in this direction, the MMLU arm is now a
+complete 24-cell design scored on one backend (\S\ref{app:exp-grid}) and the
+scoring-mode control (E2) is run full-set; extending the same treatment to GPQA
+and to multi-seed MMLU/GPQA is the natural next increment, expected to sharpen the
+directional MMLU/GPQA effects without altering the load-bearing GSM8K result.
 
 \paragraph{Pipeline-attached harness labels.} The 93\% harness coverage in the
 leaderboard subset is attached by our pipeline from platform documentation, not
