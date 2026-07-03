@@ -29,7 +29,11 @@ FORMAT_TEMPLATES = {
     "instruct": "You are an expert problem solver. Answer each question carefully and directly.",
     "cot": "You are an expert problem solver. Before answering, think step by step and show your reasoning. Then state the final answer.",
 }
-SEEDS = [42, 123, 7]
+# MMLU/GPQA are deterministic under fixed-dev few-shot (seed changes nothing), so we
+# power the format ANOVA across MODELS instead: 8 diverse models, single seed, gives
+# n=8 per format. (Random-few-shot benchmarks like ARC/WinoGrande/OpenBookQA are
+# powered by seeds separately; MMLU/GPQA cannot be.)
+SEEDS = [42]
 N_SHOT = 5
 # Full-set MMLU (14k items) x multi-seed is ~50 min/cell (impractical). MMLU is a
 # GROUP of 57 subjects, so an integer `limit` applies per-subject and doesn't subset
@@ -118,7 +122,8 @@ def run_cell(lm, task, sys_inst, seed, offline, limit):
 for eval_id, canon_id, bs in MODELS:
     # full-set MMLU with 5-shot chat-template contexts OOMs at large fixed batch;
     # "auto" finds the largest batch that fits.
-    lm = HFLM(pretrained=eval_id, dtype="bfloat16", batch_size="auto", max_batch_size=bs)
+    lm = HFLM(pretrained=eval_id, dtype="bfloat16", batch_size="auto",
+              max_batch_size=bs, trust_remote_code=True)
     for task, label in BENCHES:
         if label == "GPQA" and not HAVE_GPQA:
             print(f"[skip] GPQA unavailable for {canon_id}", flush=True)
