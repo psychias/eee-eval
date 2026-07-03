@@ -1233,7 +1233,8 @@ across 10 papers, 97.5\% precision and $\approx$81\% recall overall.
 
 \begin{table}[ht]
 \centering
-\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lrrrr}
 \toprule
 Paper & ArXiv ID & Entries & Prec. & Rec. \\
@@ -1251,7 +1252,8 @@ Gemma 2                  & 2408.00118 & 210 & 96.2\% & 81.0\% \\
 \midrule
 Total                    &            & 2{,}027 & 97.5\% & 81.1\% \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \caption{Per-paper entries, precision (extracted scores that match the paper),
 and recall (reported scores that were captured) for the score-extraction audit
 (\S\ref{sec:score-ann}).}
