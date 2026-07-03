@@ -280,11 +280,19 @@ that decide whether a specification changes practice: it is \emph{machine-valida
 \S\ref{sec:cases}). Holistic harnesses like HELM \citep{liang2023helm} record rich
 metadata, but only for their own runs; EvalSpec instead targets cross-source
 interchange. General reproducibility checklists
-\citep{pineau2021reproducibility} are hand-filled prose; EvalSpec makes conformance
-a property of the record, e.g.\ a SHACL shape requiring \texttt{judge\_model}
-whenever \texttt{scoring\_mode} is \texttt{preference} mechanically rejects an
-LLM-judge score that omits the judge (Appendix~\ref{sec:truthfulqa},
-Appendix~\ref{app:exp-judge}). It sits on existing infrastructure rather than
+\citep{pineau2021reproducibility} and benchmark-lifecycle checklists such as
+HOW2BENCH \citep{cao2025how2bench} are hand-filled prose relying on manual
+adherence; EvalSpec instead makes conformance a machine-checkable property of the
+record, e.g.\ a SHACL shape requiring \texttt{judge\_model} whenever
+\texttt{scoring\_mode} is \texttt{preference} mechanically rejects an LLM-judge
+score that omits the judge (Appendix~\ref{sec:truthfulqa},
+Appendix~\ref{app:exp-judge}), shifting the guarantee from voluntary compliance to
+automatic cross-source validation. A complementary line adds error bars and
+multi-run aggregation to quantify a single producer's sampling and seed variance
+\citep{miller2024errorbars}; this is orthogonal to and composes with EvalSpec,
+which makes the run \emph{configuration} comparable across sources and whose
+Recommended tier carries the random seed such aggregation needs. It sits on
+existing infrastructure rather than
 replacing it, adopting EEE as its interchange substrate. It composes with Croissant
 \citep{akhtar2024croissant} along an orthogonal axis: Croissant and its task-level
 extension \citep{croissanttasks2026} pin the \emph{artifact} (which files, which
@@ -616,6 +624,10 @@ harness identity via its API, so the 93\% subset harness coverage is
 auto-attachment, not source data: the \texttt{lm\_eval} label is inferred from
 OLv2's documentation \citep{openllmv2about}, and the scoring mode it runs
 (multiple-choice log-likelihood on BBH, \S\ref{sec:bbh}) is not carried at all.
+Under a \emph{strict} definition that counts only source-reported values,
+harness coverage across the leaderboard subset is therefore effectively 0\%;
+we report the pipeline-attached figure (93\%) and this strict figure side by side
+throughout so the attached labels are never silently counted as ecosystem coverage.
 
 OLv2 supplies 26{,}790 of the 28{,}755 leaderboard records (93.2\%), so the subset
 figures largely measure one platform's API; ablating it sharpens the finding, as
@@ -723,9 +735,12 @@ two source configurations, and the missing field that would explain it.
 \paragraph{TruthfulQA: n-shot and judge confounded.} Llama-2-Chat-7B appears at
 57.04 (6-shot, GPT-3 judge) and 26.30 (0-shot, fine-tuned Llama-2-7B judge) under
 one ``TruthfulQA'' label \citep{lin2022truthfulqa}, confounding shot count with
-judge; a controlled experiment isolates the judge, showing that varying it alone
-shifts means by up to 1.35/10 and reverses rankings, so neither the missing
-\texttt{n\_shot} nor \texttt{judge\_model} field is recoverable
+judge; a controlled experiment that holds the responses fixed and varies only the
+judge shows the judge systematically changes ratings (Friedman
+$\chi^2(7)=506.7$, $p<10^{-100}$, over 275 responses each scored by all eight
+judges; Kendall's $W=0.26$), shifting means by up to 1.66/10 and reversing rankings
+(cross-judge Spearman $+1.0$ to $-0.1$), so neither the missing \texttt{n\_shot}
+nor \texttt{judge\_model} field is recoverable
 (Appendices~\ref{sec:truthfulqa},~\ref{app:exp-judge}).
 
 \paragraph{Belebele: n-shot and language scope confounded.}\label{sec:belebele}
@@ -1046,7 +1061,10 @@ protocols stop being silently averaged into ``SOTA'' comparisons and cross-sourc
 meta-analysis becomes possible, even under partial uptake. The cheapest path is
 producer-side: developers who ship one EvalSpec-R record per reported benchmark
 make their own scores verifiable, which pressures aggregators and leaderboards to
-surface the same fields.
+surface the same fields. To lower even that cost we release a drop-in emission hook
+that turns an existing lm-evaluation-harness run into EvalSpec-R records, reading
+\texttt{scoring\_mode} from the task's output type and hashing the prompt template
+(portable to HELM and Inspect by swapping field accessors).
 
 \paragraph{Interoperability with EEE.} EvalSpec is not a competing schema but a
 compliance \emph{profile} over EEE: every EvalSpec field resolves to an existing
