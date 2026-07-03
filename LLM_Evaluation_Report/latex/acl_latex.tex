@@ -1062,9 +1062,12 @@ meta-analysis becomes possible, even under partial uptake. The cheapest path is
 producer-side: developers who ship one EvalSpec-R record per reported benchmark
 make their own scores verifiable, which pressures aggregators and leaderboards to
 surface the same fields. To lower even that cost we release a drop-in emission hook
-that turns an existing lm-evaluation-harness run into EvalSpec-R records, reading
-\texttt{scoring\_mode} from the task's output type and hashing the prompt template
-(portable to HELM and Inspect by swapping field accessors).
+that turns an existing lm-evaluation-harness run into EvalSpec-R records: from a
+standard run it auto-populates all \textbf{8 of 8} Required fields, including the
+\texttt{scoring\_mode} (read from the task's output type) and the prompt-template
+hash that no leaderboard API exposes, against the $\approx$0\% source-reported
+coverage of those fields in the ecosystem (\S\ref{sec:discrepancies}). The hook is
+portable to HELM and Inspect by swapping field accessors.
 
 \paragraph{Interoperability with EEE.} EvalSpec is not a competing schema but a
 compliance \emph{profile} over EEE: every EvalSpec field resolves to an existing
