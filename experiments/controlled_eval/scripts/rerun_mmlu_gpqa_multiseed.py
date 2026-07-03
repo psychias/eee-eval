@@ -29,8 +29,13 @@ FORMAT_TEMPLATES = {
     "instruct": "You are an expert problem solver. Answer each question carefully and directly.",
     "cot": "You are an expert problem solver. Before answering, think step by step and show your reasoning. Then state the final answer.",
 }
-SEEDS = [123, 7]
+SEEDS = [42, 123, 7]
 N_SHOT = 5
+# Full-set MMLU (14k items) x multi-seed is ~50 min/cell (impractical across Colab
+# session limits). limit=2000 is 10x the original grid's limit=200 -- near-full
+# representativeness -- and the multi-seed design (n=12/format) is what actually
+# powers the format ANOVA. GPQA (448 items) runs full when accessible.
+MMLU_LIMIT = 2000
 
 print("[setup] installing lm-eval==0.4.11 ...", flush=True)
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "lm-eval==0.4.11", "accelerate"], check=True)
@@ -85,7 +90,7 @@ def extract(results, task):
     return round(float(v) * 100.0, 4) if v is not None else None
 
 
-def run_cell(lm, task, sys_inst, seed, offline):
+def run_cell(lm, task, sys_inst, seed, offline, limit):
     env_bak = dict(os.environ)
     if offline:
         os.environ["HF_HUB_OFFLINE"] = "1"; os.environ["HF_DATASETS_OFFLINE"] = "1"
@@ -94,7 +99,7 @@ def run_cell(lm, task, sys_inst, seed, offline):
         for attempt in range(3):
             try:
                 return simple_evaluate(model=lm, tasks=[task], num_fewshot=N_SHOT,
-                                       gen_kwargs=f"seed={seed}", limit=None,
+                                       gen_kwargs=f"seed={seed}", limit=limit,
                                        system_instruction=sys_inst, apply_chat_template=True,
                                        fewshot_as_multiturn=False, random_seed=seed,
                                        numpy_random_seed=seed, torch_random_seed=seed,
@@ -110,20 +115,23 @@ def run_cell(lm, task, sys_inst, seed, offline):
 
 
 for eval_id, canon_id, bs in MODELS:
-    lm = HFLM(pretrained=eval_id, dtype="bfloat16", batch_size=bs)
+    # full-set MMLU with 5-shot chat-template contexts OOMs at large fixed batch;
+    # "auto" finds the largest batch that fits.
+    lm = HFLM(pretrained=eval_id, dtype="bfloat16", batch_size="auto", max_batch_size=bs)
     for task, label in BENCHES:
         if label == "GPQA" and not HAVE_GPQA:
             print(f"[skip] GPQA unavailable for {canon_id}", flush=True)
             continue
         offline = (label == "MMLU")
+        limit = MMLU_LIMIT if label == "MMLU" else None
         for fmt, sys_inst in FORMAT_TEMPLATES.items():
             for seed in SEEDS:
                 rec = dict(model_id=canon_id, benchmark=label, task_name=task,
                            temperature=0.0, prompt_format=fmt, n_shot=N_SHOT, random_seed=seed,
                            score=None, timestamp=datetime.now(timezone.utc).isoformat(),
-                           eval_library_version=lm_eval.__version__, limit=None, backend="hf")
+                           eval_library_version=lm_eval.__version__, limit=limit, backend="hf")
                 try:
-                    r = run_cell(lm, task, sys_inst, seed, offline)
+                    r = run_cell(lm, task, sys_inst, seed, offline, limit)
                     rec["score"] = extract(r, task); rec["status"] = "ok"
                     print("RESULT " + json.dumps(rec), flush=True)
                 except Exception as exc:  # noqa: BLE001
