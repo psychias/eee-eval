@@ -1,0 +1,19 @@
+{
+  "dataset": "vicuna_bench",
+  "n_contestants": 5,
+  "n_judges": 8,
+  "mean_spread": 1.836,
+  "max_spread": 1.909,
+  "cross_judge_spearman": {
+    "min": -0.4,
+    "max": 1.0,
+    "mean": 0.454,
+    "n_pairs": 28
+  },
+  "friedman": {
+    "chi2": 908.5,
+    "df": 7,
+    "n_blocks": 389,
+    "kendall_w": 0.334
+  }
+}

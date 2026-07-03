@@ -1212,15 +1212,18 @@ vocabularies and driving their population are the natural next steps as the
 community grows the schema.
 
 \paragraph{Robustness of the judge-model effect.} To verify the effect is not a
-single-task or small-panel artefact, we replicated the experiment with eight
-judge families, adding DeepSeek, Mistral, Qwen, and Amazon to the original
-four, and analysed it per MT-Bench task category
+single-task, single-dataset, or small-panel artefact, we replicated the experiment
+with eight judge families, adding DeepSeek, Mistral, Qwen, and Amazon to the
+original four, and analysed it per MT-Bench task category
 (Appendix~\ref{app:exp-judge}). The effect strengthens rather than washes out:
 the judge-induced spread rises to a mean of 1.66 (max 1.80) on the 10-point
 scale, cross-judge Spearman rank correlations across the eight judges span
 $+1.0$ to $-0.1$ (mean $+0.61$ over 28 judge pairs), and a multi-point spread
 holds in every one of the eight MT-Bench task categories (1.5--2.9, largest on
-coding, extraction, and math). This wider replication reinforces
+coding, extraction, and math). A second dataset, Vicuna-Bench (80 questions, same
+eight judges and fixed responses), reproduces it even more strongly: spread 1.84,
+Friedman $\chi^2(7)=908.5$ ($p<10^{-100}$, $n=389$; Kendall's $W=0.33$), and
+cross-judge Spearman down to $-0.4$. This cross-dataset replication reinforces
 \texttt{judge\_model} as a Required field.
 
 \section*{Acknowledgments}
