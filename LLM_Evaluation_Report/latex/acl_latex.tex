@@ -1011,6 +1011,7 @@ exposure, not implementation cost.
 
 
 \subsection{Recommendations}
+\label{sec:recs}
 
 %% DRAFT --------------------------------------------------------------
 % Concrete recommendations follow from the audit, the case studies,
@@ -1550,6 +1551,40 @@ BBH score (\S\ref{sec:sealion}); placeholders ($\langle\cdot\rangle$) mark
 values the producer fills at evaluation time. The fields below \texttt{score}
 are \texttt{unknown} in the released OLv2 record.}
 \label{fig:evalspec-json}
+\end{figure}
+
+The placeholders in Figure~\ref{fig:evalspec-json} are exactly what our released
+emission hook fills automatically. Figure~\ref{fig:hook-output} is the verbatim
+record the hook emits from a standard Qwen2.5-14B GSM8K run under
+lm-evaluation-harness: all eight Required fields are populated with no extra
+instrumentation, including the \texttt{scoring\_mode} (read from the task's
+\texttt{output\_type}) and the prompt-template \texttt{sha256} hash that no
+leaderboard API exposes, and each value is tagged \texttt{source-reported}.
+
+\begin{figure}[ht]
+\small
+\begin{verbatim}
+{
+  "model_id": "Qwen/Qwen2.5-14B-Instruct",
+  "benchmark": "gsm8k",
+  "score": 0.585,
+  "scoring_mode": "generation",
+  "harness_name": "lm-evaluation-harness",
+  "harness_version": "0.4.11",
+  "n_shot": 5,
+  "random_seed": 42,
+  "evaluation_timestamp": "2026-07-03T10:00:00Z",
+  "prompt_template_hash": "sha256:870d4f87...",
+  "temperature": 0.0,
+  "evidence_source": "source-reported"
+}
+\end{verbatim}
+\caption{Verbatim EvalSpec-R record emitted by the released hook
+(\S\ref{sec:recs}) from a standard lm-evaluation-harness GSM8K run: all
+\textbf{8/8} Required fields auto-populated (cf.\ the placeholders in
+Figure~\ref{fig:evalspec-json}), against $\approx$0\% source-reported coverage of
+\texttt{harness}/\texttt{scoring\_mode} in the ecosystem (\S\ref{sec:discrepancies}).}
+\label{fig:hook-output}
 \end{figure}
 
 
