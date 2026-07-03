@@ -283,7 +283,7 @@ interchange. General reproducibility checklists
 \citep{pineau2021reproducibility} are hand-filled prose; EvalSpec makes conformance
 a property of the record, e.g.\ a SHACL shape requiring \texttt{judge\_model}
 whenever \texttt{scoring\_mode} is \texttt{preference} mechanically rejects an
-LLM-judge score that omits the judge (\S\ref{sec:truthfulqa},
+LLM-judge score that omits the judge (Appendix~\ref{sec:truthfulqa},
 Appendix~\ref{app:exp-judge}). EvalSpec is designed to sit on existing
 reproducibility infrastructure rather than replace it: it adopts EEE as its
 cross-source interchange substrate. It also composes with Croissant
@@ -294,8 +294,8 @@ measures (inputs, outputs, metrics), explicitly leaving execution to other tools
 EvalSpec pins the evaluation \emph{procedure}, the harness, scoring mode, prompt,
 shots, decoding, and judge that Croissant lists among its non-goals and that is
 where same-model, same-dataset scores diverge across sources. A Croissant checksum
-is thus precisely the dataset-snapshot field EvalSpec leaves to future work, so an
-EvalSpec record can reference a Croissant artifact rather than re-encode it.
+is exactly the dataset-snapshot field in EvalSpec's Full tier, so an EvalSpec record
+can populate it by reference to a Croissant artifact rather than re-encode it.
 
 \paragraph{Operational evaluation systems.} A parallel line builds \emph{systems}
 around evaluation rather than reporting specifications for it. Evaluation Cards
@@ -984,7 +984,7 @@ identity separates independent measurement from a shared-pipeline artefact;
 metric variant shift the regime unlabelled; \texttt{judge\_model} from TruthfulQA,
 where varying only the judge moves means up to 1.35/10 and reorders rankings
 (cross-judge correlations $+1.0$ to $-0.3$; Appendix~\ref{app:exp-judge}); and
-\texttt{evaluation\_timestamp} from the Math-Verify swap (\S\ref{sec:math}), which
+\texttt{evaluation\_timestamp} from the Math-Verify swap (Appendix~\ref{sec:math}), which
 changes scores silently under one label. Two Recommended fields follow the same
 logic: \texttt{judge\_prompt\_hash} (the rating depends on the judge prompt and
 rubric, not the model alone) and \texttt{answer\_parser\_version} (the Math-Verify
@@ -1173,8 +1173,9 @@ format effects as consistent with the scoring-mode diagnostic, not independent
 confirmation, and rest the load-bearing claims on GSM8K. To address the
 \texttt{limit=200} and inference-backend (\texttt{hf} vs.\ vLLM) confounds, the
 generalization arm scores all four models on a single \texttt{hf} backend over full
-test sets, a matched-design GSM8K re-run on \texttt{hf} confirms the format effect
-replicates across backends ($\eta^2 \approx 38\%$ vs.\ vLLM's $27\%$), and a
+test sets, a GSM8K re-run on \texttt{hf} shows the same format--parser collapse on
+a second backend (descriptive per-model direction; the pooled effect is
+underpowered), indicating the format effect is not a vLLM artefact, and a
 full-set rerun confirms the \texttt{limit=200} subset is representative to within
 1.3\,pp (all \S\ref{app:exp-grid}). Our temperature
 finding, under 1\% of variance, is established only on GSM8K under greedy decoding
@@ -1199,11 +1200,12 @@ that missing scoring-mode metadata makes the divergence \emph{unattributable}. T
 released dataset marks inferred fields and records scoring mode where known.
 
 \paragraph{Extending the schema.} EvalSpec is an extensible adaptation of EEE, not
-a closed standard; the audit surfaces further runtime context we leave to future
-fields: the inference backend, the tokenizer version, and the dataset snapshot (a
-task commit hash or Croissant checksum, which the Math-Verify case,
-\S\ref{sec:math}, shows can change silently). These are natural first targets as
-the community grows the schema.
+a closed standard. Its Full tier already reserves the runtime context the audit
+surfaces, the inference backend, tokenizer version, and dataset snapshot (a task
+commit hash or Croissant checksum, which the Math-Verify case,
+Appendix~\ref{sec:math}, shows can change silently); standardizing their controlled
+vocabularies and driving their population are the natural next steps as the
+community grows the schema.
 
 \paragraph{Robustness of the judge-model effect.} To verify the effect is not a
 single-task or small-panel artefact, we replicated the experiment with eight
@@ -1730,21 +1732,23 @@ scoring protocol. Because this arm is run entirely on one backend at full set, i
 also removes the \texttt{limit=200} and vLLM-vs-\texttt{hf} confounds that qualify
 the original grid.
 
-\paragraph{Backend control: the GSM8K format effect is not a vLLM artefact.} To
-rule out that GSM8K's prompt-format effect is specific to the vLLM backend the grid
-uses there, we re-scored GSM8K on the \texttt{hf} backend for all four models at the
-same single-seed, full-set, $n{=}4$-per-format design as the generalization
-benchmarks. The effect persists and is if anything larger on \texttt{hf}: pooled
-$\eta^2 \approx 37.8\%$, versus $\approx 27.4\%$ on vLLM. As on vLLM it is driven by
-the format--parser coupling and is model-dependent: the two Qwen models collapse
-under \texttt{cot} (7B $37.0{\to}7.0$, 14B $38.2{\to}0.1$ from \texttt{plain} to
-\texttt{cot}) because their chain-of-thought output drops the \texttt{\#\#\#\#}
-delimiter, whereas Mistral, whose \texttt{cot} output keeps it, is nearly flat
-($38.4/41.0/40.4$). At $n{=}3$ per format (Llama-3.1 excluded: its NousResearch
-mirror's chat template breaks the parser and floors all three formats near 2\%) the
-\texttt{hf} ANOVA is underpowered ($F=1.83$), but a comparable-to-larger effect size
-on a second backend confirms the vLLM result is not a backend artefact, so backend
-and prompt format are disentangled rather than merely acknowledged.
+\paragraph{Backend control: is the GSM8K format effect a vLLM artefact?} To test
+whether GSM8K's prompt-format effect is specific to the vLLM backend the grid uses
+there, we re-scored GSM8K on the \texttt{hf} backend for all four models (single
+seed, full test set, three formats). The descriptive per-model pattern replicates
+the vLLM result and its mechanism: both Qwen models collapse under \texttt{cot}
+(7B $37.0{\to}7.0$, 14B $38.2{\to}0.1$ from \texttt{plain} to \texttt{cot}) because
+their chain-of-thought output drops the \texttt{\#\#\#\#} delimiter the parser
+needs, exactly as on vLLM, while Mistral, whose \texttt{cot} output keeps the
+delimiter, stays flat ($38.4/41.0/40.4$). The effect is thus mechanism-scoped, not
+a generic ``format matters'' result: it appears precisely for the models whose
+\texttt{cot} output omits the delimiter, the same format--parser coupling as Case
+Study~1. The pooled prompt-format ANOVA over the three usable models
+($\eta^2 \approx 37.8\%$, $F(2,6)=1.83$; Llama-3.1 excluded, as its NousResearch
+mirror's chat template breaks the parser and floors all three formats near 2\%) is
+underpowered and not significant, so it corroborates rather than confirms; but the
+per-model direction matching vLLM on a second backend indicates the format effect
+is not a vLLM artefact, disentangling backend from prompt format.
 
 We attribute variance to the n-shot factor the same way, pooling each
 benchmark's successful cells by shot count (0-shot vs.\ 5-shot;
