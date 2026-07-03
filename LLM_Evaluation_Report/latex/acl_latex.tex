@@ -1182,11 +1182,13 @@ test sets: a GSM8K re-run on \texttt{hf} reproduces the format--parser collapse
 (descriptive per-model direction; pooled effect underpowered), so the effect is
 not a vLLM artefact, and a full-set rerun confirms the \texttt{limit=200} subset is
 representative to within 1.3\,pp (both \S\ref{app:exp-grid}). Our temperature
-finding, under 1\% of variance, holds only on GSM8K under greedy decoding with
-answer parsing and must not be generalised: where sampling drives output diversity
-with no single parseable answer (open-ended generation, creative writing, safety or
-refusal tasks), temperature can dominate rather than vanish, and we make no claim
-there.
+finding is not confined to GSM8K: a generation-task panel over temperatures
+0.0--1.0 (\S\ref{app:exp-temp}) shows temperature explaining $2.2\%$ of GSM8K
+accuracy variance and only $0.66\%$ of MT-Bench judged-quality variance (score
+spread $0.05/10$), so its effect on \emph{aggregate scores} stays small even for
+open-ended, judge-scored generation. The claim is scoped to scores, not outputs:
+sampling still changes \emph{which} text is produced, so diversity-sensitive uses
+(creativity, safety probing) may behave differently, and we make no claim there.
 
 \paragraph{Pipeline-attached harness labels.} The 93\% harness coverage in the
 leaderboard subset is attached by our pipeline from platform documentation, not
@@ -2085,5 +2087,25 @@ with the dataset.}
 \label{tab:judge-sensitivity}
 \end{table}
 
+\paragraph{Second-dataset replication (Vicuna-Bench).} To rule out a dataset-specific
+effect, we repeated the eight-judge study on Vicuna-Bench (80 single-turn questions)
+under the same fixed-response design. It reproduces more strongly than on MT-Bench:
+judge-induced spread 1.84 (vs.\ 1.66); a Friedman test over the 389 fully-rated
+responses rejects judge equivalence at $\chi^2(7)=908.5$ ($p<10^{-100}$, Kendall's
+$W=0.33$); and cross-judge Spearman falls to $-0.40$.
+
+\subsection{Temperature Panel}
+\label{app:exp-temp}
+To test whether the grid's ``temperature under 1\%'' result (GSM8K, greedy, parsed
+short answers) generalises across generation tasks, we ran a panel via OpenRouter:
+four models (Qwen2.5-7B, Qwen2.5-72B, Llama-3.1-8B, Ministral-8B) on GSM8K
+(100-question subset, parsed) and MT-Bench (80 questions, scored 1--10 by a fixed
+GPT-4o-mini judge), at temperatures $\{0.0, 0.7, 1.0\}$ with two samples each. A
+one-way ANOVA over temperature finds $\eta^2 = 2.2\%$ on GSM8K accuracy (means
+86.0/87.0/85.1) and $\eta^2 = 0.66\%$ on MT-Bench judged quality (means
+8.63/8.61/8.58, spread $0.05/10$). Temperature thus moves \emph{aggregate scores}
+little across the generation spectrum, from parsed short answers to open-ended
+judged responses; it does change \emph{which} outputs are sampled, so this bounds
+score sensitivity, not output diversity.
 
 \end{document}
