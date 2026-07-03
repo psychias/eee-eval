@@ -284,43 +284,37 @@ interchange. General reproducibility checklists
 a property of the record, e.g.\ a SHACL shape requiring \texttt{judge\_model}
 whenever \texttt{scoring\_mode} is \texttt{preference} mechanically rejects an
 LLM-judge score that omits the judge (Appendix~\ref{sec:truthfulqa},
-Appendix~\ref{app:exp-judge}). EvalSpec is designed to sit on existing
-reproducibility infrastructure rather than replace it: it adopts EEE as its
-cross-source interchange substrate. It also composes with Croissant
+Appendix~\ref{app:exp-judge}). It sits on existing infrastructure rather than
+replacing it, adopting EEE as its interchange substrate. It composes with Croissant
 \citep{akhtar2024croissant} along an orthogonal axis: Croissant and its task-level
-extension \citep{croissanttasks2026} pin the \emph{artifact}, which files, which
-record structure, and a per-file \texttt{sha256}, and \emph{what} a benchmark
-measures (inputs, outputs, metrics), explicitly leaving execution to other tools;
-EvalSpec pins the evaluation \emph{procedure}, the harness, scoring mode, prompt,
-shots, decoding, and judge that Croissant lists among its non-goals and that is
-where same-model, same-dataset scores diverge across sources. A Croissant checksum
-is exactly the dataset-snapshot field in EvalSpec's Full tier, so an EvalSpec record
-can populate it by reference to a Croissant artifact rather than re-encode it.
+extension \citep{croissanttasks2026} pin the \emph{artifact} (which files, which
+record structure, a per-file \texttt{sha256}) and \emph{what} a benchmark measures,
+explicitly leaving execution to other tools; EvalSpec pins the \emph{procedure},
+the harness, scoring mode, prompt, shots, decoding, and judge that Croissant lists
+among its non-goals and where same-model, same-dataset scores diverge. A Croissant
+checksum is exactly the dataset-snapshot field in EvalSpec's Full tier, so a record
+can populate it by reference rather than re-encode it.
 
 \paragraph{Operational evaluation systems.} A parallel line builds \emph{systems}
-around evaluation rather than reporting specifications for it. Evaluation Cards
-\citep{ghosh2026evalcards} compose benchmark, run, and model metadata into an
-interpretive monitoring layer that derives reproducibility, documentation,
-provenance, and comparability signals across results at scale; HRET
-\citep{lee2025hret} is a registry-based execution toolkit that standardises how
-evaluations are \emph{run} (inference backends, scoring methods), narrowing
-$\sim$10-point cross-institution gaps on Korean benchmarks; and DEP
-\citep{peng2026dep} is a decentralised protocol that keeps benchmark data
-server-side to prevent leakage. Widely-used platforms differ mainly in how much
+around evaluation rather than specifications for it. Evaluation Cards
+\citep{ghosh2026evalcards} compose benchmark, run, and model metadata into a
+monitoring layer that derives reproducibility, provenance, and comparability signals
+at scale; HRET \citep{lee2025hret} is a registry-based execution toolkit
+standardising how evaluations are \emph{run}, narrowing $\sim$10-point
+cross-institution gaps on Korean benchmarks; and DEP \citep{peng2026dep} keeps
+benchmark data server-side to prevent leakage. Platforms differ mainly in how much
 run metadata they expose: OpenCompass \citep{opencompass2023} dumps its resolved
-config alongside predictions but surfaces few-shot count, prompt template, and
-temperature only as ad~hoc script parameters, with no standardised per-score field
-or scoring-mode label, while LightEval \citep{lighteval} records richer provenance
-(harness commit, model SHA, per-task version, prompt hashes) yet still leaves
-decoding parameters and the generation-vs-log-likelihood scoring mode implicit
-rather than first-class, exactly the gap EvalSpec targets. These are complementary
-to, not competitors of, a reporting specification: EvalSpec neither runs evaluations (HRET), hosts them
-(DEP), nor monitors them at scale (Evaluation Cards). It instead fixes the minimal
+config but surfaces few-shot count, prompt template, and temperature only as ad~hoc
+script parameters, with no per-score field or scoring-mode label, while LightEval
+\citep{lighteval} records richer provenance (harness commit, model SHA, per-task
+version, prompt hashes) yet leaves decoding parameters and the
+generation-vs-log-likelihood scoring mode implicit, exactly the gap EvalSpec targets.
+These are complementary to a reporting specification: EvalSpec neither runs (HRET),
+hosts (DEP), nor monitors (Evaluation Cards) evaluations. It fixes the minimal
 per-record fields whose absence provably breaks cross-source comparison
-(\S\ref{sec:cases}), so an EvalSpec-conformant record is exactly the input such
-systems consume, emitted by a harness like HRET, or ingested by a monitoring layer
-like Evaluation Cards, whose comparability signals presuppose the very fields
-EvalSpec makes mandatory.
+(\S\ref{sec:cases}), so a conformant record is exactly the input such systems
+consume or emit, and whose comparability signals presuppose the fields EvalSpec
+makes mandatory.
 
 
 \subsection{The EEE Schema}
@@ -346,14 +340,13 @@ EvalSpec makes mandatory.
 % rather than silently inferred away.
 %% END DRAFT ----------------------------------------------------------
 
-This paper is built on, and extends, the open Every Eval Ever (EEE) schema
+This paper builds on and extends the open Every Eval Ever (EEE) schema
 released by the EvalEval Coalition
 \citep{evaleval2026everyevalever}, which articulates the
-cross-framework score-comparability problem this paper investigates (citing the
+cross-framework score-comparability problem we investigate (citing the
 gap between HELM~\citep{liang2023helm} and EleutherAI's
 lm-evaluation-harness~\citep{gao2024lmevalharness} on LLaMA~65B MMLU, 0.637
-vs.\ 0.488); our case studies trace the specific mechanisms behind such gaps in
-the public record.
+vs.\ 0.488).
 EEE is a unified JSON format storing one model's result on one benchmark from one
 source, with four objects: \texttt{model\_info} (model name, id, developer),
 \texttt{eval\_library} (harness name and version), \texttt{source\_metadata}
@@ -645,24 +638,16 @@ become incomparable across sources; Figure~\ref{fig:casestudies-unified} shows a
 representative divergence for each. A controlled factorial experiment first
 quantifies the factors (four models $\times$ three benchmarks $\times$ three
 prompt formats $\times$ two temperatures $\times$ two n-shot counts; 312
-evaluations), with three further log-likelihood benchmarks then added full-set on a
-common backend to test generalization (Appendix~\ref{app:exp-grid}). Prompt format
-dominates on the generation benchmark: on GSM8K it
-accounts for ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$; 95\%
-bootstrap CI $[14.1\%, 44.8\%]$), operating through the format--parser coupling of
-\S\ref{sec:gsm8k} rather than a capability shift. On all five log-likelihood
-benchmarks the format effect is not significant (MMLU $p = 0.14$, GPQA $p = 0.51$,
-plus three added in Appendix~\ref{app:exp-grid}); their large $\eta^2$ point
-estimates (e.g.\ MMLU $35.1\%$) are underpowered, with single-seed $n{=}4$ groups
-and wide bootstrap intervals, so we read them as consistent with rather than
-evidence for the small effects the scoring-mode diagnostic (\S\ref{sec:hellaswag})
-predicts.
-Temperature contributes under 1\% ($\eta^2 = 0.25\%$), and the n-shot effect is
-benchmark-dependent: negligible on MMLU but on GSM8K inseparable from the parser,
-since 0-shot runs collapse when models omit the expected delimiter. The grid shows
-these factors move scores systematically and by how much; the case studies below
-show the same factors in the wild, each isolating one mechanism by which two
-separately published scores under a shared name measure different things.
+evaluations, plus three log-likelihood benchmarks added full-set;
+Appendix~\ref{app:exp-grid}). Prompt format dominates on the generation benchmark
+GSM8K, where it drives ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$)
+through the format--parser coupling of \S\ref{sec:gsm8k}; on all five
+log-likelihood benchmarks it is not significant (underpowered single-seed designs;
+Appendix~\ref{app:exp-grid}), matching the scoring-mode diagnostic
+(\S\ref{sec:hellaswag}). Temperature contributes under 1\%, and the n-shot effect
+is benchmark-dependent (negligible on MMLU, parser-bound on GSM8K). The case
+studies below show the same factors in the wild, each isolating one mechanism by
+which two separately published scores under a shared name measure different things.
 
 \begin{figure*}[t]
 \centering
@@ -1055,15 +1040,13 @@ Appendix~\ref{app:exp-e2}, shows the converse: at most 0.21\,pp when scoring
 mode alone varies).
 
 \paragraph{Adoption.}
-The Required fields need no new instrumentation, so the barrier is incentive, not
-engineering: a producer emits them by logging and a leaderboard by adding them to
-its API response, and even partial uptake pays off. Because conformance is
-machine-checkable (SHACL), records validate automatically rather than by hand;
-because the fields are uniform across sources, incomparable protocols stop being
-silently averaged into ``SOTA'' comparisons and cross-source meta-analysis becomes
-possible. The cheapest path is producer-side: developers who ship one EvalSpec-R
-record per reported benchmark make their own scores verifiable, which pressures
-aggregators and leaderboards to surface the same fields.
+Because conformance is machine-checkable (SHACL), records validate automatically
+rather than by hand; because the fields are uniform across sources, incomparable
+protocols stop being silently averaged into ``SOTA'' comparisons and cross-source
+meta-analysis becomes possible, even under partial uptake. The cheapest path is
+producer-side: developers who ship one EvalSpec-R record per reported benchmark
+make their own scores verifiable, which pressures aggregators and leaderboards to
+surface the same fields.
 
 \paragraph{Interoperability with EEE.} EvalSpec is not a competing schema but a
 compliance \emph{profile} over EEE: every EvalSpec field resolves to an existing
@@ -1173,16 +1156,15 @@ format effects as consistent with the scoring-mode diagnostic, not independent
 confirmation, and rest the load-bearing claims on GSM8K. To address the
 \texttt{limit=200} and inference-backend (\texttt{hf} vs.\ vLLM) confounds, the
 generalization arm scores all four models on a single \texttt{hf} backend over full
-test sets, a GSM8K re-run on \texttt{hf} shows the same format--parser collapse on
-a second backend (descriptive per-model direction; the pooled effect is
-underpowered), indicating the format effect is not a vLLM artefact, and a
-full-set rerun confirms the \texttt{limit=200} subset is representative to within
-1.3\,pp (all \S\ref{app:exp-grid}). Our temperature
-finding, under 1\% of variance, is established only on GSM8K under greedy decoding
-with answer parsing and must not be generalised: in open-ended generation,
-creative or long-form writing, and safety or refusal tasks, where sampling drives
-output diversity and there is no single parseable answer, temperature can dominate
-rather than vanish, and we make no claim about those regimes.
+test sets: a GSM8K re-run on \texttt{hf} reproduces the format--parser collapse
+(descriptive per-model direction; pooled effect underpowered), so the effect is
+not a vLLM artefact, and a full-set rerun confirms the \texttt{limit=200} subset is
+representative to within 1.3\,pp (both \S\ref{app:exp-grid}). Our temperature
+finding, under 1\% of variance, holds only on GSM8K under greedy decoding with
+answer parsing and must not be generalised: where sampling drives output diversity
+with no single parseable answer (open-ended generation, creative writing, safety or
+refusal tasks), temperature can dominate rather than vanish, and we make no claim
+there.
 
 \paragraph{Pipeline-attached harness labels.} The 93\% harness coverage in the
 leaderboard subset is attached by our pipeline from platform documentation, not
