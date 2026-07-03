@@ -31,11 +31,12 @@ FORMAT_TEMPLATES = {
 }
 SEEDS = [42, 123, 7]
 N_SHOT = 5
-# Full-set MMLU (14k items) x multi-seed is ~50 min/cell (impractical across Colab
-# session limits). limit=2000 is 10x the original grid's limit=200 -- near-full
-# representativeness -- and the multi-seed design (n=12/format) is what actually
-# powers the format ANOVA. GPQA (448 items) runs full when accessible.
-MMLU_LIMIT = 2000
+# Full-set MMLU (14k items) x multi-seed is ~50 min/cell (impractical). MMLU is a
+# GROUP of 57 subjects, so an integer `limit` applies per-subject and doesn't subset
+# (each subject has <2000 items). A FRACTIONAL limit does: 0.15 -> 15% of each
+# subject (~2100 items total, stratified across all subjects), ~7 min/cell. The
+# multi-seed design (n=12/format) is what actually powers the format ANOVA.
+MMLU_LIMIT = 0.15
 
 print("[setup] installing lm-eval==0.4.11 ...", flush=True)
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "lm-eval==0.4.11", "accelerate"], check=True)
