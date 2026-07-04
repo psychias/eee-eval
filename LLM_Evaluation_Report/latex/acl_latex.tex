@@ -517,19 +517,18 @@ in multiple sources.}
 \label{sec:score-ann}
 
 \paragraph{Score extraction precision and recall.}
-We audited 2{,}027 extracted (model, benchmark, score) entries against the source
-papers across 10 ArXiv papers (Table~\ref{tab:score-ann-app},
-Appendix~\ref{app:audit}). \emph{Precision}, extracted scores matching the
-paper, is \textbf{97.5\%} (1{,}977/2{,}027); the 50 errors are systematic
-artefacts (base/chat variant duplication, 33; a spurious HumanEval leading ``0'',
-8; a Qwen1.5-32B-as-34B mislabel, 5; duplicate Elo attribution, 3; one wrong
-pass@k, 1). \emph{Recall}, reported scores captured, is approximately
-\textbf{81\%} but variable (52--100\% per paper): it captures headline tables but
-skips secondary ones and, in table-heavy papers, whole comparison models. Neither
-check verifies surrounding metadata; a third audit (\S\ref{sec:meta-ann}) covers
-the non-score protocol fields. Separately, 16{,}374/17{,}228 (95.0\%)
-LLM-extracted ArXiv records carry a non-null score, a structural presence check,
-not a correctness one.
+We audited 2{,}027 extracted (model, benchmark, score) entries against 10 source
+ArXiv papers (Table~\ref{tab:score-ann-app}, Appendix~\ref{app:audit}).
+\emph{Precision}, extracted scores matching the paper, is \textbf{97.5\%}
+(1{,}977/2{,}027); the 50 errors are systematic artefacts (base/chat variant
+duplication, 33; a spurious HumanEval leading ``0'', 8; a Qwen1.5-32B-as-34B
+mislabel, 5; duplicate Elo attribution, 3; one wrong pass@k, 1). \emph{Recall},
+reported scores captured, is approximately \textbf{81\%} but variable (52--100\%
+per paper): it captures headline tables but skips secondary ones and, in
+table-heavy papers, whole comparison models. Neither check verifies surrounding
+metadata; a third audit (\S\ref{sec:meta-ann}) covers the non-score protocol
+fields. Separately, 16{,}374/17{,}228 (95.0\%) LLM-extracted ArXiv records carry a
+non-null score, a structural presence check, not a correctness one.
 
 \subsection{Human Annotation of Automatic Harness Identification}
 \label{sec:harness-ann}
@@ -544,7 +543,7 @@ verbatim; Appendix~\ref{app:harness}).
 Per-row precision on the with-harness sample is 712/817 = 87.1\%: three papers
 reach 100\% (BLOOM 436/436, with the \emph{Prompted Language Model Evaluation
 Harness} fork correctly extracted, plus Sheared LLaMA and Aya 23), while two
-expose a failure mode. When a harness is attributed to a broad group (``across
+expose a failure mode: when a harness is attributed to a broad group (``across
 all aforementioned tasks'', Nemotron-4 15B, 6/96; ``for open access models'',
 Llemma, 74/89), the LLM tags only the benchmarks named in the same sentence.
 Abstention on the without-harness sample is 869/869 = 100\% (\texttt{unknown}
@@ -559,9 +558,9 @@ DeepSeek-Coder-V2, Granite Code, Gemma~3, Qwen3, OpenELM), verifying the four
 non-harness benchmark-level fields \texttt{n\_shot}, \texttt{temperature},
 \texttt{prompt\_template}, and \texttt{decoding\_strategy}. As an independent
 cross-extractor check, a second model re-read each paper's evaluation tables and
-appendix, judging every non-null extracted value as matching the paper,
-contradicting it, or \emph{unstated} (paper silent, so the value is a pipeline
-default and is excluded from precision). Across 229 distinct per-benchmark
+appendix, judging every non-null extracted value as matching, contradicting, or
+\emph{unstated} (paper silent, so the value is a pipeline default, excluded from
+precision). Across 229 distinct per-benchmark
 tuples (631 non-null values), precision on values the paper actually states is
 high: \texttt{n\_shot} 99.4\% (171/172), \texttt{temperature} 100\% (42/42),
 \texttt{prompt\_template} 93.4\% (114/122), \texttt{decoding\_strategy} 98.8\%
@@ -572,17 +571,18 @@ paper samples at temperature~0.2), one a Gemma~3 shot count (FLoRes-Indic 5 vs.\
 the paper's 1). The more consequential finding is coverage-side: \textbf{21\%
 (130/631) of extracted metadata values are unstated pipeline defaults}
 (\texttt{prompt\_template=direct}, \texttt{decoding\_strategy=greedy},
-\texttt{n\_shot=0} for completion benchmarks) the source paper never states. Extraction of \emph{stated} metadata is therefore
-reliable, but apparent field coverage overstates \emph{verifiable} coverage,
-especially for \texttt{prompt\_template} and \texttt{decoding\_strategy};
-\texttt{n\_shot} is both high-precision and usually paper-stated, whereas prompt
-and decoding are high-precision only \emph{when} the paper states them. Because the reference judgments come from a second language model rather than a
-human, this figure is an inter-extractor agreement rate, not precision against a
+\texttt{n\_shot=0} for completion benchmarks) the source paper never states.
+Extraction of \emph{stated} metadata is therefore reliable, but apparent field
+coverage overstates \emph{verifiable} coverage: \texttt{n\_shot} is both
+high-precision and usually paper-stated, whereas \texttt{prompt\_template} and
+\texttt{decoding\_strategy} are high-precision only \emph{when} the paper states
+them. Because the reference judgments come from a second language model rather than
+a human, this figure is an inter-extractor agreement rate, not precision against a
 human gold standard; the two extractors could share failure modes, so it
 upper-bounds rather than certifies correctness. The more robust finding is the
-qualitative one, the 21\% default-filling, which any reader can confirm against
-the cited papers. Released records flag inferred-versus-stated values so
-downstream users can discount defaults.
+qualitative 21\% default-filling, which any reader can confirm against the cited
+papers. Released records flag inferred-versus-stated values so downstream users can
+discount defaults.
 
 
 \subsection{Results and Discrepancies}
@@ -618,11 +618,11 @@ documentation (\S\ref{sec:pipeline}). No leaderboard we examined returns harness
 identity via its API, so the 93\% subset harness coverage is auto-attachment, not
 source data: the \texttt{lm\_eval} label is inferred from OLv2's documentation
 \citep{openllmv2about}, and the scoring mode it runs (multiple-choice
-log-likelihood on BBH, \S\ref{sec:bbh}) is not carried at all.
-Under a \emph{strict} definition that counts only source-reported values,
-harness coverage across the leaderboard subset is therefore effectively 0\%;
-we report the pipeline-attached figure (93\%) and this strict figure side by side
-throughout so the attached labels are never silently counted as ecosystem coverage.
+log-likelihood on BBH, \S\ref{sec:bbh}) is not carried at all. Under a
+\emph{strict} definition counting only source-reported values, subset harness
+coverage is therefore effectively 0\%; we report the pipeline-attached figure
+(93\%) and this strict figure side by side throughout so attached labels are never
+silently counted as ecosystem coverage.
 
 OLv2 supplies 26{,}790 of the 28{,}755 leaderboard records (93.2\%), so the subset
 figures largely measure one platform's API; ablating it sharpens the finding, as
@@ -634,8 +634,8 @@ the remaining nine sources expose nothing beyond the protocol-fixed n-shot count
 absent from the audit because no source records it discretely; it is implicit in
 the harness configuration. Unlike harness identity it cannot even be
 pipeline-attached, since one platform runs the same benchmark in either mode
-(\S\ref{sec:bbh}), which is itself the argument for making it a first-class
-required field (\S\ref{sec:evalspec}).
+(\S\ref{sec:bbh})---itself the argument for making it a first-class required field
+(\S\ref{sec:evalspec}).
 
 \section{Case Studies}
 \label{sec:cases}
@@ -1127,74 +1127,71 @@ Public evaluation records routinely report a score without the procedure that
 produced it. Across 46{,}559 records from 12 sources, the fields most responsible
 for score divergence (harness identity, scoring mode, prompt template) are largely
 absent from the leaderboard subset, where prompt template and temperature reach
-zero valid coverage and no API exposes the harness. Cross-source overlap enabling
-independent verification is rare and concentrated in one dominant source. Three
-case studies show how these absences turn ordinary score gaps into uninterpretable
-ones, and a controlled factorial experiment confirms an undocumented prompt-format
-or answer-parser choice can move a score by tens of points on the same model,
-benchmark, and harness. Since targeted re-evaluation does not scale and
-re-extraction cannot recover what a source never recorded, documentation is the
-remaining identification strategy. EvalSpec specifies the minimum fields to record,
-grounded in the audit and validated against the case studies. The dataset, schema,
-and pipeline are released for the community to extend.
+zero valid coverage and no API exposes the harness, and the cross-source overlap
+enabling independent verification is rare and concentrated in one dominant source.
+Three case studies turn ordinary score gaps into uninterpretable ones, and a
+controlled factorial experiment confirms an undocumented prompt-format or
+answer-parser choice can move a score by tens of points on the same model,
+benchmark, and harness. Since re-evaluation does not scale and re-extraction cannot
+recover what a source never recorded, documentation is the remaining strategy:
+EvalSpec specifies the minimum fields to record, grounded in the audit and validated
+on the case studies. The dataset, schema, and pipeline are released for the
+community to extend.
 
 \section*{Limitations}
 
 \paragraph{Source concentration.} The leaderboard subset is 93\% Open LLM
 Leaderboard v2 (26{,}790 of 28{,}755 records), so aggregate statistics largely
-describe one dominant platform plus a sparse periphery. We report the leaderboard
-subset separately throughout and ablate OLv2 directly
-(Table~\ref{tab:coverage-app}): removing it, the nine-source tail carries 0.0\%
-coverage on harness, prompt template, temperature, and chain-of-thought, and only
-the protocol-fixed n-shot count (71.0\%) survives, so the caveat sharpens the
-headline rather than overturning it.
+describe one dominant platform plus a sparse periphery. We report it separately
+throughout and ablate OLv2 (Table~\ref{tab:coverage-app}): removing it, the
+nine-source tail carries 0.0\% coverage on harness, prompt template, temperature,
+and chain-of-thought, and only the protocol-fixed n-shot count (71.0\%) survives,
+sharpening the headline rather than overturning it.
 
 \paragraph{Single-extractor ArXiv pipeline.} The ArXiv source comes from one LLM
-extractor (Claude Haiku). Three audits check it against the papers, on scores
+extractor (Claude Haiku). Three audits check it against the papers on scores
 (\S\ref{sec:score-ann}), harness identity (\S\ref{sec:harness-ann}), and non-score
 protocol fields (\S\ref{sec:meta-ann}); the last uses an independent second model
 and surfaces the pipeline's default-filling (21\% of metadata values are unstated
-defaults). These cover 26 papers but are point estimates on a modest sample, not
-ecosystem-wide guarantees; we exclude ArXiv from the headline coverage analysis
-and mark its inferred metadata as such.
+defaults). These cover 26 papers, point estimates on a modest sample not
+ecosystem-wide guarantees; we exclude ArXiv from the headline coverage and mark its
+inferred metadata as such.
 
 \paragraph{Existence vs.\ mechanism-level prevalence.} The case studies are
 hand-selected for diagnosability, not sampled. The corpus-wide pass
-(\S\ref{sec:prevalence}) quantifies the aggregate picture: overlap is rare
-(0.63\% of cells) and where it exists divergence is the norm (69\% $>$1\,pp) and
-unattributable (harness missing in 98\% of disagreements; scoring mode absent
-ecosystem-wide). It cannot attribute each collision to a \emph{specific}
-mechanism, because the separating fields are the missing ones; a
-mechanism-labelled census must wait until enough records carry EvalSpec-Required
-fields.
+(\S\ref{sec:prevalence}) shows overlap is rare (0.63\% of cells) and where it
+exists divergence is the norm (69\% $>$1\,pp) and unattributable (harness missing
+in 98\% of disagreements; scoring mode absent ecosystem-wide). It cannot attribute
+each collision to a \emph{specific} mechanism, since the separating fields are the
+missing ones; a mechanism-labelled census awaits enough records carrying
+EvalSpec-Required fields.
 
 \paragraph{Statistical power and inference backend.} We estimate the format effect
 on each log-likelihood benchmark with the replication unit its protocol admits
 (Appendix~\ref{app:exp-grid}): seeds ($n{=}12$) for the random-few-shot
 ARC-Challenge/WinoGrande/OpenBookQA, and models ($n{=}8$) for the seed-deterministic
-MMLU/GPQA. A within-subject ANOVA (format a repeated-measures factor, blocking on
-model) finds the effect significant on four benchmarks (ARC-Challenge,
-WinoGrande, MMLU, OpenBookQA; all $p<0.01$, Friedman-confirmed) and null only on
-GPQA, where models sit at its chance floor; the effect is smaller than on
-generation-scored GSM8K but statistically conclusive. To address the
-\texttt{limit=200} and inference-backend (\texttt{hf} vs.\ vLLM) confounds, the
-generalization arm scores all four models on a single \texttt{hf} backend over full
-test sets: a GSM8K re-run on \texttt{hf} reproduces the format--parser collapse
-(descriptive per-model direction; pooled effect underpowered), so it is not a vLLM
-artefact, and a full-set rerun confirms the \texttt{limit=200} subset is
-representative to within 1.3\,pp (both \S\ref{app:exp-grid}). Our temperature
+MMLU/GPQA. A within-subject ANOVA (format repeated-measures, blocking on model)
+finds it significant on four benchmarks (ARC-Challenge, WinoGrande, MMLU,
+OpenBookQA; all $p<0.01$, Friedman-confirmed) and null only on GPQA, where models
+sit at its chance floor; it is smaller than on generation-scored GSM8K but
+conclusive. Addressing the \texttt{limit=200} and inference-backend (\texttt{hf}
+vs.\ vLLM) confounds, the generalization arm scores all four models on a single
+\texttt{hf} backend over full test sets (both \S\ref{app:exp-grid}): a GSM8K re-run
+on \texttt{hf} reproduces the format--parser collapse (descriptive per-model
+direction; pooled effect underpowered), so it is not a vLLM artefact, and the
+\texttt{limit=200} subset is representative to within 1.3\,pp. The temperature
 finding is not confined to GSM8K: a four-model, two-task generation panel over
-temperatures 0.0--1.0 (\S\ref{app:exp-temp}) shows temperature explaining $2.2\%$ of GSM8K
+temperatures 0.0--1.0 (\S\ref{app:exp-temp}) shows it explaining $2.2\%$ of GSM8K
 accuracy variance and only $0.66\%$ of MT-Bench judged-quality variance (score
 spread $0.05/10$), so its effect on \emph{aggregate scores} stays small even for
 open-ended, judge-scored generation. The claim is scoped to scores, not outputs:
-sampling still changes \emph{which} text is produced, so diversity-sensitive uses
-(creativity, safety probing) may differ, and we make no claim there.
+sampling still changes \emph{which} text is produced, so we make no claim for
+diversity-sensitive uses (creativity, safety probing).
 
 \paragraph{Pipeline-attached harness labels.} The 93\% harness coverage in the
-leaderboard subset is attached by our pipeline from platform documentation, not
-returned by any API, so it is inferred, not source-reported. Even when correct it
-is insufficient: OLv2's docs name its lm-evaluation-harness fork but not the
+leaderboard subset is inferred, attached by our pipeline from platform
+documentation rather than returned by any API. Even when correct it is
+insufficient: OLv2's docs name its lm-evaluation-harness fork but not the
 \emph{scoring mode} it applies, which for BBH is 3-shot multiple-choice
 log-likelihood (\texttt{acc\_norm}), not the chain-of-thought generation the
 models' own reports use \citep{openllmv2about}. The effect is systematic: across
@@ -1202,35 +1199,33 @@ every pair where OLv2 and a model's own paper report the same benchmark, OLv2 is
 lower in \textbf{37 of 42} BBH pairs (median \textbf{25.6\,pp}) and \textbf{19 of
 24} MMLU-Pro pairs (median \textbf{8.0\,pp}). Since each pair is OLv2 vs.\ a
 different paper's best-protocol number, this is suggestive rather than a clean
-effect size and carries the papers' self-report choices; we read it as evidence
-that missing scoring-mode metadata makes the divergence \emph{unattributable}. The
+effect size and carries the papers' self-report choices, but is evidence that
+missing scoring-mode metadata makes the divergence \emph{unattributable}; the
 released dataset marks inferred fields and records scoring mode where known.
 
 \paragraph{Extending the schema.} EvalSpec is an extensible adaptation of EEE, not
 a closed standard. Its Full tier already reserves the runtime context the audit
 surfaces: inference backend, tokenizer version, and dataset snapshot (a task commit
 hash or Croissant checksum, which the Math-Verify case, Appendix~\ref{sec:math},
-shows can change silently). Our backend control (Appendix~\ref{app:exp-grid}),
-where switching vLLM to \texttt{hf} inverts GSM8K's \texttt{plain}/\texttt{cot}
-ordering, argues for treating the inference backend and its version as a first-class
-recorded parameter, not a Full-tier afterthought, and more broadly for leaderboards
-adopting an archival contract pinning the backend, harness, and dataset snapshot
-behind every published score. Standardizing these vocabularies and driving their
-population are the natural next steps as the community grows the schema.
+shows can change silently). Our backend control (Appendix~\ref{app:exp-grid}), where
+switching vLLM to \texttt{hf} inverts GSM8K's \texttt{plain}/\texttt{cot} ordering,
+argues for treating the inference backend and its version as a first-class parameter,
+and for leaderboards pinning the backend, harness, and dataset snapshot behind every
+published score in an archival contract. Standardizing these vocabularies and driving
+their population are the natural next steps.
 
-\paragraph{Robustness of the judge-model effect.} To verify the effect is not a
-single-task, single-dataset, or small-panel artefact, we replicated the experiment
-with eight judge families, adding DeepSeek, Mistral, Qwen, and Amazon to the
-original four, analysed per MT-Bench task category (Appendix~\ref{app:exp-judge}).
-The effect strengthens rather than washes out: the judge-induced spread rises to
-a mean of 1.66 (max 1.80) on the 10-point scale, cross-judge Spearman correlations
-across the eight judges span $+1.0$ to $-0.1$ (mean $+0.61$ over 28 pairs), and a
-multi-point spread holds in every one of the eight MT-Bench task categories
-(1.5--2.9, largest on coding, extraction, and math). A second dataset, Vicuna-Bench (80 questions, same
-eight judges and fixed responses), reproduces it even more strongly: spread 1.84,
-Friedman $\chi^2(7)=908.5$ ($p<10^{-100}$, $n=389$; Kendall's $W=0.33$), and
-cross-judge Spearman down to $-0.4$. This cross-dataset replication reinforces
-\texttt{judge\_model} as a Required field.
+\paragraph{Robustness of the judge-model effect.} To verify it is not a single-task,
+single-dataset, or small-panel artefact, we replicated it with eight judge families,
+adding DeepSeek, Mistral, Qwen, and Amazon to the original four, analysed per
+MT-Bench task category (Appendix~\ref{app:exp-judge}). It strengthens rather than
+washes out: the judge-induced spread rises to a mean of 1.66 (max 1.80) on the
+10-point scale, cross-judge Spearman correlations across the eight judges span
+$+1.0$ to $-0.1$ (mean $+0.61$ over 28 pairs), and a multi-point spread holds in
+every one of the eight MT-Bench task categories (1.5--2.9, largest on coding,
+extraction, and math). A second dataset, Vicuna-Bench (80 questions, same eight
+judges and fixed responses), reproduces it even more strongly: spread 1.84, Friedman
+$\chi^2(7)=908.5$ ($p<10^{-100}$, $n=389$; Kendall's $W=0.33$), and cross-judge
+Spearman down to $-0.4$, reinforcing \texttt{judge\_model} as a Required field.
 
 \section*{Acknowledgments}
 \bibliography{custom}
