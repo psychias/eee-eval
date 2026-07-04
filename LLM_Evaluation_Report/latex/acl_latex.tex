@@ -802,24 +802,25 @@ mode and the reporting variants that most often move their scores.
 \subsection{Case Study 3: Shared Pipelines Fake Independence}
 \label{sec:convergence}\label{sec:sealion}
 
-Two sources reporting the same score to several decimals need not be independent
-measurements; one may be the other re-reported. OLv2 reports Gemma-2-9B's BBH
-score as 34.10, and the SEA-LION paper (\citealt{ng2025sealion};
-arXiv:2504.05747) reports the same model at 34.10, an exact two-decimal
-match, while listing Open LLM Leaderboard among its benchmark sources. Such a
-match fits either direct importation of the OLv2 score or independent
-re-evaluation on the identical harness, and the EEE record cannot
-distinguish them; but our harness-version control (Appendix~\ref{app:exp-e3})
-shows reruns vary by up to 2.81\,pp across seeds, so an exact two-decimal match is
-more consistent with a re-import than an independent re-run under a different
-seed. OLv2's exact, deterministic configuration could reproduce it, but
-SEA-LION records none; either way the two records share a
-pipeline origin. This is a plausibility argument from the decimal match and the
-seed spread, not proof: the fields that would settle it directly---a
-run or job ID, an \texttt{evaluation\_timestamp}, the \texttt{harness}, and a
-\texttt{prompt\_template\_hash}---are absent from both records, leaving the match as
-the only signal. Recording them, as EvalSpec requires, would replace the inference
-with a check.
+Two sources reporting the same score need not be independent measurements; one may
+be the other re-reported. OLv2's leaderboard records \texttt{google/gemma-2-9b}'s raw
+BBH as 34.0968 (34.10) under a 3-shot multiple-choice log-likelihood protocol, with a
+model SHA, \texttt{bfloat16} precision, and a submission date attached. The SEA-LION
+paper (\citealt{ng2025sealion}; arXiv:2504.05747) reports the same base model at 34.1
+in a bare table and states it evaluated English performance ``using the Open LLM
+Leaderboard,'' listing OLv2's identical six-benchmark suite (MMLU-PRO, BBH, GPQA,
+MATH, MuSR, IFEval); the shared-pipeline origin is thus attributed by the source, not
+inferred from the matching number alone. The number cannot settle the narrower
+question of whether SEA-LION imported OLv2's value or re-ran the identical
+deterministic pipeline---both yield 34.0968---but both are non-independent, and BBH
+is precisely the score a free re-run would fail to reproduce: the same model scores
+$\approx$68 under CoT generation (\S\ref{sec:bbh}) and moves $\le$2.81\,pp across
+harness versions (Appendix~\ref{app:exp-e3}), so landing on OLv2's exact 34.10
+fingerprints OLv2's specific pipeline rather than an independent choice of protocol.
+The run/job ID, \texttt{evaluation\_timestamp}, \texttt{harness}, and
+\texttt{prompt\_template\_hash} that would separate import from re-run are absent from
+SEA-LION's record (OLv2's carries only a model SHA and date); recording them, as
+EvalSpec requires, would replace the inference with a check.
 
 The Gemma 2 and Gemma 3 reports instead list 68.20, 69.00, and 69.40, using
 chain-of-thought generation rather than OLv2's 3-shot multiple-choice log-likelihood
@@ -1163,12 +1164,15 @@ each collision to a \emph{specific} mechanism, since the separating fields are t
 missing ones; a mechanism-labelled census awaits enough records carrying
 EvalSpec-Required fields.
 
-\paragraph{Provenance inferences are plausibility arguments.} The sharper causal
-reading of SEA-LION, an imported rather than independently re-run OLv2 score
-(\S\ref{sec:sealion}), is plausible, not proven: the run identifiers, timestamps,
-and harness fields that would confirm it are the very metadata absent from both
-records, the thesis turned on itself. Recording them, as EvalSpec requires, would
-settle it.
+\paragraph{Provenance inferences.} SEA-LION's own text attributes its English
+scores to ``the Open LLM Leaderboard'' (\S\ref{sec:sealion}), so the shared-pipeline
+reading is source-attributed rather than inferred from the matching number. What
+stays a plausibility argument is the narrower import-versus-identical-rerun
+distinction: both are non-independent, but the run/job identifiers that would
+separate them are absent from SEA-LION's record (OLv2's carries only a model SHA and
+date). Recording them, as EvalSpec requires, would settle it---the thesis turned on
+itself, the same missing metadata the paper targets also bounding how precisely a
+specific collision's mechanism can be reconstructed.
 
 \paragraph{Statistical power and inference backend.} We estimate the format effect
 on each log-likelihood benchmark with the replication unit its protocol admits
