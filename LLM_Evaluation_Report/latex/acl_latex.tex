@@ -653,11 +653,15 @@ prompt formats $\times$ two temperatures $\times$ two n-shot counts; 312
 evaluations, plus three log-likelihood benchmarks added full-set;
 Appendix~\ref{app:exp-grid}). Prompt format dominates on the generation benchmark
 GSM8K, where it drives ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$)
-through the format--parser coupling of \S\ref{sec:gsm8k}; on all five
-log-likelihood benchmarks it is not significant (underpowered single-seed designs;
-Appendix~\ref{app:exp-grid}), matching the scoring-mode diagnostic
-(\S\ref{sec:hellaswag}). Temperature contributes under 1\%, and the n-shot effect
-is benchmark-dependent (negligible on MMLU, parser-bound on GSM8K). The case
+through the format--parser coupling of \S\ref{sec:gsm8k}. Adequately powered
+(Appendix~\ref{app:exp-grid}), prompt format has real but smaller and
+benchmark-dependent effects on log-likelihood scoring too: significant on
+ARC-Challenge ($\eta^2=23\%$, $p=0.01$), large but marginal on MMLU ($26\%$) and
+WinoGrande ($15\%$), and null on GPQA and OpenBookQA. It is thus not the uniformly
+inert factor an underpowered single-seed grid suggests, though its magnitude on
+log-likelihood benchmarks stays below the generation benchmark. Temperature
+contributes under 1\%, and the n-shot effect is benchmark-dependent (negligible on
+MMLU, parser-bound on GSM8K). The case
 studies below show the same factors in the wild, each isolating one mechanism by
 which two separately published scores under a shared name measure different things.
 
@@ -784,13 +788,15 @@ open-ended generation (high-risk), which widens the space in which the modes div
 parser must reduce to a final answer (high-risk) or score the answer directly
 (low-risk)? This is the BBH mechanism (\S\ref{sec:bbh}).
 \end{itemize}
-Pure multiple-choice log-likelihood benchmarks are low-risk on all three, so the
-two modes agree: MMLU differs by 0.21\,pp (E2, Appendix~\ref{app:exp-e2}), and the
-three log-likelihood benchmarks we add to the grid precisely to test this
-(ARC-Challenge, WinoGrande, OpenBookQA; Appendix~\ref{app:exp-grid}) show only
-small prompt-format effects, as predicted. Benchmarks high-risk on one or more axis
-diverge by tens of points: GSM8K (extraction + open output), BBH (extraction +
-CoT), HellaSwag (open continuation). The prediction is therefore mechanical from
+Pure multiple-choice log-likelihood benchmarks are low-risk on all three, so
+prompt format moves scores by only a few points: MMLU differs by 0.21\,pp under
+matched scoring (E2, Appendix~\ref{app:exp-e2}), and the log-likelihood benchmarks
+we add to the grid (ARC-Challenge, WinoGrande, OpenBookQA, MMLU, GPQA;
+Appendix~\ref{app:exp-grid}) show format spreads of a few points, an order of
+magnitude below the generation benchmarks, even where, adequately powered, the
+effect is statistically detectable (significant on ARC-Challenge). Benchmarks
+high-risk on one or more axis diverge by tens of points: GSM8K (extraction + open
+output), BBH (extraction + CoT), HellaSwag (open continuation). The prediction is therefore mechanical from
 the protocol, not the benchmark name, and it is what \texttt{scoring\_mode} plus
 the presence of a parser encodes, which is why EvalSpec places \texttt{scoring\_mode}
 in the Required tier: it tells a reader which axis a cross-source gap under a shared
@@ -1170,12 +1176,15 @@ mode absent ecosystem-wide). It does not attribute each collision to a
 missing; a mechanism-labelled census must wait until enough records carry
 EvalSpec-Required fields.
 
-\paragraph{Statistical power and inference backend.} The grid is well powered on
-GSM8K (prompt format $F=13.0$, $p<0.001$) but not on the log-likelihood benchmarks
-(MMLU $p=0.14$, GPQA $p=0.51$, and the three added benchmarks), which run
-single-seed at $n{=}4$ per format group; we read their small, non-significant
-format effects as consistent with the scoring-mode diagnostic, not independent
-confirmation, and rest the load-bearing claims on GSM8K. To address the
+\paragraph{Statistical power and inference backend.} The single-seed grid is
+underpowered on the log-likelihood benchmarks ($n{=}4$ per format), so we power each
+one with the replication unit its protocol admits (Appendix~\ref{app:exp-grid}):
+seeds ($n{=}12$) for the random-few-shot ARC-Challenge/WinoGrande/OpenBookQA, and
+models ($n{=}8$, eight models) for the seed-deterministic MMLU/GPQA. Adequately
+powered, the format effect on log-likelihood benchmarks is real but
+benchmark-dependent (significant on ARC-Challenge, $\eta^2=23\%$; marginal on MMLU
+and WinoGrande; null on GPQA and OpenBookQA), and smaller in magnitude than on
+generation-scored GSM8K. To address the
 \texttt{limit=200} and inference-backend (\texttt{hf} vs.\ vLLM) confounds, the
 generalization arm scores all four models on a single \texttt{hf} backend over full
 test sets: a GSM8K re-run on \texttt{hf} reproduces the format--parser collapse
@@ -1756,26 +1765,32 @@ thesis, the inference backend is an undocumented configuration choice that moves
 scores, so the rerun validates subset representativeness within a backend, not the
 vLLM absolute numbers. Script and raw records are released.
 
-\paragraph{Generalizing across benchmarks on a common backend.} To test whether
-the prompt-format effect generalizes, and whether the scoring-mode diagnostic
-(\S\ref{sec:hellaswag}) holds beyond the original benchmarks, we added three more,
-ARC-Challenge, WinoGrande, and OpenBookQA, evaluated for all four models on a
-single \texttt{hf} backend over the full test sets (no \texttt{limit=200}). All
-three are closed-set log-likelihood benchmarks, so the diagnostic predicts a small
-prompt-format effect, and that is what we find: at 5-shot the format spread is
-6.1\,pp (ARC-Challenge), 2.9\,pp (WinoGrande), and 2.1\,pp (OpenBookQA), and none of
-the three effects is significant ($F = 1.13/1.15/0.38$, $p = 0.36/0.36/0.70$),
-like MMLU and GPQA. At this design's single-seed $n{=}4$ per format group these
-five log-likelihood tests are underpowered, so their null results are
-\emph{consistent with} the small effects the diagnostic predicts, not positive
-evidence of them; the load-bearing contrast is with generation-scored GSM8K, where
-the format effect is large and significant ($\eta^2 \approx 27\%$, $p < 0.001$) on
-the same design. That a significant effect appears on the generation benchmark and
-not on any of the five log-likelihood benchmarks is what the diagnostic predicts:
-prompt format is not a universal driver but one whose magnitude is set by the
-scoring protocol. Because this arm is run entirely on one backend at full set, it
-also removes the \texttt{limit=200} and vLLM-vs-\texttt{hf} confounds that qualify
-the original grid.
+\paragraph{Powering the log-likelihood benchmarks beyond GSM8K.} The single-seed
+grid leaves the log-likelihood format effects underpowered ($n{=}4$ per format), so
+we power each benchmark with the replication unit its protocol admits. The three
+added benchmarks, ARC-Challenge, WinoGrande, and OpenBookQA, draw few-shot examples
+\emph{randomly}, so we add two seeds (123, 7) for $n{=}12$ per format. MMLU and GPQA
+draw from a \emph{fixed} dev set and are deterministic under greedy log-likelihood
+(every seed returns an identical score, so seeds cannot power them); we instead
+power them across \emph{models}, running each on eight instruction-tuned models
+(1.5B--14B, four families) for $n{=}8$ per format. All runs use the \texttt{hf}
+backend (MMLU at a 15\% stratified subset, ${\approx}2100$ items; others full-set).
+
+Adequately powered, prompt format is \emph{not} the uniformly inert factor the
+underpowered nulls implied; its effect is real but benchmark-dependent and generally
+smaller than on generation: it is significant on ARC-Challenge ($F(2,33)=5.02$,
+$p=0.01$, $\eta^2=23\%$), large but marginal on MMLU ($\eta^2=26\%$, $p=0.06$) and
+WinoGrande ($15\%$, $p=0.07$), and null on GPQA ($13\%$, $p=0.29$, where the models
+sit near GPQA's chance floor) and OpenBookQA ($5\%$, $p=0.40$). We drop Phi-3.5
+(its metric did not parse) and flag the Llama-3.1 mirror (MMLU-depressed, GPQA at
+floor), but the conclusions are robust to excluding it (MMLU $\eta^2$ 24--26\%; GPQA
+null either way). Even the largest log-likelihood effect (MMLU, $\eta^2\approx26\%$)
+matches generation-scored GSM8K in variance explained ($\eta^2\approx27\%$,
+$F=13.0$, $p<0.001$) yet is far smaller in absolute magnitude (a few points vs.\
+tens). The diagnostic (\S\ref{sec:hellaswag}) therefore holds in \emph{relative}
+magnitude, format matters most where scoring parses generated text, rather than as a
+strict on/off. This arm runs entirely on \texttt{hf}, removing the vLLM-vs-\texttt{hf}
+confound.
 
 \paragraph{Backend control: is the GSM8K format effect a vLLM artefact?} To test
 whether GSM8K's prompt-format effect is specific to the vLLM backend the grid uses
@@ -1843,15 +1858,14 @@ OBQA  & \texttt{instruct} &  4 & 42.50 & 38.20--46.00 \\
 OBQA  & \texttt{cot}      &  4 & 40.60 & 36.40--46.80 \\
 \bottomrule
 \end{tabular}
-\caption{Per-benchmark, per-format score distributions at 5-shot in the
-factorial grid. GSM8K cells are pooled across 4 models $\times$ 2
-temperatures $\times$ 3 seeds; MMLU, GPQA, and the three added log-likelihood
-benchmarks (ARC-Challenge, WinoGrande, OpenBookQA) across 4 models $\times$ 1
-temperature $\times$ 1 seed. The plain--cot gap is 19.50 pp on generation-scored
-GSM8K, whose format effect is significant; on the five log-likelihood benchmarks
-the gap ranges from 2.1 pp (OpenBookQA) to 13.9 pp (MMLU) but none reaches
-significance at this design's single-seed $n{=}4$, matching the scoring-mode
-diagnostic. Raw values released with the dataset.}
+\caption{Per-benchmark, per-format score distributions at 5-shot in the single-seed
+factorial grid (GSM8K pooled across 4 models $\times$ 2 temperatures $\times$ 3
+seeds; the log-likelihood benchmarks across 4 models $\times$ 1 temperature
+$\times$ 1 seed). The plain--cot gap is 19.50 pp on generation-scored GSM8K vs.\
+2--14 pp on the log-likelihood benchmarks, an order of magnitude smaller. These
+single-seed cells are underpowered; the powered format ANOVAs (seeds for
+ARC/WinoGrande/OpenBookQA, models for MMLU/GPQA) are in the ``Powering the
+log-likelihood benchmarks'' paragraph. Raw values released with the dataset.}
 \label{tab:anova-per-benchmark}
 \end{table}
 
