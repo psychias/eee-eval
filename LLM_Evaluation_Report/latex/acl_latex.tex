@@ -273,14 +273,20 @@ prose; EvalSpec (\S\ref{sec:evalspec}) differs on the two axes that decide wheth
 specification changes practice: it is \emph{machine-validated} (records checked by
 SHACL constraints, not prose) and \emph{audit-grounded} (fields chosen because their
 absence demonstrably breaks comparisons, \S\ref{sec:cases}). Holistic harnesses like HELM \citep{liang2023helm} record rich
-metadata, but only for their own runs; EvalSpec instead targets cross-source
-interchange. General reproducibility checklists \citep{pineau2021reproducibility} and
+per-run metadata (adapter method, decoding parameters, prompt construction), but
+only for their own runs and without a portable cross-source \texttt{scoring\_mode}
+label; EvalSpec instead targets cross-source interchange. General reproducibility checklists \citep{pineau2021reproducibility} and
 benchmark-lifecycle checklists such as HOW2BENCH \citep{cao2025how2bench} are
 hand-filled prose relying on manual adherence; EvalSpec instead makes conformance
 machine-checkable, e.g.\ a SHACL shape requiring \texttt{judge\_model} whenever
 \texttt{scoring\_mode} is \texttt{preference} mechanically rejects an LLM-judge score
 that omits the judge (Appendix~\ref{sec:truthfulqa}, Appendix~\ref{app:exp-judge}),
-shifting the guarantee from voluntary compliance to automatic validation. A complementary line adds error bars and multi-run aggregation to quantify a single
+shifting the guarantee from voluntary compliance to automatic validation. Concern
+with evaluation reproducibility predates the LLM era: \citet{gundersen2018reproducibility}
+surveyed reproducibility across AI and \citet{belz2021systematic} systematically
+reviewed NLP reproduction attempts, both tracing failures to underreported
+experimental settings; EvalSpec carries that lineage to the configuration fields
+that break present-day cross-source comparison. A complementary line adds error bars and multi-run aggregation to quantify a single
 producer's sampling and seed variance \citep{miller2024errorbars}; this composes with
 EvalSpec, which makes the run \emph{configuration} comparable across sources and whose
 Recommended tier carries the random seed such aggregation needs. EvalSpec sits on
@@ -788,7 +794,10 @@ GPQA). Benchmarks high-risk on one or more axis diverge by tens of points: GSM8K
 The prediction is therefore mechanical from the protocol, not the benchmark name,
 and is what \texttt{scoring\_mode} plus the presence of a parser encodes---why
 EvalSpec places \texttt{scoring\_mode} in the Required tier: it tells a reader
-which axis a cross-source gap under a shared name could be hiding.
+which axis a cross-source gap under a shared name could be hiding. As a
+practitioner reference, Table~\ref{tab:scoring-ref}
+(Appendix~\ref{app:scoring-ref}) maps common benchmarks to their typical scoring
+mode and the reporting variants that most often move their scores.
 
 \subsection{Case Study 3: Shared Pipelines Fake Independence}
 \label{sec:convergence}\label{sec:sealion}
@@ -1174,8 +1183,8 @@ test sets: a GSM8K re-run on \texttt{hf} reproduces the format--parser collapse
 (descriptive per-model direction; pooled effect underpowered), so it is not a vLLM
 artefact, and a full-set rerun confirms the \texttt{limit=200} subset is
 representative to within 1.3\,pp (both \S\ref{app:exp-grid}). Our temperature
-finding is not confined to GSM8K: a generation-task panel over temperatures
-0.0--1.0 (\S\ref{app:exp-temp}) shows temperature explaining $2.2\%$ of GSM8K
+finding is not confined to GSM8K: a four-model, two-task generation panel over
+temperatures 0.0--1.0 (\S\ref{app:exp-temp}) shows temperature explaining $2.2\%$ of GSM8K
 accuracy variance and only $0.66\%$ of MT-Bench judged-quality variance (score
 spread $0.05/10$), so its effect on \emph{aggregate scores} stays small even for
 open-ended, judge-scored generation. The claim is scoped to scores, not outputs:
@@ -1944,6 +1953,38 @@ Aggregate: 58.5\% (plain) vs.\ 2.5\% (CoT), $\Delta = -56.0$ pp.}
 \label{fig:case1-parser}
 \end{figure}
 
+
+\subsection{Practitioner Reference: Benchmark Scoring Modes and Variants}
+\label{app:scoring-ref}
+Table~\ref{tab:scoring-ref} maps widely used benchmarks to the scoring mode they
+are \emph{typically} run under and the reporting variants that most often move
+their scores, so a reader can anticipate where a mode or variant mismatch
+(\S\ref{sec:cases}) is consequential. The mapping is a practical default, not a
+definition: a benchmark can be run under another mode (e.g.\ MMLU by generation),
+which is exactly why \texttt{scoring\_mode} is Required rather than inferred.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}p{0.24\columnwidth}p{0.30\columnwidth}p{0.34\columnwidth}@{}}
+\toprule
+\textbf{Benchmark} & \textbf{Typical scoring mode} & \textbf{Variants that move scores} \\
+\midrule
+MMLU & log-likelihood MC & \texttt{acc} vs.\ \texttt{acc\_norm}; letter vs.\ full-option; n-shot \\
+ARC, OpenBookQA, WinoGrande & log-likelihood MC & \texttt{acc} vs.\ length-normalised \texttt{acc\_norm}; n-shot \\
+HellaSwag & log-likelihood continuation & raw vs.\ length-normalised; n-shot (\S\ref{sec:hellaswag}) \\
+GSM8K & generation + numeric parser & answer-extraction regex; CoT vs.\ plain; flexible vs.\ strict match \\
+BBH & generation + CoT & CoT vs.\ direct; answer-extraction rule \\
+TruthfulQA & log-likelihood (MC1/MC2) \emph{or} LLM-judge & MC vs.\ judge; judge model (\S\ref{sec:truthfulqa}) \\
+HumanEval, MBPP & execution (pass@$k$) & $k$; test harness; prompt wrapping \\
+AlpacaEval, MT-Bench, Arena & LLM-judge / preference & judge model; rubric; length control \\
+\bottomrule
+\end{tabular}
+\caption{Common benchmarks, their typical scoring mode, and the reporting variants
+that most often shift scores under a shared name. A practical default for
+practitioners, not a fixed definition; \texttt{scoring\_mode} and the listed
+variant fields record which was actually used.}
+\label{tab:scoring-ref}
+\end{table}
 
 \subsection{E2: MMLU Scoring-Mode Control}
 \label{app:exp-e2}
