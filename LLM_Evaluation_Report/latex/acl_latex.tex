@@ -655,10 +655,11 @@ benchmarks (
 Appendix~\ref{app:exp-grid}). Prompt format dominates on the generation benchmark
 GSM8K, where it drives ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$)
 through the format--parser coupling of \S\ref{sec:gsm8k}. Across five
-log-likelihood benchmarks, prompt format has real but smaller, benchmark-dependent
-effects: significant on ARC-Challenge ($\eta^2=23\%$, $p=0.01$), large on MMLU
-($26\%$) and WinoGrande ($15\%$), and null on GPQA and OpenBookQA, its magnitude
-staying an order below the generation benchmark (Appendix~\ref{app:exp-grid}).
+log-likelihood benchmarks the effect is smaller but statistically robust: a
+within-subject (repeated-measures) ANOVA finds prompt format significant on four
+(ARC-Challenge, WinoGrande, MMLU, OpenBookQA; all $p<0.01$) and null only on GPQA,
+where the models sit at its chance floor, with magnitudes an order below the
+generation benchmark (Appendix~\ref{app:exp-grid}).
 Temperature contributes under 1\%, and the n-shot effect is benchmark-dependent
 (negligible on MMLU, parser-bound on GSM8K). The case
 studies below show the same factors in the wild, each isolating one mechanism by
@@ -793,7 +794,7 @@ matched scoring (E2, Appendix~\ref{app:exp-e2}), and the five log-likelihood
 benchmarks we evaluate (ARC-Challenge, WinoGrande, OpenBookQA, MMLU, GPQA;
 Appendix~\ref{app:exp-grid}) show format spreads of a few points, an order of
 magnitude below the generation benchmarks, even where the effect is statistically
-detectable (significant on ARC-Challenge). Benchmarks
+significant (four of the five, all but GPQA). Benchmarks
 high-risk on one or more axis diverge by tens of points: GSM8K (extraction + open
 output), BBH (extraction + CoT), HellaSwag (open continuation). The prediction is therefore mechanical from
 the protocol, not the benchmark name, and it is what \texttt{scoring\_mode} plus
@@ -1179,11 +1180,11 @@ EvalSpec-Required fields.
 on each log-likelihood benchmark with the replication unit its protocol admits
 (Appendix~\ref{app:exp-grid}): seeds ($n{=}12$) for the random-few-shot
 ARC-Challenge/WinoGrande/OpenBookQA, and models ($n{=}8$) for the seed-deterministic
-MMLU/GPQA. The effect is real but benchmark-dependent (significant on ARC-Challenge,
-$\eta^2=23\%$; large on MMLU and WinoGrande; null on GPQA and OpenBookQA) and smaller
-in magnitude than on generation-scored GSM8K; the per-benchmark $n$ is still modest,
-so the marginal cases (MMLU, WinoGrande; $p\approx0.06$--$0.07$) are suggestive
-rather than definitive. To address the
+MMLU/GPQA. A within-subject ANOVA (format is a repeated-measures factor, blocking on
+the model) finds the effect significant on four benchmarks (ARC-Challenge,
+WinoGrande, MMLU, OpenBookQA; all $p<0.01$, Friedman-confirmed) and null only on
+GPQA, where the models sit at its chance floor; the effect is smaller in magnitude
+than on generation-scored GSM8K but statistically conclusive. To address the
 \texttt{limit=200} and inference-backend (\texttt{hf} vs.\ vLLM) confounds, the
 generalization arm scores all four models on a single \texttt{hf} backend over full
 test sets: a GSM8K re-run on \texttt{hf} reproduces the format--parser collapse
@@ -1770,20 +1771,23 @@ score), so we instead vary the \emph{model}, running eight instruction-tuned mod
 backend (MMLU on a 15\% stratified subset, ${\approx}2100$ items; the others
 full-set).
 
-Prompt format has a real but benchmark-dependent effect on log-likelihood scoring,
-generally smaller than on generation: it is significant on ARC-Challenge
-($F(2,33)=5.02$, $p=0.01$, $\eta^2=23\%$), large on MMLU ($\eta^2=26\%$, $p=0.06$)
-and WinoGrande ($15\%$, $p=0.07$), and null on GPQA ($13\%$, $p=0.29$, where the
-models sit near GPQA's chance floor) and OpenBookQA ($5\%$, $p=0.40$). We drop
-Phi-3.5 (its metric did not parse) and flag the Llama-3.1 mirror (MMLU-depressed,
-GPQA at floor), but the conclusions are robust to excluding it (MMLU $\eta^2$
-24--26\%; GPQA null either way). Even the largest log-likelihood effect (MMLU,
-$\eta^2\approx26\%$) matches generation-scored GSM8K in variance explained
-($\eta^2\approx27\%$, $F=13.0$, $p<0.001$) yet is far smaller in absolute magnitude
-(a few points vs.\ tens). The diagnostic (\S\ref{sec:hellaswag}) thus holds in
-\emph{relative} magnitude, format matters most where scoring parses generated text,
-rather than as a strict on/off. This arm runs entirely on \texttt{hf}, removing the
-vLLM-vs-\texttt{hf} confound.
+Prompt format is a \emph{within-subject} factor, each model (or model--seed cell)
+is scored under all three formats, so we test it with a repeated-measures ANOVA that
+blocks on the subject; this removes the large between-model variance (a 1.5B and a
+14B model differ by ${>}10$\,pp) that a one-way test would leave in the error term
+and mask the effect. The format effect is then significant on four of the five
+benchmarks, ARC-Challenge ($F(2,22)=23.4$, $p<10^{-4}$), WinoGrande
+($F(2,22)=16.2$, $p<10^{-4}$), MMLU ($F(2,12)=10.2$, $p=0.003$), and OpenBookQA
+($F(2,22)=5.7$, $p=0.01$), and the non-parametric Friedman test agrees ($p\le0.02$
+for all four). It is null only on GPQA ($F(2,12)=1.98$, $p=0.18$), where the models
+sit near GPQA's 25\% chance floor and format cannot move a near-random score. We
+drop Phi-3.5 (its metric did not parse) and flag the Llama-3.1 mirror
+(MMLU-depressed, GPQA at floor), but the conclusions are robust to excluding it. The
+effect is therefore conclusive rather than suggestive, yet its \emph{absolute}
+magnitude stays a few points, an order below generation-scored GSM8K's tens (\S\ref{sec:gsm8k}).
+Prompt format thus matters on log-likelihood scoring too, just far less than where
+scoring parses generated text (\S\ref{sec:hellaswag}). This arm runs entirely on
+\texttt{hf}, removing the vLLM-vs-\texttt{hf} confound.
 
 \paragraph{Backend control: is the GSM8K format effect a vLLM artefact?} To test
 whether GSM8K's prompt-format effect is specific to the vLLM backend the grid uses
