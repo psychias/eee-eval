@@ -818,10 +818,13 @@ record cannot distinguish them; but our harness-version control
 seeds, so an exact two-decimal match is more consistent with a re-import than with
 an independent re-run under a different seed. A re-run under OLv2's exact,
 deterministic configuration could of course reproduce it, but SEA-LION records no
-such configuration; either way the two records share a pipeline origin. The fields that would separate replication from
-re-import (\texttt{harness}, \texttt{prompt\_template\_hash},
-\texttt{evaluation\_timestamp}) were dropped before the comparison table, leaving
-the match as the only signal.
+such configuration; either way the two records share a pipeline origin. This is a
+plausibility argument from the decimal match and the harness-version seed spread,
+not proof: the fields that would settle it directly, a run or job ID, an
+\texttt{evaluation\_timestamp}, the \texttt{harness}, and a
+\texttt{prompt\_template\_hash}, are absent from both records, leaving the match as
+the only signal. Recording them, as EvalSpec requires, would replace the inference
+with a decisive check.
 
 The Gemma 2 and Gemma 3 reports instead list 68.20, 69.00, and 69.40, using
 chain-of-thought generation rather than OLv2's 3-shot multiple-choice log-likelihood,
@@ -1219,9 +1222,14 @@ released dataset marks inferred fields and records scoring mode where known.
 a closed standard. Its Full tier already reserves the runtime context the audit
 surfaces, the inference backend, tokenizer version, and dataset snapshot (a task
 commit hash or Croissant checksum, which the Math-Verify case,
-Appendix~\ref{sec:math}, shows can change silently); standardizing their controlled
-vocabularies and driving their population are the natural next steps as the
-community grows the schema.
+Appendix~\ref{sec:math}, shows can change silently). Our backend control
+(Appendix~\ref{app:exp-grid}), where switching vLLM to \texttt{hf} inverts GSM8K's
+\texttt{plain}/\texttt{cot} ordering, argues for treating the inference backend and
+its version as a first-class recorded parameter rather than a Full-tier afterthought,
+and, more broadly, for leaderboards adopting an archival contract that pins the
+backend, harness, and dataset snapshot behind every published score. Standardizing
+these controlled vocabularies and driving their population are the natural next
+steps as the community grows the schema.
 
 \paragraph{Robustness of the judge-model effect.} To verify the effect is not a
 single-task, single-dataset, or small-panel artefact, we replicated the experiment
