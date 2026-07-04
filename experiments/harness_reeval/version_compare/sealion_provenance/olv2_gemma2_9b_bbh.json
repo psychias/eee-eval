@@ -2,11 +2,18 @@
   "source": "open-llm-leaderboard/contents (public leaderboard table, HF datasets-server)",
   "model": "google/gemma-2-9b",
   "type": "pretrained (base)",
-  "BBH_raw_acc_pct": 34.09681853589784,
-  "BBH_normalized": 0.5377373397621884,
   "model_sha": "beb0c08e9eeb0548f3aca2ac870792825c357b7d",
   "precision": "bfloat16",
   "submission_date": "2024-07-11",
   "upload_to_hub_date": "2024-06-24",
-  "note": "OLv2 leaderboard_bbh = 3-shot multiple-choice log-likelihood (acc_norm). SEA-LION (arXiv:2504.05747) Table 2 reports the same base model at BBH 34.1, attributing its English eval to 'the Open LLM Leaderboard (HuggingFace, 2024)' and listing the identical 6-benchmark OLv2 suite. OLv2's record carries model_sha/precision/date; SEA-LION's does not."
+  "note": "OLv2 leaderboard_bbh = 3-shot multiple-choice log-likelihood (acc_norm). SEA-LION (arXiv:2504.05747) Table 2 reports the same base model at BBH 34.1, attributing its English eval to 'the Open LLM Leaderboard (HuggingFace, 2024)' and listing the identical 6-benchmark OLv2 suite. OLv2's record carries model_sha/precision/date; SEA-LION's does not.",
+  "bbh_display_normalized": 34.0968,
+  "bbh_raw_acc_norm_pct": 53.7737,
+  "rerun_leaderboard_bbh_acc_norm_pct": 53.8795,
+  "rerun_note": "lm-eval 0.4.11 rerun of google/gemma-2-9b@beb0c08e on leaderboard_bbh reproduces OLv2's raw acc_norm to within 0.11pp (53.88 vs 53.77), confirming 34.10 (the leaderboard-normalized display) is a deterministic fingerprint of OLv2's pipeline.",
+  "other_models_raw_acc_norm_pct": {
+    "google/gemma-7b": 43.62,
+    "google/gemma-2-2b": 36.56,
+    "TIGER-Lab/MAmmoTH2-7B-Plus": 42.35
+  }
 }
