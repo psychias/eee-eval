@@ -262,9 +262,9 @@ exposes: \citet{alzahrani2024} report MMLU gaps up to fifteen points from harnes
 choice alone; \citet{biderman2024} extend this to prompt format, tokenisation, and
 generation configuration; \citet{singh2025} document Chatbot Arena instability under
 different aliases; and data contamination \citep{sainz2023} is a parallel threat
-whose detection also needs richer per-run records. These show \emph{that} scores
-vary with protocol; we trace how that variation enters the cross-source record and
-which absences produce which gaps.
+needing richer per-run records. These show \emph{that} scores vary with protocol; we
+trace how that variation enters the cross-source record and which absences produce
+which gaps.
 
 A separate line proposes structured documentation. Model Cards \citep{mitchell2019}
 and Datasheets \citep{gebru2021} set the norm for models and data; three concurrent
@@ -276,18 +276,17 @@ SHACL constraints, not prose) and \emph{audit-grounded} (fields chosen because t
 absence demonstrably breaks comparisons, \S\ref{sec:cases}). Holistic harnesses like HELM \citep{liang2023helm} record rich
 per-run metadata (adapter method, decoding parameters, prompt construction), but
 only for their own runs and without a portable cross-source \texttt{scoring\_mode}
-label; EvalSpec instead targets cross-source interchange. General reproducibility checklists \citep{pineau2021reproducibility} and
-benchmark-lifecycle checklists such as HOW2BENCH \citep{cao2025how2bench} are
-hand-filled prose relying on manual adherence; EvalSpec instead makes conformance
+label; EvalSpec instead targets cross-source interchange. Reproducibility checklists \citep{pineau2021reproducibility} and
+benchmark-lifecycle ones such as HOW2BENCH \citep{cao2025how2bench} are hand-filled
+prose relying on manual adherence; EvalSpec instead makes conformance
 machine-checkable, e.g.\ a SHACL shape requiring \texttt{judge\_model} whenever
 \texttt{scoring\_mode} is \texttt{preference} mechanically rejects an LLM-judge score
-that omits the judge (Appendix~\ref{sec:truthfulqa}, Appendix~\ref{app:exp-judge}),
+omitting the judge (Appendix~\ref{sec:truthfulqa}, Appendix~\ref{app:exp-judge}),
 shifting the guarantee from voluntary compliance to automatic validation. Concern
 with evaluation reproducibility predates the LLM era: \citet{gundersen2018reproducibility}
-surveyed reproducibility across AI and \citet{belz2021systematic} systematically
-reviewed NLP reproduction attempts, both tracing failures to underreported
-experimental settings; EvalSpec carries that lineage to the configuration fields
-that break present-day cross-source comparison. A complementary line adds error bars and multi-run aggregation to quantify a single
+surveyed reproducibility across AI and \citet{belz2021systematic} reviewed NLP
+reproduction attempts, both tracing failures to underreported settings; EvalSpec
+carries that lineage to the fields that break present-day cross-source comparison. A complementary line adds error bars and multi-run aggregation to quantify a single
 producer's sampling and seed variance \citep{miller2024errorbars}; this composes with
 EvalSpec, which makes the run \emph{configuration} comparable across sources and whose
 Recommended tier carries the random seed such aggregation needs. EvalSpec sits on
@@ -318,12 +317,11 @@ gap EvalSpec targets. Table~\ref{tab:crosswalk} (Appendix~\ref{app:crosswalk}) m
 this contrast concrete, mapping each EvalSpec Required field to whether HELM,
 LightEval, and OpenCompass expose it as a first-class field, only implicitly, or not
 at all.
-These are complementary to a reporting specification: EvalSpec neither runs (HRET),
-hosts (DEP), nor monitors (Evaluation Cards) evaluations. It fixes the minimal
-per-record fields whose absence provably breaks cross-source comparison
-(\S\ref{sec:cases}), so a conformant record is exactly the input such systems
-consume or emit, and whose comparability signals presuppose the fields EvalSpec
-makes mandatory.
+These complement a reporting specification: EvalSpec neither runs (HRET), hosts
+(DEP), nor monitors (Evaluation Cards) evaluations. It fixes the minimal per-record
+fields whose absence provably breaks cross-source comparison (\S\ref{sec:cases}), so
+a conformant record is exactly the input such systems consume or emit, whose
+comparability signals presuppose the fields EvalSpec makes mandatory.
 
 
 \subsection{The EEE Schema}
@@ -433,8 +431,8 @@ harness, prompt template, scoring mode, or temperature). HuggingFace Model Cards
 are parsed from the YAML \texttt{model-index}. Third, ArXiv extraction: an LLM
 (Claude Haiku via OpenRouter) reads paper prose into the EEE schema for 100
 papers, returning per-benchmark metadata (n-shot, temperature, prompt template,
-chain-of-thought, harness) when explicitly stated; since it may hallucinate, we
-treat these fields as unverified.
+chain-of-thought, harness) when explicitly stated; since it may hallucinate, these
+fields are unverified.
 
 
 \subsection{What We Gathered}
@@ -530,9 +528,9 @@ mislabel, 5; duplicate Elo attribution, 3; one wrong pass@k, 1). \emph{Recall},
 reported scores captured, is approximately \textbf{81\%} but variable (52--100\%
 per paper): it captures headline tables but skips secondary ones and, in
 table-heavy papers, whole comparison models. Neither check verifies surrounding
-metadata; a third audit (\S\ref{sec:meta-ann}) covers the non-score protocol
-fields. Separately, 16{,}374/17{,}228 (95.0\%) LLM-extracted ArXiv records carry a
-non-null score, a structural presence check, not a correctness one.
+metadata; a third audit (\S\ref{sec:meta-ann}) covers the non-score protocol fields.
+Separately, 16{,}374/17{,}228 (95.0\%) LLM-extracted ArXiv records carry a non-null
+score, a structural presence check, not a correctness one.
 
 \subsection{Human Annotation of Automatic Harness Identification}
 \label{sec:harness-ann}
@@ -561,10 +559,9 @@ third audit used a six-paper sample disjoint from both (StarCoder~2,
 DeepSeek-Coder-V2, Granite Code, Gemma~3, Qwen3, OpenELM), verifying the four
 non-harness benchmark-level fields \texttt{n\_shot}, \texttt{temperature},
 \texttt{prompt\_template}, and \texttt{decoding\_strategy}. As an independent
-cross-extractor check, a second model re-read each paper's evaluation tables and
-appendix, judging every non-null extracted value as matching, contradicting, or
-\emph{unstated} (paper silent, so the value is a pipeline default, excluded from
-precision). Across 229 distinct per-benchmark
+cross-extractor check, a second model re-read each paper's tables and appendix,
+judging every non-null value as matching, contradicting, or \emph{unstated} (paper
+silent, so the value is a pipeline default, excluded from precision). Across 229 distinct per-benchmark
 tuples (631 non-null values), precision on values the paper actually states is
 high: \texttt{n\_shot} 99.4\% (171/172), \texttt{temperature} 100\% (42/42),
 \texttt{prompt\_template} 93.4\% (114/122), \texttt{decoding\_strategy} 98.8\%
@@ -580,10 +577,10 @@ coverage overstates \emph{verifiable} coverage: \texttt{n\_shot} is both
 high-precision and usually paper-stated, whereas \texttt{prompt\_template} and
 \texttt{decoding\_strategy} are high-precision only \emph{when} the paper states
 them. Since the reference judgments come from a second model, not a human, this is
-an inter-extractor agreement rate, not precision against a gold standard; shared
-failure modes make it an upper bound. The more robust finding is
-the 21\% default-filling, which any reader can confirm against the cited papers;
-released records flag inferred-versus-stated values so users can discount defaults.
+an inter-extractor agreement rate, not precision against gold; shared failure modes
+make it an upper bound. The more robust finding is the 21\% default-filling, which
+any reader can confirm against the cited papers; released records flag
+inferred-versus-stated values so users can discount defaults.
 
 
 \subsection{Results and Discrepancies}
@@ -915,13 +912,13 @@ were dropped at step~2, the two records share a pipeline origin and cannot be tr
 An evaluation result is the product of a long chain of decisions (harness,
 version, prompt template, n-shot, temperature, scoring mode, answer
 extractor), each known at evaluation time but almost all dropped before the
-reader. The case studies locate the loss: at the leaderboard
+reader reaches it. The case studies locate the loss: at the leaderboard
 (\S\ref{sec:protocol}), the benchmark label (\S\ref{sec:onenametwo}), and the
 appearance of independent measurement (\S\ref{sec:convergence}). Both
 alternatives to documentation fail where the need is greatest: re-extraction
 cannot recover what the leaderboard subset never records
 (Figure~\ref{fig:coverage}), and re-evaluation does not scale across thousands of
-model--benchmark pairs. This leaves documentation, necessary if not sufficient.
+model--benchmark pairs, leaving documentation, necessary if not sufficient.
 
 \paragraph{From existence to prevalence.}\label{sec:prevalence} The case studies
 establish that each mechanism \emph{occurs}; a corpus-wide pass shows how often the
@@ -930,7 +927,7 @@ and benchmark names across all 46{,}559 records (keeping base and instruct
 checkpoints distinct) leaves 42{,}114 distinct model--benchmark cells, of which
 only \textbf{267 (0.63\%)} are reported by two or more independent sources, a
 direct measure of the fragmentation that makes cross-source verification rare.
-Where that overlap occurs it usually disagrees: \textbf{185 of the 267 (69\%)}
+Where it occurs the overlap usually disagrees: \textbf{185 of the 267 (69\%)}
 differ by more than 1\,pp and \textbf{139 (52\%)} by more than 5\,pp (gaps
 above 30\,pp are common, e.g.\ Gemma-2-9B BBH at 34.1 vs.\ 68.2 across OLv2 and
 the model's own report), and unattributably so: \textbf{98\%}
@@ -1142,10 +1139,9 @@ Three case studies turn ordinary score gaps into uninterpretable ones, and a
 controlled factorial experiment confirms an undocumented prompt-format or
 answer-parser choice moves a score by tens of points on the same model,
 benchmark, and harness. Since re-evaluation does not scale and re-extraction cannot
-recover what a source never recorded, documentation is the remaining strategy:
-EvalSpec specifies the minimum fields to record, grounded in the audit and validated
-on the case studies. The dataset, schema, and pipeline are released for the
-community to extend.
+recover what a source never recorded, documentation remains: EvalSpec specifies the
+minimum fields to record, grounded in the audit and validated on the case studies.
+The dataset, schema, and pipeline are released for the community to extend.
 
 \section*{Limitations}
 
