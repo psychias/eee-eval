@@ -662,9 +662,9 @@ within-subject (repeated-measures) ANOVA finds prompt format significant on four
 where the models sit at its chance floor, with magnitudes an order below the
 generation benchmark (Appendix~\ref{app:exp-grid}).
 Temperature contributes under 1\%, and the n-shot effect is benchmark-dependent
-(negligible on MMLU, parser-bound on GSM8K). The case
-studies below show the same factors in the wild, each isolating one mechanism by
-which two separately published scores under a shared name measure different things.
+(negligible on MMLU, parser-bound on GSM8K). The case studies below show the same
+factors in the wild, each isolating one mechanism by which two separately published
+scores under a shared name measure different things.
 
 \begin{figure*}[t]
 \centering
@@ -687,8 +687,8 @@ pipeline origin (exact match, 34.10) while the Gemma reports run CoT independent
 \label{sec:protocol}
 
 Here the harness makes implementation choices the benchmark specification leaves
-open, and different choices produce measurements incomparable on the same scale
-even when both are correctly executed.
+open, so different choices yield measurements incomparable on the same scale even
+when both are correctly executed.
 
 \paragraph{BBH: log-likelihood vs.\ chain-of-thought.}\label{sec:bbh}
 BBH \citep{suzgun2023} specifies 3-shot chain-of-thought generation with the
@@ -702,19 +702,19 @@ both are known only from its documentation. The effect is visible in the data
 on OLv2 against 55.10--59.60 in ArXiv papers,\footnote{The 59.60 figure is
 reported under the surface label ``BigBench-Hard''; our normaliser keys on the
 ``BBH'' alias, so it is shown for completeness but held out of the automated
-collision counts.} a gap over 35 points; the same holds for Gemma-2-2B (11.76
+collision counts.} a gap over 35 points, and the same holds for Gemma-2-2B (11.76
 vs.\ 40.80) and MAmmoTH2-7B-Plus (18.93 vs.\ 63.10). This is not a generic
 scoring-mode effect: E2 (Appendix~\ref{app:exp-e2}) shows the
-log-likelihood-vs-generation gap on MMLU is at most 0.21\,pp, two orders of
-magnitude smaller, so the BBH gap is specific to OLv2's multiple-choice
-log-likelihood scoring meeting BBH's chain-of-thought structure.
+log-likelihood-vs-generation gap on MMLU is at most 0.21\,pp, two orders smaller,
+so the BBH gap is specific to OLv2's multiple-choice log-likelihood meeting BBH's
+chain-of-thought structure.
 
 \paragraph{MATH Lvl 5: a silent answer-parser swap.} A third instance sits at the
 dataset-version rather than scoring-mode layer: OLv2's February-2025 swap of the
 MATH Level 5 answer parser (SymPy${\to}$Math-Verify) shifted scores by up to
-${\approx}90$ points individually, and no evaluation timestamp in the record dates
-a score to before or after the transition, the same missing-metadata failure as
-BBH (detail in Appendix~\ref{sec:math}).
+${\approx}90$ points, and no evaluation timestamp dates a record before or after
+the transition, the same missing-metadata failure as BBH
+(Appendix~\ref{sec:math}).
 
 \paragraph{GSM8K: prompt format breaks the parser.}\label{sec:gsm8k}
 The same parser sensitivity arises whenever a format-specific extractor meets a
@@ -724,24 +724,24 @@ prompt-shaped output. In the factorial grid, Qwen2.5-14B-Instruct on GSM8K
 Figure~\ref{fig:case1-parser}). The $\approx$56-point CoT collapse is parser
 failure: the harness extracts the answer with the GSM8K delimiter
 (\texttt{\#\#\#\#~\{answer\}}), which CoT prose omits, so the regex records zero
-even though the reasoning is correct. As with Math-Verify, the score reflects
-the parser's format assumptions, not capability: a CoT-prompted GSM8K score and
-a plain-prompted one are incommensurable under one label.
+even where the reasoning is correct. As with Math-Verify, the score reflects the
+parser's format assumptions, not capability, so CoT-prompted and plain-prompted
+GSM8K scores are incommensurable under one label.
 
 \subsection{Case Study 2: One Name, Several Specifications}
 \label{sec:onenametwo}
 
-Unlike Case Study~1 (\S\ref{sec:protocol}), where one benchmark specification is
-implemented differently by different harnesses, here several legitimate
-specifications coexist under one benchmark name, so two equally-labelled scores
-can measure genuinely different things. Each example below states the gap, the
-two source configurations, and the missing field that would explain it.
+Unlike Case Study~1 (\S\ref{sec:protocol}), where one specification is implemented
+differently by different harnesses, here several legitimate specifications coexist
+under one benchmark name, so two equally-labelled scores can measure genuinely
+different things. Each example states the gap, the two source configurations, and
+the missing field that would explain it.
 
 \paragraph{TruthfulQA: n-shot and judge confounded.} Llama-2-Chat-7B appears at
 57.04 (6-shot, GPT-3 judge) and 26.30 (0-shot, fine-tuned Llama-2-7B judge) under
 one ``TruthfulQA'' label \citep{lin2022truthfulqa}, confounding shot count with
-judge; a controlled experiment that holds the responses fixed and varies only the
-judge shows the judge systematically changes ratings (Friedman
+judge; a controlled experiment holding responses fixed and varying only the judge
+shows the judge systematically changes ratings (Friedman
 $\chi^2(7)=506.7$, $p<10^{-100}$, over 275 responses each scored by all eight
 judges; Kendall's $W=0.26$), shifting means by up to 1.66/10 and reversing rankings
 (cross-judge Spearman $+1.0$ to $-0.1$), so neither the missing \texttt{n\_shot}
@@ -758,7 +758,7 @@ single uncontrolled numbers, not a controlled decomposition, but the near-match 
 consistent with n-shot dominating: 0-shot$\to$5-shot on English spans nearly the
 full 47-point gain ($32.48 \to 79.42$), language scope contributing little. Either
 way the 46.6-point gap under one ``Belebele'' label confounds n-shot with language
-scope, neither of which the records label.
+scope, neither labelled in the records.
 
 \paragraph{HellaSwag: scoring mode and n-shot confounded.}\label{sec:hellaswag}
 Gemma-7B is recorded at 49.80 and 81.20, both ``HellaSwag''
@@ -768,7 +768,7 @@ the Gemma report \citep{gemmateam2024gemma} (0-shot, log-likelihood over the
 four continuations). The $\approx$31-point gap is too large for shot count
 alone: on a log-likelihood benchmark n-shot moves scores by about a point (our
 grid: MMLU 0-vs-5-shot differ 1.0\,pp, $\eta^2\approx0.1\%$,
-Appendix~\ref{app:exp-grid}). The driver is scoring mode: generating the
+Appendix~\ref{app:exp-grid}). The driver is scoring mode, since generating the
 continuation is structurally harder than ranking pre-specified ones. Neither
 record labels scoring mode or n-shot, so the gap is indistinguishable from a
 capability difference (Appendix~\ref{app:hellaswag} gives an alternative rendering
@@ -777,8 +777,8 @@ of Figure~\ref{fig:casestudies-unified}).
 \paragraph{When is a scoring-mode mismatch consequential? A diagnostic.}
 The results yield a
 diagnostic that predicts, for a benchmark \emph{not} in our study, whether a
-log-likelihood-vs-generation mismatch can move the score. A mismatch is
-consequential to the degree a benchmark is high-risk on any of three protocol axes:
+log-likelihood-vs-generation mismatch can move the score, to the degree the
+benchmark is high-risk on any of three protocol axes:
 \begin{itemize}
 \item \textbf{Answer-extraction dependence:} does scoring parse/normalise generated
 text (high-risk) or rank fixed options (low-risk)? Parser brittleness collapses
@@ -793,15 +793,14 @@ Pure multiple-choice log-likelihood benchmarks are low-risk on all three, so
 prompt format moves scores by only a few points: MMLU differs by 0.21\,pp under
 matched scoring (E2, Appendix~\ref{app:exp-e2}), and the five log-likelihood
 benchmarks we evaluate (ARC-Challenge, WinoGrande, OpenBookQA, MMLU, GPQA;
-Appendix~\ref{app:exp-grid}) show format spreads of a few points, an order of
-magnitude below the generation benchmarks, even where the effect is statistically
-significant (four of the five, all but GPQA). Benchmarks
-high-risk on one or more axis diverge by tens of points: GSM8K (extraction + open
-output), BBH (extraction + CoT), HellaSwag (open continuation). The prediction is therefore mechanical from
-the protocol, not the benchmark name, and it is what \texttt{scoring\_mode} plus
-the presence of a parser encodes, which is why EvalSpec places \texttt{scoring\_mode}
-in the Required tier: it tells a reader which axis a cross-source gap under a shared
-name could be hiding.
+Appendix~\ref{app:exp-grid}) show format spreads of a few points, an order below
+the generation benchmarks, even where significant (four of the five, all but
+GPQA). Benchmarks high-risk on one or more axis diverge by tens of points: GSM8K
+(extraction + open output), BBH (extraction + CoT), HellaSwag (open continuation).
+The prediction is therefore mechanical from the protocol, not the benchmark name,
+and is what \texttt{scoring\_mode} plus the presence of a parser encodes, which is
+why EvalSpec places \texttt{scoring\_mode} in the Required tier: it tells a reader
+which axis a cross-source gap under a shared name could be hiding.
 
 \subsection{Case Study 3: Shared Pipelines Fake Independence}
 \label{sec:convergence}\label{sec:sealion}
@@ -812,25 +811,24 @@ score as 34.10, and the SEA-LION paper (\citealt{ng2025sealion};
 arXiv:2504.05747) reports the same model at 34.10, an exact two-decimal
 match, while listing Open LLM Leaderboard among its benchmark sources. Such a
 match is consistent with either direct importation of the OLv2 score or
-independent re-evaluation on the identical harness, and the EEE
-record cannot distinguish them; but our harness-version control
-(Appendix~\ref{app:exp-e3}) shows reruns vary by up to 2.81\,pp across
-seeds, so an exact two-decimal match is more consistent with a re-import than with
-an independent re-run under a different seed. A re-run under OLv2's exact,
-deterministic configuration could of course reproduce it, but SEA-LION records no
-such configuration; either way the two records share a pipeline origin. This is a
-plausibility argument from the decimal match and the harness-version seed spread,
-not proof: the fields that would settle it directly, a run or job ID, an
-\texttt{evaluation\_timestamp}, the \texttt{harness}, and a
+independent re-evaluation on the identical harness, and the EEE record cannot
+distinguish them; but our harness-version control (Appendix~\ref{app:exp-e3})
+shows reruns vary by up to 2.81\,pp across seeds, so an exact two-decimal match is
+more consistent with a re-import than with an independent re-run under a different
+seed. A re-run under OLv2's exact, deterministic configuration could reproduce it,
+but SEA-LION records no such configuration; either way the two records share a
+pipeline origin. This is a plausibility argument from the decimal match and the
+harness-version seed spread, not proof: the fields that would settle it directly,
+a run or job ID, an \texttt{evaluation\_timestamp}, the \texttt{harness}, and a
 \texttt{prompt\_template\_hash}, are absent from both records, leaving the match as
 the only signal. Recording them, as EvalSpec requires, would replace the inference
 with a decisive check.
 
 The Gemma 2 and Gemma 3 reports instead list 68.20, 69.00, and 69.40, using
-chain-of-thought generation rather than OLv2's 3-shot multiple-choice log-likelihood,
-which explains the $\approx$35-point gap (the harness mismatch of
-\S\ref{sec:bbh} compounding here). All five sources are in
-Table~\ref{tab:sealion-app} (Appendix~\ref{app:casetables}).
+chain-of-thought generation rather than OLv2's 3-shot multiple-choice log-likelihood
+(the harness mismatch of \S\ref{sec:bbh} compounding here), which explains the
+$\approx$35-point gap. All five sources are in Table~\ref{tab:sealion-app}
+(Appendix~\ref{app:casetables}).
 
 
 \section{Discussion}
