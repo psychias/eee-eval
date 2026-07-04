@@ -1651,9 +1651,9 @@ per-experiment design and results follow in
 
 \begin{table*}[ht]
 \centering
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lp{3.6cm}p{3.0cm}p{4.4cm}p{4.0cm}}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lp{3.2cm}p{2.6cm}p{4.0cm}p{3.4cm}}
 \toprule
 \textbf{ID} & \textbf{Goal} & \textbf{Models} & \textbf{Setup} & \textbf{Result} \\
 \midrule
@@ -1993,19 +1993,20 @@ table doubles as an adapter target: a platform populates a conformant record by
 mapping its native config keys onto these fields.
 
 \begin{table}[t]
-\centering\small
-\begin{tabular}{@{}p{0.30\columnwidth}ccc@{}}
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.40\columnwidth}ccc@{}}
 \toprule
-\textbf{EvalSpec Required field} & \textbf{HELM} & \textbf{LightEval} & \textbf{OpenCompass} \\
+\textbf{EvalSpec Req.\ field} & \textbf{HELM} & \textbf{Light\-Eval} & \textbf{Open\-Compass} \\
 \midrule
-\texttt{harness\_name/\_version} & \checkmark & \checkmark & $\sim$ \\
+\texttt{harness\_name/}\allowbreak\texttt{\_version} & \checkmark & \checkmark & $\sim$ \\
 \texttt{n\_shot}                 & \checkmark & \checkmark & $\sim$ \\
-\texttt{prompt\_template\_hash}  & $\sim$     & \checkmark & $\sim$ \\
+\texttt{prompt\_template}\allowbreak\texttt{\_hash}  & $\sim$     & \checkmark & $\sim$ \\
 \texttt{scoring\_mode}           & $\sim$     & $\sim$     & $\times$ \\
-\texttt{model\_id/revision}      & \checkmark & \checkmark & \checkmark \\
-\texttt{benchmark\_variant}      & $\sim$     & \checkmark & $\times$ \\
+\texttt{model\_id/}\allowbreak\texttt{revision}      & \checkmark & \checkmark & \checkmark \\
+\texttt{benchmark}\allowbreak\texttt{\_variant}      & $\sim$     & \checkmark & $\times$ \\
 \texttt{judge\_model}            & $\sim$     & $\times$   & $\times$ \\
-\texttt{evaluation\_timestamp}   & $\sim$     & $\sim$     & $\times$ \\
+\texttt{evaluation}\allowbreak\texttt{\_timestamp}   & $\sim$     & $\sim$     & $\times$ \\
 \bottomrule
 \end{tabular}
 \caption{Field-coverage crosswalk. \checkmark\ = first-class queryable field;
@@ -2024,11 +2025,11 @@ alone produces large score gaps (Table~\ref{tab:e2-scoring-mode}).
 
 \begin{table}[ht]
 \centering
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lrrr}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrr@{}}
 \toprule
-Model & log-likelihood & generation & $|\Delta|$ (pp) \\
+Model & log-lik. & gen. & $|\Delta|$ \\
 \midrule
 Mistral-7B-Instruct-v0.3   & 61.85 & 61.64 & 0.21 \\
 Qwen2.5-7B-Instruct        & 74.25 & 74.43 & 0.18 \\
@@ -2037,7 +2038,7 @@ Qwen2.5-14B-Instruct       & 79.97 & 79.79 & 0.18 \\
 \bottomrule
 \end{tabular}
 \caption{MMLU 5-shot, plain prompt, temperature 0.0, lm-evaluation-harness
-0.4.11. Both scoring modes use the full MMLU test set
+0.4.11 (log-lik.\ = log-likelihood, gen.\ = generation, $|\Delta|$ in pp). Both scoring modes use the full MMLU test set
 (\texttt{limit=14042}), an exact same-sample comparison for every model. The
 maximum scoring-mode gap is 0.21 pp, which rules out a generic scoring-mode
 effect: the $\approx$35-point BBH gap documented in \S\ref{sec:bbh} is
