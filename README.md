@@ -225,6 +225,47 @@ absolute scores differ from the grid's vLLM scores — itself a backend-as-confi
 effect — so it validates subset-representativeness rather than reproducing the
 vLLM numbers.)
 
+### 7. Prompt-format effect across five log-likelihood benchmarks (beyond GSM8K)
+
+**Setup.** To test whether prompt format matters beyond generation-scored GSM8K, we
+measure it on five log-likelihood benchmarks, powering each with the replication unit
+its protocol admits: **seeds** (n=12) for the random-few-shot ARC-Challenge,
+WinoGrande, and OpenBookQA; **models** (8 instruct models, 1.5B–14B) for the
+seed-deterministic MMLU and GPQA. All on a single `hf` backend. Because prompt format
+is a *within-subject* factor (each model is scored under plain/instruct/cot), the
+test is a **repeated-measures ANOVA** blocking on the subject, cross-checked with the
+non-parametric Friedman test.
+
+| Benchmark | powered via | n | RM-ANOVA *p* | verdict |
+|---|---|---|---|---|
+| ARC-Challenge | seeds | 12 | <1e-4 | significant |
+| WinoGrande | seeds | 12 | <1e-4 | significant |
+| MMLU | models | 7 | 0.003 | significant |
+| OpenBookQA | seeds | 12 | 0.010 | significant |
+| GPQA | models | 7 | 0.18 | null (chance floor) |
+
+**Result.** Adequately powered, prompt format has a real effect on log-likelihood
+scoring too — **significant on 4 of 5** benchmarks (Friedman-confirmed), null only on
+GPQA where the models sit at its ~25% chance floor. Absolute magnitude stays a few
+points, an *order below* generation-scored GSM8K's tens — so format matters most where
+scoring parses generated text. Data QA: Phi-3.5 excluded (metric did not parse); the
+Llama-3.1-8B mirror is flagged but conclusions are robust to excluding it.
+(`experiments/controlled_eval/scripts/rm_anova_loglik.py`)
+
+### 8. Additional robustness studies
+
+- **Judge effect, second dataset (Vicuna-Bench)** — the judge-model effect replicates
+  on a second dataset: judge-induced spread **1.84**, Friedman χ²(7)=**908.5**
+  (Kendall's *W*=0.33), cross-judge Spearman down to **−0.4**.
+  (`experiments/judge_sensitivity_vicuna/`)
+- **Temperature panel (OpenRouter)** — temperature explains **2.2%** of GSM8K and
+  **0.66%** of MT-Bench judged-quality variance, so the "under 1%" finding holds even
+  for open-ended, judge-scored generation. (`experiments/temperature_panel/`)
+- **EvalSpec emission hook** — a tested drop-in adapter that turns an existing
+  lm-evaluation-harness run into EvalSpec-R records, auto-populating **all 8/8
+  Required fields** (including `scoring_mode` and the prompt-template hash).
+  (`src/emission_hooks/lm_eval_to_evalspec.py`)
+
 ## Dataset
 The aggregated dataset is available on HuggingFace:
 - Dataset: https://huggingface.co/datasets/evaleval/EEE_datastore
