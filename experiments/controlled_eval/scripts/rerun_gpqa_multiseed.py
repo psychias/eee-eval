@@ -25,7 +25,9 @@ FORMAT_TEMPLATES = {
     "instruct": "You are an expert problem solver. Answer each question carefully and directly.",
     "cot": "You are an expert problem solver. Before answering, think step by step and show your reasoning. Then state the final answer.",
 }
-SEEDS = [42, 123, 7]
+# GPQA is deterministic under fixed few-shot (seed changes nothing), so power the
+# format ANOVA across MODELS: single seed, 8 diverse models -> n=8 per format.
+SEEDS = [42]
 N_SHOT = 5
 TASK = "gpqa_main_n_shot"   # lm-eval GPQA main task (multiple-choice log-likelihood), respects num_fewshot
 
@@ -36,9 +38,16 @@ subprocess.run([sys.executable, "-m", "pip", "install", "-q", "datasets==2.21.0"
 
 import datasets
 print(f"[setup] datasets {datasets.__version__}", flush=True)
+# The gated GPQA loading script's internal file download does not pick up the env
+# token; an explicit login authenticates the whole huggingface_hub session so the
+# script's downloads carry the (access-granted) token.
+if _TOKEN:
+    from huggingface_hub import login
+    login(token=_TOKEN, add_to_git_credential=False)
+    print("[setup] hf login done", flush=True)
 # sanity: confirm GPQA is now loadable with the granted token
 try:
-    datasets.load_dataset("Idavidrein/gpqa", "gpqa_main", trust_remote_code=True)
+    datasets.load_dataset("Idavidrein/gpqa", "gpqa_main", trust_remote_code=True, token=_TOKEN or None)
     print("[gpqa] dataset loads OK", flush=True)
 except Exception as e:  # noqa: BLE001
     print(f"[gpqa] STILL FAILING: {str(e)[:160]}", flush=True)
@@ -77,7 +86,8 @@ def run_cell(lm, sys_inst, seed):
 
 
 for eval_id, canon_id, bs in MODELS:
-    lm = HFLM(pretrained=eval_id, dtype="bfloat16", batch_size="auto", max_batch_size=bs)
+    lm = HFLM(pretrained=eval_id, dtype="bfloat16", batch_size="auto",
+              max_batch_size=bs, trust_remote_code=True)
     for fmt, sys_inst in FORMAT_TEMPLATES.items():
         for seed in SEEDS:
             rec = dict(model_id=canon_id, benchmark="GPQA", task_name=TASK,
