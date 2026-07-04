@@ -648,13 +648,13 @@ prompt formats $\times$ two temperatures $\times$ two n-shot counts $\times$ thr
 seeds, with MMLU reduced to a single temperature and seed; 312 evaluations), and
 prompt-format sensitivity is assessed on five log-likelihood benchmarks
 (Appendix~\ref{app:exp-grid}). Prompt format dominates on the generation benchmark
-GSM8K, where it drives ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$)
-through the format--parser coupling of \S\ref{sec:gsm8k}. On five
-log-likelihood benchmarks the effect is smaller but robust: a
-within-subject (repeated-measures) ANOVA finds prompt format significant on four
+GSM8K, driving ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$)
+through the format--parser coupling of \S\ref{sec:gsm8k}. On the five
+log-likelihood benchmarks the effect is smaller but robust: a within-subject
+(repeated-measures) ANOVA finds prompt format significant on four
 (ARC-Challenge, WinoGrande, MMLU, OpenBookQA; all $p<0.01$) and null only on GPQA,
-where the models sit at its chance floor, at magnitudes an order below the
-generation benchmark (Appendix~\ref{app:exp-grid}).
+where the models sit at its chance floor, an order below the generation benchmark
+(Appendix~\ref{app:exp-grid}).
 Temperature contributes under 1\%, and the n-shot effect is benchmark-dependent
 (negligible on MMLU, parser-bound on GSM8K). The case studies below show these
 factors in the wild, each isolating one mechanism by which two separately published
@@ -680,7 +680,7 @@ pipeline origin (exact match, 34.10) while the Gemma reports run CoT independent
 \subsection{Case Study 1: Undocumented Scoring Mode and Parsing}
 \label{sec:protocol}
 
-Here the harness makes implementation choices the benchmark specification leaves
+Here the harness makes choices the benchmark specification leaves
 open, so different choices yield measurements incomparable on the same scale even
 when both are correct.
 
@@ -706,7 +706,7 @@ CoT structure.
 \paragraph{MATH Lvl 5: a silent answer-parser swap.} A third instance sits at the
 dataset-version rather than scoring-mode layer: OLv2's February-2025 swap of the
 MATH Level 5 answer parser (SymPy${\to}$Math-Verify) shifted scores by up to
-${\approx}90$ points, yet no evaluation timestamp dates a record before or after
+${\approx}90$ points, yet no evaluation timestamp dates a record either side of
 the transition---the same missing-metadata failure as BBH
 (Appendix~\ref{sec:math}).
 
@@ -718,8 +718,8 @@ prompt-shaped output. In the factorial grid, Qwen2.5-14B-Instruct on GSM8K
 Figure~\ref{fig:case1-parser}). The $\approx$56-point CoT collapse is parser
 failure: the harness extracts the answer with the GSM8K delimiter
 (\texttt{\#\#\#\#~\{answer\}}), which CoT prose omits, so the regex records zero
-even where the reasoning is correct. As with Math-Verify, the score reflects the
-parser's format assumptions, not capability, so CoT-prompted and plain-prompted
+even when the reasoning is correct. As with Math-Verify, the score reflects the
+parser's format assumptions, not capability, so CoT- and plain-prompted
 GSM8K scores are incommensurable under one label.
 
 \subsection{Case Study 2: One Name, Several Specifications}
@@ -728,14 +728,14 @@ GSM8K scores are incommensurable under one label.
 Unlike Case Study~1 (\S\ref{sec:protocol}), where one specification is implemented
 differently by different harnesses, here several legitimate specifications coexist
 under one benchmark name, so two equally-labelled scores can measure genuinely
-different things. Each example states the gap, its two source configurations, and
+different things. Each example states the gap, its two configurations, and
 the missing field that would explain it.
 
 \paragraph{TruthfulQA: n-shot and judge confounded.} Llama-2-Chat-7B appears at
 57.04 (6-shot, GPT-3 judge) and 26.30 (0-shot, fine-tuned Llama-2-7B judge) under
 one ``TruthfulQA'' label \citep{lin2022truthfulqa}, confounding shot count with
-judge; a controlled experiment holding responses fixed and varying only the judge
-shows the judge systematically changes ratings (Friedman
+judge; holding responses fixed and varying only the judge, the judge
+systematically changes ratings (Friedman
 $\chi^2(7)=506.7$, $p<10^{-100}$, over 275 responses each scored by all eight
 judges; Kendall's $W=0.26$), shifting means by up to 1.66/10 and reversing rankings
 (cross-judge Spearman $+1.0$ to $-0.1$), so neither the missing \texttt{n\_shot}
@@ -747,8 +747,8 @@ Mistral-7B is recorded at 32.80 and 79.42, both ``Belebele''
 \citep{bandarkar2023belebele}. The 32.80 is the Reka report
 \citep{team2024reka} (0-shot, multilingual average over 150 variants); the 79.42
 is Falcon2 \citep{malartic2024falcon2} (5-shot, English only). Falcon2's own
-0-shot English score for Mistral-7B, 32.48, nearly matches Reka's 32.80. These are
-single uncontrolled numbers, not a controlled decomposition, but the near-match is
+0-shot English score for Mistral-7B, 32.48, nearly matches Reka's 32.80---single
+uncontrolled numbers, not a decomposition, but the near-match is
 consistent with n-shot dominating: 0-shot$\to$5-shot on English spans nearly the
 full 47-point gain ($32.48 \to 79.42$), language scope contributing little. Either
 way the 46.6-point gap under one ``Belebele'' label confounds n-shot with language
@@ -789,7 +789,7 @@ matched scoring (E2, Appendix~\ref{app:exp-e2}), and the five log-likelihood
 benchmarks we evaluate (ARC-Challenge, WinoGrande, OpenBookQA, MMLU, GPQA;
 Appendix~\ref{app:exp-grid}) show format spreads of a few points, an order below
 the generation benchmarks, even where significant (four of the five, all but
-GPQA). Benchmarks high-risk on one or more axis diverge by tens of points: GSM8K
+GPQA). Benchmarks high-risk on one or more axes diverge by tens of points: GSM8K
 (extraction + open output), BBH (extraction + CoT), HellaSwag (open continuation).
 The prediction is therefore mechanical from the protocol, not the benchmark name,
 and is what \texttt{scoring\_mode} plus the presence of a parser encodes---why
@@ -807,17 +807,17 @@ measurements; one may be the other re-reported. OLv2 reports Gemma-2-9B's BBH
 score as 34.10, and the SEA-LION paper (\citealt{ng2025sealion};
 arXiv:2504.05747) reports the same model at 34.10, an exact two-decimal
 match, while listing Open LLM Leaderboard among its benchmark sources. Such a
-match is consistent with either direct importation of the OLv2 score or
-independent re-evaluation on the identical harness, and the EEE record cannot
+match fits either direct importation of the OLv2 score or independent
+re-evaluation on the identical harness, and the EEE record cannot
 distinguish them; but our harness-version control (Appendix~\ref{app:exp-e3})
 shows reruns vary by up to 2.81\,pp across seeds, so an exact two-decimal match is
-more consistent with a re-import than with an independent re-run under a different
+more consistent with a re-import than an independent re-run under a different
 seed. OLv2's exact, deterministic configuration could reproduce it, but
-SEA-LION records no such configuration; either way the two records share a
+SEA-LION records none; either way the two records share a
 pipeline origin. This is a plausibility argument from the decimal match and the
-harness-version seed spread, not proof: the fields that would settle it directly,
-a run or job ID, an \texttt{evaluation\_timestamp}, the \texttt{harness}, and a
-\texttt{prompt\_template\_hash}, are absent from both records, leaving the match as
+harness-version seed spread, not proof: the fields that would settle it directly---a
+run or job ID, an \texttt{evaluation\_timestamp}, the \texttt{harness}, and a
+\texttt{prompt\_template\_hash}---are absent from both records, leaving the match as
 the only signal. Recording them, as EvalSpec requires, would replace the inference
 with a decisive check.
 
@@ -909,8 +909,7 @@ appearance of independent measurement (\S\ref{sec:convergence}). Both
 alternatives to documentation fail where the need is greatest: re-extraction
 cannot recover what the leaderboard subset never records
 (Figure~\ref{fig:coverage}), and re-evaluation does not scale across thousands of
-model--benchmark pairs. This leaves documentation, necessary if not always
-sufficient.
+model--benchmark pairs. This leaves documentation, necessary if not sufficient.
 
 \paragraph{From existence to prevalence.}\label{sec:prevalence} The case studies
 establish that each mechanism \emph{occurs}; a corpus-wide pass shows how often the
@@ -973,8 +972,7 @@ EvalSpec adapts the open EEE schema (\S\ref{sec:related}) to the gaps this audit
 exposes: it requires the configuration fields whose absence the case studies show
 to break cross-source comparison, so two records on the same benchmark compare
 without guessing the procedure behind them. We release it with the
-populated dataset as a starting point, not a finished standard, for the
-community to extend.
+populated dataset as a starting point, not a finished standard.
 
 Field selection follows from the case studies (\S\ref{sec:cases}):
 \texttt{scoring\_mode} from the BBH and HellaSwag collapses
@@ -1001,7 +999,7 @@ Instantiating these fields for the SEA-LION collision
 Appendix~\ref{app:evalspec}) shows two suffice: \texttt{scoring\_mode} splits the
 34.10 log-likelihood pair from the 68--69 generation reports, and
 \texttt{harness\_name} plus \texttt{evaluation\_timestamp} separate SEA-LION's
-re-import from an independent re-run, all \texttt{unknown} in the actual records.
+re-import from an independent re-run---all \texttt{unknown} in the actual records.
 
 EvalSpec is encoded as a JSON-LD vocabulary (extending \texttt{schema.org},
 compatible with Croissant) whose tiers SHACL shape constraints can mechanically
@@ -1102,7 +1100,7 @@ With the EEE profile above and the crosswalk to
 operational layers such as Evaluation Cards \citep{ghosh2026evalcards}, whose
 signals consume precisely the fields EvalSpec makes mandatory, provenance and
 reproducibility become structural properties of the record rather than optional
-extras, which lets a third party audit a score and lowers the barrier to
+extras, letting a third party audit a score and lowering the barrier to
 adoption.
 
 \section{Conclusions}
