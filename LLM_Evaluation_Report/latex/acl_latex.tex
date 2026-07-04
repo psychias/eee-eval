@@ -184,10 +184,11 @@ configurations.
 Open LLM Leaderboard v2 (OLv2) reports Gemma-7B's Big-Bench Hard (BBH) score as
 21.12; the Jamba, RecurrentGemma, and MAmmoTH2 papers, among others, report BBH
 between 55 and 60 for the same model, a gap over 35 points. Neither side
-fabricates: each reports the score its pipeline produced. The missing procedure:
-OLv2 scores BBH 3-shot by multiple-choice log-likelihood (\texttt{acc\_norm}),
-whereas the papers use the original 3-shot chain-of-thought protocol. These are
-not the same measurement, and a benchmark name does not make them so. The pattern
+fabricates: each reports the score its pipeline produced. The missing procedure is
+twofold: OLv2 scores BBH by 3-shot multiple-choice log-likelihood \emph{and} reports
+a leaderboard-normalised value, whereas the papers use the original 3-shot
+chain-of-thought protocol on the raw scale. These are not the same measurement, and
+a benchmark name does not make them so. The pattern
 recurs for Gemma-2-9B (\S\ref{sec:sealion}), where the metadata distinguishing
 the two protocols is stripped from every record before the scores meet.
 
@@ -658,7 +659,12 @@ where the models sit at its chance floor, an order below the generation benchmar
 Temperature contributes under 1\%, and the n-shot effect is benchmark-dependent
 (negligible on MMLU, parser-bound on GSM8K). The case studies below show these
 factors in the wild, each isolating one mechanism by which two separately published
-scores under a shared name measure different things.
+scores under a shared name measure different things. We flag each configuration
+attribution by provenance: \emph{source-reported} where the producing paper states
+it (Belebele, TruthfulQA, and the HellaSwag shot counts), \emph{reproduced} by our
+controlled runs (GSM8K, BBH), or \emph{documentation-inferred} where only platform
+documentation exists (OLv2's BBH scoring mode, SEA-LION's pipeline origin); the
+released records mark which is which.
 
 \begin{figure*}[t]
 \centering
@@ -687,21 +693,26 @@ when both are correct.
 \paragraph{BBH: log-likelihood vs.\ chain-of-thought.}\label{sec:bbh}
 BBH \citep{suzgun2023} specifies 3-shot chain-of-thought generation with the
 answer extracted from free-form reasoning, the protocol ArXiv papers follow.
-OLv2 instead runs BBH under its fork of the EleutherAI lm-evaluation-harness,
-scoring 3-shot by normalised accuracy (\texttt{acc\_norm}): the model ranks the
-fixed answer choices by log-likelihood, generating no reasoning
-\citep{openllmv2about}. OLv2's API exposes no harness or scoring-mode field, so
-both are known only from its documentation. The effect is visible in the data
-(Table~\ref{tab:bbh-app}, Appendix~\ref{app:casetables}): Gemma-7B scores 21.12
-on OLv2 against 55.10--59.60 in ArXiv papers,\footnote{The 59.60 figure is
-reported under the surface label ``BigBench-Hard''; our normaliser keys on the
-``BBH'' alias, so it is shown for completeness but held out of the automated
-collision counts.} a gap over 35 points, and the same holds for Gemma-2-2B (11.76
-vs.\ 40.80) and MAmmoTH2-7B-Plus (18.93 vs.\ 63.10). This is not a generic
-scoring-mode effect: E2 (Appendix~\ref{app:exp-e2}) shows the
-log-likelihood-vs-generation gap on MMLU is at most 0.21\,pp, two orders smaller,
-so the BBH gap is specific to OLv2's multiple-choice log-likelihood meeting BBH's
-CoT structure.
+OLv2 instead ranks the fixed answer choices by log-likelihood
+(\texttt{acc\_norm}, generating no reasoning) and then \emph{displays} a
+leaderboard-normalised score \citep{openllmv2about}; its API exposes no harness or
+scoring-mode field, so both are known only from its documentation. The published
+numbers span a wide gap (Table~\ref{tab:bbh-app}, Appendix~\ref{app:casetables}):
+Gemma-7B shows 21.12 on OLv2 against 55.10--59.60 in ArXiv papers,\footnote{The
+59.60 figure is reported under the surface label ``BigBench-Hard''; our normaliser
+keys on the ``BBH'' alias, so it is shown for completeness but held out of the
+automated collision counts.} with Gemma-2-2B (11.76 vs.\ 40.80) and
+MAmmoTH2-7B-Plus (18.93 vs.\ 63.10) similar. \emph{Two} undocumented choices
+produce these gaps, not one: scoring mode (multiple-choice log-likelihood vs.\ CoT
+generation) \emph{and} OLv2's display normalisation. The raw \texttt{acc\_norm}
+behind the shown OLv2 values is 43.62/36.56/42.35\%, so the scoring-mode component
+alone is $\approx$4--21\,pp raw-to-raw and the remainder is normalisation; a re-run
+of OLv2's exact \texttt{leaderboard\_bbh} config on Gemma-2-9B reproduces the raw
+\texttt{acc\_norm} to within 0.1\,pp (53.88 vs.\ OLv2's 53.77), separating the two.
+The scoring-mode component is nonetheless real and far larger than on a genuinely
+multiple-choice benchmark, where E2 (Appendix~\ref{app:exp-e2}) finds a mode gap on
+MMLU of at most 0.21\,pp: BBH is sensitive because its CoT structure meets OLv2's
+multiple-choice log-likelihood.
 
 \paragraph{MATH Lvl 5: a silent answer-parser swap.} A third instance sits at the
 dataset-version rather than scoring-mode layer: OLv2's February-2025 swap of the
@@ -757,14 +768,14 @@ scope, neither labelled.
 \paragraph{HellaSwag: scoring mode and n-shot confounded.}\label{sec:hellaswag}
 Gemma-7B is recorded at 49.80 and 81.20, both ``HellaSwag''
 \citep{zellers2019hellaswag}. The 49.80 is the Phi-3 report
-\citep{abdin2024phi3} (5-shot, generation-based, temperature~0); the 81.20 is
-the Gemma report \citep{gemmateam2024gemma} (0-shot, log-likelihood over the
-four continuations). The $\approx$31-point gap is too large for shot count
-alone: on a log-likelihood benchmark n-shot moves scores by about a point (our
-grid: MMLU 0-vs-5-shot differ 1.0\,pp, $\eta^2\approx0.1\%$,
-Appendix~\ref{app:exp-grid}). The driver is scoring mode, since generating the
-continuation is structurally harder than ranking pre-specified ones. Neither
-record labels scoring mode or n-shot, so the gap is indistinguishable from a
+\citep{abdin2024phi3} (reported at 5-shot, via its internal pipeline); the 81.20 is
+the Gemma report \citep{gemmateam2024gemma} (reported at 0-shot). The two stated
+shot counts cannot explain the $\approx$31-point gap: on a log-likelihood benchmark
+n-shot moves scores by about a point (our grid: MMLU 0-vs-5-shot differ 1.0\,pp,
+$\eta^2\approx0.1\%$, Appendix~\ref{app:exp-grid}). The remaining gap is consistent
+with a scoring-mode difference---Phi-3's generation-style pipeline versus Gemma's
+log-likelihood ranking of the four continuations---but this is our inference:
+neither report labels its scoring mode, so the gap stays indistinguishable from a
 capability difference (Appendix~\ref{app:hellaswag} gives an alternative rendering
 of Figure~\ref{fig:casestudies-unified}).
 
@@ -803,30 +814,30 @@ mode and the reporting variants that most often move their scores.
 \label{sec:convergence}\label{sec:sealion}
 
 Two sources reporting the same score need not be independent measurements; one may
-be the other re-reported. OLv2's leaderboard records \texttt{google/gemma-2-9b}'s raw
-BBH as 34.0968 (34.10) under a 3-shot multiple-choice log-likelihood protocol, with a
-model SHA, \texttt{bfloat16} precision, and a submission date attached. The SEA-LION
-paper (\citealt{ng2025sealion}; arXiv:2504.05747) reports the same base model at 34.1
-in a bare table and states it evaluated English performance ``using the Open LLM
-Leaderboard,'' listing OLv2's identical six-benchmark suite (MMLU-PRO, BBH, GPQA,
-MATH, MuSR, IFEval); the shared-pipeline origin is thus attributed by the source, not
-inferred from the matching number alone. The number cannot settle the narrower
-question of whether SEA-LION imported OLv2's value or re-ran the identical
-deterministic pipeline---both yield 34.0968---but both are non-independent, and BBH
-is precisely the score a free re-run would fail to reproduce: the same model scores
-$\approx$68 under CoT generation (\S\ref{sec:bbh}) and moves $\le$2.81\,pp across
-harness versions (Appendix~\ref{app:exp-e3}), so landing on OLv2's exact 34.10
-fingerprints OLv2's specific pipeline rather than an independent choice of protocol.
-The run/job ID, \texttt{evaluation\_timestamp}, \texttt{harness}, and
-\texttt{prompt\_template\_hash} that would separate import from re-run are absent from
-SEA-LION's record (OLv2's carries only a model SHA and date); recording them, as
-EvalSpec requires, would replace the inference with a check.
+be the other re-reported. OLv2's leaderboard \emph{displays} \texttt{google/gemma-2-9b}'s
+BBH as 34.10---a normalised score computed from a raw \texttt{acc\_norm} of 53.77\%
+under a 3-shot multiple-choice log-likelihood protocol, carrying a model SHA,
+precision, and date. SEA-LION (\citealt{ng2025sealion}; arXiv:2504.05747) reports
+the same base model at 34.1 in a bare table and states it evaluated English
+performance ``using the Open LLM Leaderboard,'' listing OLv2's identical
+six-benchmark suite (MMLU-PRO, BBH, GPQA, MATH, MuSR, IFEval); the shared-pipeline
+origin is thus attributed by the source, not inferred from the match alone. The
+number cannot settle whether SEA-LION imported the value or re-ran the identical
+deterministic pipeline---both give 34.10---but both are non-independent, and 34.10
+is a fingerprint of OLv2's pipeline: our re-run of its exact \texttt{leaderboard\_bbh}
+config reproduces the raw \texttt{acc\_norm} to within 0.1\,pp (53.88 vs.\ 53.77),
+whereas CoT generation (\S\ref{sec:bbh}) and other harness versions ($\le$2.81\,pp,
+Appendix~\ref{app:exp-e3}) land elsewhere. The run/job ID,
+\texttt{evaluation\_timestamp}, \texttt{harness}, and \texttt{prompt\_template\_hash}
+that would separate import from re-run are absent from SEA-LION's record (OLv2's
+carries only a model SHA and date); recording them, as EvalSpec requires, would
+replace the inference with a check.
 
-The Gemma 2 and Gemma 3 reports instead list 68.20, 69.00, and 69.40, using
-chain-of-thought generation rather than OLv2's 3-shot multiple-choice log-likelihood
-(the harness mismatch of \S\ref{sec:bbh} compounding here), which explains the
-$\approx$35-point gap. All five sources are in Table~\ref{tab:sealion-app}
-(Appendix~\ref{app:casetables}).
+The Gemma 2 and Gemma 3 reports instead list 68.20, 69.00, and 69.40 in raw
+chain-of-thought generation, rather than OLv2's multiple-choice log-likelihood; this
+scoring-mode mismatch (\S\ref{sec:bbh}), compounded by OLv2's display normalisation,
+spans the $\approx$34-point gap between the shown 34.10 and the 68--69 reports. All
+five sources are in Table~\ref{tab:sealion-app} (Appendix~\ref{app:casetables}).
 
 
 \section{Discussion}
@@ -1325,8 +1336,10 @@ MAmmoTH2 paper & 57.40 & CoT generation \\
 \end{tabular}%
 }
 \caption{Gemma-7B BBH scores across sources (\S\ref{sec:bbh}). The
-$\approx$35-point gap reflects OLv2's multiple-choice log-likelihood scoring
-vs.\ the ArXiv papers' chain-of-thought generation. The final row is reported
+$\approx$35-point gap reflects two undocumented choices: OLv2's multiple-choice
+log-likelihood scoring (raw \texttt{acc\_norm} 43.62\%) vs.\ the ArXiv papers'
+chain-of-thought generation, and OLv2's display normalisation of that raw score to
+21.12. The final row is reported
 under the surface label ``BigBench-Hard''; it is shown for completeness but held
 out of the automated cross-source collision counts (\S\ref{sec:bbh}).}
 \label{tab:bbh-app}
@@ -2045,10 +2058,10 @@ Qwen2.5-14B-Instruct       & 79.97 & 79.79 & 0.18 \\
 0.4.11 (log-lik.\ = log-likelihood, gen.\ = generation, $|\Delta|$ in pp). Both scoring modes use the full MMLU test set
 (\texttt{limit=14042}), an exact same-sample comparison for every model. The
 maximum scoring-mode gap is 0.21 pp, which rules out a generic scoring-mode
-effect: the $\approx$35-point BBH gap documented in \S\ref{sec:bbh} is
-specific to the interaction between OLv2's multiple-choice log-likelihood approach and
-BBH's chain-of-thought structure, not a property of log-likelihood scoring in
-general.}
+effect: the much larger BBH gap (\S\ref{sec:bbh}) comes from multiple-choice
+log-likelihood meeting BBH's chain-of-thought structure ($\approx$14 pp raw-to-raw
+on Gemma-2-9B, our \texttt{leaderboard\_bbh} re-run) \emph{plus} OLv2's display
+normalisation, not from log-likelihood scoring in general.}
 \label{tab:e2-scoring-mode}
 \end{table}
 
