@@ -1097,12 +1097,14 @@ that operational systems (\S\ref{sec:related}) consume.
 
 \paragraph{Provenance and reproducibility as first-class.} Two properties make the
 above auditable rather than aspirational. First, \emph{each value carries its
-evidence source}: EvalSpec adds a provenance tag separating source-reported values
-(returned by the producer) from API-exposed, documentation-inferred (e.g.\ a
-harness label attached from a leaderboard's docs), and LLM-extracted ones, so a
-reader can tell measurement from inference, exactly the distinction the OLv2
-harness label needs (\S\ref{sec:pipeline}); the released dataset already applies it
-to the load-bearing inferred fields. Second, \emph{each headline number links to a
+evidence source}: EvalSpec adds a provenance tag with five values---source-reported
+(returned by the producer), API-exposed, documentation-inferred (e.g.\ a harness
+label attached from a leaderboard's docs), pipeline-default (an unstated value the
+extractor filled with a default, like the 21\% of ArXiv metadata in
+\S\ref{sec:meta-ann}), and LLM-extracted---so a reader can tell a measurement from an
+inference or a default, exactly the distinction the OLv2 harness label
+(\S\ref{sec:pipeline}) and the SEA-LION collision (\S\ref{sec:sealion}) need; the
+released dataset already applies it to the load-bearing inferred and default fields. Second, \emph{each headline number links to a
 released artifact}: the dataset, extraction and analysis code, and the collision,
 coverage, and audit scripts regenerate every reported table (\S\ref{sec:materials}).
 With the EEE profile above and the crosswalk to
