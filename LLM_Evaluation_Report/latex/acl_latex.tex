@@ -649,8 +649,9 @@ The case studies fall into three groups, one per mechanism by which scores
 become incomparable across sources; Figure~\ref{fig:casestudies-unified} shows a
 representative divergence for each. A controlled factorial experiment
 quantifies the factors (four models $\times$ three benchmarks $\times$ three
-prompt formats $\times$ two temperatures $\times$ two n-shot counts; 312
-evaluations), and prompt-format sensitivity is assessed on five log-likelihood
+prompt formats $\times$ two temperatures $\times$ two n-shot counts $\times$ three
+seeds, with MMLU reduced to a single temperature and seed; 312 evaluations), and
+prompt-format sensitivity is assessed on five log-likelihood
 benchmarks (
 Appendix~\ref{app:exp-grid}). Prompt format dominates on the generation benchmark
 GSM8K, where it drives ${\approx}27\%$ of 5-shot variance ($F = 13.0$, $p < 0.001$)
