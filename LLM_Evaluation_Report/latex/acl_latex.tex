@@ -919,22 +919,22 @@ sufficient.
 
 \paragraph{From existence to prevalence.}\label{sec:prevalence} The case studies
 establish that each mechanism \emph{occurs}; a corpus-wide pass shows how often the
-precondition for catching one is even present. After conservatively normalising model and benchmark names across
-all 46{,}559 records (keeping base and instruct checkpoints distinct), 42{,}114
-distinct model--benchmark cells remain, of which only \textbf{267 (0.63\%)} are
-reported by two or more independent sources, a direct measure of the fragmentation
-that makes cross-source verification rare. Where that overlap does occur it usually
-disagrees: \textbf{185 of the 267 (69\%)} differ by more than 1\,pp and
-\textbf{139 (52\%)} by more than 5\,pp (differences above 30\,pp are common, e.g.\
-Gemma-2-9B BBH at 34.1 vs.\ 68.2 across OLv2 and the model's own report). The
-disagreements are also unattributable from the record: \textbf{98\%} have the
-harness field missing from at least one of the two colliding records, and scoring
-mode is recorded in none of them, though that last point is corpus-wide, not
-special to collisions (\S\ref{sec:discrepancies}), so the gap cannot be assigned to
-a cause. Prevalence is thus bounded less by how often the mechanisms fire than by
-how rarely two sources measure the same thing at all; when they do, divergence is
-the norm and its cause is unrecorded. Name normalisation is heuristic, so 0.63\% is a
-lower bound on overlap; the released collision script reproduces the count.
+precondition for catching one is present. After conservatively normalising model
+and benchmark names across all 46{,}559 records (keeping base and instruct
+checkpoints distinct), 42{,}114 distinct model--benchmark cells remain, of which
+only \textbf{267 (0.63\%)} are reported by two or more independent sources, a
+direct measure of the fragmentation that makes cross-source verification rare.
+Where that overlap occurs it usually disagrees: \textbf{185 of the 267 (69\%)}
+differ by more than 1\,pp and \textbf{139 (52\%)} by more than 5\,pp (differences
+above 30\,pp are common, e.g.\ Gemma-2-9B BBH at 34.1 vs.\ 68.2 across OLv2 and
+the model's own report), and the disagreements are unattributable: \textbf{98\%}
+have the harness field missing from at least one colliding record, and scoring
+mode is recorded in none (though that last point is corpus-wide, not special to
+collisions (\S\ref{sec:discrepancies}), so the gap cannot be assigned to a cause).
+Prevalence is thus bounded less by how often the mechanisms fire than by how
+rarely two sources measure the same thing at all. Name normalisation is heuristic,
+so 0.63\% is a lower bound on overlap; the released collision script reproduces the
+count.
 
 \subsection{EvalSpec: Adapting EEE for Comparable Reporting}
 \label{sec:evalspec}
@@ -979,9 +979,8 @@ EvalSpec adapts the open EEE schema (\S\ref{sec:related}) to the gaps this audit
 exposes: it requires the configuration fields whose absence the case studies show
 to break cross-source comparison, so two records on the same benchmark can be
 compared without guessing the procedure behind them. We release it with the
-populated dataset as a starting point rather than a finished standard, so future
-papers report the configuration that makes their scores easy to compare and the
-community can keep extending it.
+populated dataset as a starting point rather than a finished standard, for the
+community to extend.
 
 Field selection follows from the case studies (\S\ref{sec:cases}):
 \texttt{scoring\_mode} from the BBH and HellaSwag collapses
@@ -997,10 +996,10 @@ where varying only the judge moves means up to 1.35/10 and reorders rankings
 \texttt{evaluation\_timestamp} from the Math-Verify swap (Appendix~\ref{sec:math}), which
 changes scores silently under one label. Two Recommended fields follow the same
 logic: \texttt{judge\_prompt\_hash} (the rating depends on the judge prompt and
-rubric, not the model alone) and \texttt{answer\_parser\_version} (the Math-Verify
-parser swap is invisible to \texttt{harness\_version}); hashed fields are
-canonicalised before hashing so cosmetic differences do not cause spurious
-mismatches. The full set by tier is in Table~\ref{tab:evalspec-fields-app}
+rubric, not the model alone) and \texttt{answer\_parser\_version} (the Math-Verify parser
+swap is invisible to \texttt{harness\_version}); hashed fields are canonicalised
+before hashing to avoid spurious mismatches. The full set by tier is in
+Table~\ref{tab:evalspec-fields-app}
 (Appendix~\ref{app:evalspec}).
 
 Instantiating these fields for the SEA-LION collision
@@ -1008,13 +1007,11 @@ Instantiating these fields for the SEA-LION collision
 Appendix~\ref{app:evalspec}) shows two suffice: \texttt{scoring\_mode} splits the
 34.10 log-likelihood pair from the 68--69 generation reports, and
 \texttt{harness\_name} plus \texttt{evaluation\_timestamp} separate SEA-LION's
-re-import from an independent re-run. In the actual records all are
-\texttt{unknown}, which is why the collision is unresolvable and recording them
-the resolution.
+re-import from an independent re-run, all \texttt{unknown} in the actual records.
 
 EvalSpec is encoded as a JSON-LD vocabulary (extending \texttt{schema.org},
 compatible with Croissant) whose tiers can be mechanically checked by SHACL shape
-constraints, so conformance needs no human judgement; the prompt template is
+constraints; the prompt template is
 stored as a hash of its canonical string. None of the required fields need new
 instrumentation, the values already exist at evaluation time; the barrier is API
 exposure, not implementation cost.
@@ -1053,8 +1050,8 @@ exposure, not implementation cost.
 \emph{Leaderboard operators} should expose \texttt{harness\_name},
 \texttt{harness\_version}, \texttt{scoring\_mode}, and
 \texttt{evaluation\_timestamp}, known at evaluation time, so a logging decision,
-not an engineering project; SEA-LION (\S\ref{sec:sealion}) shows the cost, where an
-exact match becomes unreliable evidence of replication. \emph{Model developers}
+not an engineering project; SEA-LION (\S\ref{sec:sealion}) shows the cost.
+\emph{Model developers}
 should ship at least one EvalSpec-R record per reported benchmark, making scores
 verifiable against later third-party evaluations (E1, Appendix~\ref{app:exp-e1}:
 58.5\% vs.\ 2.5\% from one unrecorded prompt format). \emph{Schema designers}
@@ -1066,19 +1063,19 @@ Appendix~\ref{app:exp-e2}, shows the converse: at most 0.21\,pp when scoring
 mode alone varies).
 
 \paragraph{Adoption.}
-Because conformance is machine-checkable (SHACL), records validate automatically
-rather than by hand; because the fields are uniform across sources, incomparable
-protocols stop being silently averaged into ``SOTA'' comparisons and cross-source
-meta-analysis becomes possible, even under partial uptake. The cheapest path is
-producer-side: developers who ship one EvalSpec-R record per reported benchmark
-make their own scores verifiable, which pressures aggregators and leaderboards to
-surface the same fields. To lower even that cost we release a drop-in emission hook
-that turns an existing lm-evaluation-harness run into EvalSpec-R records: from a
-standard run it auto-populates all \textbf{8 of 8} Required fields, including the
-\texttt{scoring\_mode} (read from the task's output type) and the prompt-template
-hash that no leaderboard API exposes, against the $\approx$0\% source-reported
-coverage of those fields in the ecosystem (\S\ref{sec:discrepancies}). The hook is
-portable to HELM and Inspect by swapping field accessors.
+Because conformance is machine-checkable (SHACL), records validate automatically;
+because the fields are uniform across sources, incomparable protocols stop being
+silently averaged into ``SOTA'' comparisons and cross-source meta-analysis becomes
+possible, even under partial uptake. The cheapest path is producer-side:
+developers who ship one EvalSpec-R record per benchmark make their scores
+verifiable, pressuring aggregators and leaderboards to surface the same fields. To
+lower even that cost we release a drop-in emission hook that turns an existing
+lm-evaluation-harness run into EvalSpec-R records: it auto-populates all
+\textbf{8 of 8} Required fields, including \texttt{scoring\_mode} (read from the
+task's output type) and the prompt-template hash that no leaderboard API exposes,
+against the $\approx$0\% source-reported coverage of those fields
+(\S\ref{sec:discrepancies}). The hook is portable to HELM and Inspect by swapping
+field accessors.
 
 \paragraph{Interoperability with EEE.} EvalSpec is not a competing schema but a
 compliance \emph{profile} over EEE: every EvalSpec field resolves to an existing
@@ -1095,8 +1092,8 @@ EEE's evolving \texttt{metric\_config} and its optional instance-level records
 instance-level EEE data satisfies the Full tier and enables item-level re-scoring,
 while one emitting only the Required fields still yields comparable aggregate
 scores. EvalSpec thus fixes a comparability \emph{floor} without capping the
-reproducibility ceiling that richer EEE records provide, and its records are the
-natural unit that operational systems (\S\ref{sec:related}) consume.
+reproducibility ceiling of richer EEE records, and its records are the natural unit
+that operational systems (\S\ref{sec:related}) consume.
 
 \paragraph{Provenance and reproducibility as first-class.} Two properties make the
 above auditable rather than aspirational. First, \emph{each value carries its
@@ -1107,12 +1104,12 @@ reader can tell measurement from inference, exactly the distinction the OLv2
 harness label needs (\S\ref{sec:pipeline}); the released dataset already applies it
 to the load-bearing inferred fields. Second, \emph{each headline number links to a
 released artifact}: the dataset, extraction and analysis code, and the collision,
-coverage, and audit scripts regenerate every reported table from the released
-records (\S\ref{sec:materials}). With the EEE profile above and the crosswalk to
+coverage, and audit scripts regenerate every reported table (\S\ref{sec:materials}).
+With the EEE profile above and the crosswalk to
 operational layers such as Evaluation Cards \citep{ghosh2026evalcards}, whose
 signals consume precisely the fields EvalSpec makes mandatory, provenance and
 reproducibility become structural properties of the record rather than optional
-extras, which is what lets a third party audit a score and lowers the barrier to
+extras, which lets a third party audit a score and lowers the barrier to
 adoption.
 
 \section{Conclusions}
