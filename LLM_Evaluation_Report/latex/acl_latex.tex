@@ -520,11 +520,14 @@ in multiple sources.}
 
 \paragraph{Score extraction precision and recall.}
 We audited 2{,}027 extracted (model, benchmark, score) entries against 10 source
-ArXiv papers (Table~\ref{tab:score-ann-app}, Appendix~\ref{app:audit}).
+ArXiv papers (Table~\ref{tab:score-ann-app}, Appendix~\ref{app:audit}), verified
+independently by a second annotator (99.65\% agreement with the first).
 \emph{Precision}, extracted scores matching the paper, is \textbf{97.5\%}
-(1{,}977/2{,}027); the 50 errors are systematic artefacts (base/chat variant
-duplication, 33; a spurious HumanEval leading ``0'', 8; a Qwen1.5-32B-as-34B
-mislabel, 5; duplicate Elo attribution, 3; one wrong pass@k, 1). \emph{Recall},
+(1{,}976/2{,}027); the 51 non-matches are systematic: 35 duplicated base/chat variant
+rows whose score is not in the paper, 14 genuine value errors (TinyLlama
+HumanEval/DROP parsing, 8; a Qwen1.5-32B-as-34B mislabel, 5; an OLMo AIME slip, 1),
+and 2 ambiguous. Excluding the duplicated and ambiguous rows, precision on locatable
+scores is \textbf{99.3\%} (1{,}976/1{,}990). \emph{Recall},
 reported scores captured, is approximately \textbf{81\%} but variable (52--100\%
 per paper): it captures headline tables but skips secondary ones and, in
 table-heavy papers, whole comparison models. Neither check verifies surrounding
