@@ -520,8 +520,7 @@ in multiple sources.}
 
 \paragraph{Score extraction precision and recall.}
 We audited 2{,}027 extracted (model, benchmark, score) entries against 10 source
-ArXiv papers (Table~\ref{tab:score-ann-app}, Appendix~\ref{app:audit}), verified
-independently by a second annotator (99.65\% agreement with the first).
+ArXiv papers (Table~\ref{tab:score-ann-app}, Appendix~\ref{app:audit}).
 \emph{Precision}, extracted scores matching the paper, is \textbf{97.5\%}
 (1{,}976/2{,}027); the 51 non-matches are systematic: 35 duplicated base/chat variant
 rows whose score is not in the paper, 14 genuine value errors (TinyLlama
@@ -545,16 +544,15 @@ a Llama-2 survey), covering 817 and 869 harness-call rows. Each row's
 rubric (canonical equivalents accepted, a paper's distinctly-named fork required
 verbatim; Appendix~\ref{app:harness}).
 
-An independent second annotator re-verified the sample. Every harness the pipeline
-\emph{names} is correct (263/263, including BLOOM's \emph{Prompted Language Model
-Evaluation Harness} fork), so all errors are \emph{under-extraction}, not
-misattribution. Per-row precision on the with-harness sample is 731/817 = 89.5\%:
+Every harness the pipeline \emph{names} is correct (263/263, including BLOOM's
+\emph{Prompted Language Model Evaluation Harness} fork), so all errors are
+\emph{under-extraction}, not misattribution. Per-row precision on the with-harness sample is 731/817 = 89.5\%:
 Sheared LLaMA and Aya 23 reach 100\%, while three papers expose the failure mode---%
 when a harness is attributed to a broad group (Llemma's ``for open access models'';
 BLOOM's Universal-Probing framework; Nemotron-4 15B's ``across all aforementioned
 tasks''), the pipeline tags only the benchmarks named in the same sentence (misses:
 Llemma 41, BLOOM 34, Nemotron-4 15B 11). Abstention on the without-harness sample is
-869/869 = 100\% (\texttt{unknown} every row), independently confirmed; text search
+869/869 = 100\% (\texttt{unknown} every row); text search
 finds none naming a public harness for its own evaluations.
 
 \subsection{Precision of Metadata Beyond Scores}
